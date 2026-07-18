@@ -7,6 +7,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const serverUrl = ref('http://127.0.0.1:8188')
   const outputDir = ref('')
   const launchCommand = ref('')
+  const promptPreviewDir = ref('')
   const connStatus = ref<ConnStatus>('unknown')
   const connMessage = ref('')
   const loaded = ref(false)
@@ -15,6 +16,7 @@ export const useSettingsStore = defineStore('settings', () => {
     serverUrl.value = s.serverUrl
     outputDir.value = s.outputDir
     launchCommand.value = s.launchCommand
+    promptPreviewDir.value = s.promptPreviewDir || ''
   }
 
   async function load(): Promise<void> {
@@ -39,6 +41,17 @@ export const useSettingsStore = defineStore('settings', () => {
     await window.api.settings.openOutputDir()
   }
 
+  async function pickPromptPreviewDir(): Promise<void> {
+    const dir = await window.api.settings.pickPromptPreviewDir()
+    if (dir) {
+      promptPreviewDir.value = dir
+    }
+  }
+
+  async function openPromptPreviewDir(): Promise<void> {
+    await window.api.settings.openPromptPreviewDir()
+  }
+
   async function healthCheck(url?: string): Promise<boolean> {
     connStatus.value = 'checking'
     const result = await window.api.comfy.healthCheck(url ?? serverUrl.value)
@@ -51,6 +64,7 @@ export const useSettingsStore = defineStore('settings', () => {
     serverUrl,
     outputDir,
     launchCommand,
+    promptPreviewDir,
     connStatus,
     connMessage,
     loaded,
@@ -58,6 +72,8 @@ export const useSettingsStore = defineStore('settings', () => {
     save,
     pickOutputDir,
     openOutputDir,
+    pickPromptPreviewDir,
+    openPromptPreviewDir,
     healthCheck,
   }
 })

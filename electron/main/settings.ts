@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { homedir } from 'os'
 import { join } from 'path'
 import type { AppSettings } from './types'
 
@@ -21,11 +22,19 @@ export function defaultOutputDir(): string {
   return dir
 }
 
+/** Prefer Desktop/artists when present (common local preview library). */
+export function defaultPromptPreviewDir(): string {
+  const desktop = join(homedir(), 'Desktop', 'artists')
+  if (existsSync(desktop)) return desktop
+  return ''
+}
+
 export function getSettings(): AppSettings {
   const defaults: AppSettings = {
     serverUrl: DEFAULT_SERVER_URL,
     outputDir: defaultOutputDir(),
     launchCommand: DEFAULT_LAUNCH_COMMAND,
+    promptPreviewDir: defaultPromptPreviewDir(),
   }
 
   try {
@@ -47,6 +56,10 @@ export function getSettings(): AppSettings {
         typeof raw.launchCommand === 'string' && raw.launchCommand.trim()
           ? raw.launchCommand.trim()
           : defaults.launchCommand,
+      promptPreviewDir:
+        typeof raw.promptPreviewDir === 'string'
+          ? raw.promptPreviewDir.trim()
+          : defaults.promptPreviewDir,
     }
   } catch {
     return defaults
@@ -63,6 +76,9 @@ export function setSettings(patch: Partial<AppSettings>): AppSettings {
   }
   if (next.launchCommand) {
     next.launchCommand = next.launchCommand.trim()
+  }
+  if (typeof next.promptPreviewDir === 'string') {
+    next.promptPreviewDir = next.promptPreviewDir.trim()
   }
   writeFileSync(settingsPath(), JSON.stringify(next, null, 2), 'utf-8')
   return next

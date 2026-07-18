@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
 import { sanitizePoolName, type PromptPoolEntry } from '@/random/prompt-pool-types'
@@ -14,11 +14,23 @@ const nameInputRef = ref<HTMLInputElement | null>(null)
 const listQuery = ref('')
 const entryQuery = ref('')
 const entryListRef = ref<HTMLElement | null>(null)
+const previewOpen = ref(false)
+const previewLoading = ref(false)
+const preview = ref<{ prompt: string; images: PromptPreviewImage[] } | null>(null)
 
 const pool = computed(() => poolStore.selected)
 
+function onPreviewKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && previewOpen.value) closePreview()
+}
+
 onMounted(() => {
   void poolStore.hydrate()
+  window.addEventListener('keydown', onPreviewKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onPreviewKeydown)
 })
 
 watch(
@@ -200,6 +212,37 @@ async function copyToken(): Promise<void> {
     toast.error('复制失败')
   }
 }
+
+function closePreview(): void {
+  previewOpen.value = false
+  preview.value = null
+}
+
+async function onPreviewEntry(prompt: string): Promise<void> {
+  const text = prompt.trim()
+  if (!text) {
+    toast.info('空 prompt')
+    return
+  }
+  if (previewLoading.value) return
+  previewLoading.value = true
+  try {
+    const result = await window.api.promptPreview.resolve(text)
+    if (!result.ok) {
+      toast.info(result.reason === 'no_dir' ? '请先在设置中配置预览图目录' : '未找到预览图')
+      return
+    }
+    preview.value = {
+      prompt: text,
+      images: result.images,
+    }
+    previewOpen.value = true
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  } finally {
+    previewLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -356,6 +399,7 @@ async function copyToken(): Promise<void> {
           <div class="panel-body pool-editor-body">
             <div class="pool-entry-table">
               <div class="pool-entry-head">
+                <span class="pool-entry-head-eye" aria-hidden="true"></span>
                 <div class="pool-entry-head-prompt">
                   <span class="pool-entry-head-title">Prompt</span>
                   <label class="pool-search pool-entry-head-search">
@@ -393,6 +437,24 @@ async function copyToken(): Promise<void> {
                   :class="{ 'is-off': entry.weight <= 0 }"
                   :data-entry-index="index"
                 >
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-icon pool-entry-preview"
+                    title="预览图"
+                    aria-label="预览图"
+                    :disabled="previewLoading || !entry.prompt.trim()"
+                    @click="onPreviewEntry(entry.prompt)"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path
+                        d="M1.75 8s2.25-3.75 6.25-3.75S14.25 8 14.25 8s-2.25 3.75-6.25 3.75S1.75 8 1.75 8z"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linejoin="round"
+                      />
+                      <circle cx="8" cy="8" r="1.75" stroke="currentColor" stroke-width="1.4" />
+                    </svg>
+                  </button>
                   <input
                     class="input"
                     type="text"
@@ -448,5 +510,46 @@ async function copyToken(): Promise<void> {
         </section>
       </template>
     </SplitPane>
+
+    <Teleport to="body">
+      <div
+        v-if="previewOpen && preview"
+        class="pool-preview-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-label="提示词预览图"
+        @click.self="closePreview"
+      >
+        <div class="pool-preview-card">
+          <div class="pool-preview-header">
+            <code class="pool-preview-name" :title="preview.prompt">{{ preview.prompt }}</code>
+            <span class="pool-preview-count">{{ preview.images.length }} 张</span>
+            <button
+              type="button"
+              class="btn btn-ghost btn-icon"
+              title="关闭"
+              aria-label="关闭"
+              @click="closePreview"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="pool-preview-grid" :class="{ 'is-single': preview.images.length === 1 }">
+            <figure v-for="img in preview.images" :key="img.path" class="pool-preview-item">
+              <img
+                class="pool-preview-img"
+                :src="img.dataUrl"
+                :alt="img.filename"
+                draggable="false"
+                @dragstart.prevent
+              />
+              <figcaption class="pool-preview-file" :title="img.filename">{{ img.filename }}</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

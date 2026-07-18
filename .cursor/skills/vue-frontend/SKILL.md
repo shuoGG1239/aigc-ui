@@ -3,10 +3,12 @@ name: vue-frontend
 description: >-
   aigc-ui 项目前端规范：Electron + Vue 3 桌面客户端，紧凑工具型 UI，
   Slate + Blue，纯 CSS 变量，无第三方 UI 库。含一体化标题栏、窄侧栏、
-  panel-header 操作、mono 表单、图标按钮与开发者工具约定。
+  panel-header 操作、mono 表单、Toast、图片元数据解析、提示词格式化、
+  提示词池与开发者工具约定。
   Use when creating or editing Vue 3 + Pinia + Vite + TypeScript frontend
   in this repo (web/), Electron UI, styling, pages/components, CSS, or when
-  the user mentions UI 风格、界面优化、侧边栏、按钮、前端规范。
+  the user mentions UI 风格、界面优化、侧边栏、按钮、前端规范、PNG 元数据、
+  提示词格式化、Toast。
 ---
 
 # Vue Frontend — aigc-ui
@@ -112,6 +114,8 @@ app-frame (column, 100%)
 | 清空日志 / 删除 | 垃圾桶 |
 | 打开资源管理器 | 文件夹 |
 | 选择文件夹 | 文件夹 + 加号 |
+| 格式化提示词 | 文字 `{}`（`.btn-icon-braces`，mono） |
+| 关闭 Toast | 细线叉 SVG |
 
 交互：hover 色变 + active `scale(0.98)`；`.btn-primary .spinner` 用白环。
 
@@ -172,7 +176,10 @@ app-frame (column, 100%)
 
 ## 7. Toast / 确认
 
-- Toast：**右下**；info / ok / error；~3500ms
+- Toast：**右下**；info / ok / error；info/ok ~3500ms，error ~4500ms
+- 实现：`useToast` + `ToastHost`（`TransitionGroup`）
+- **必须**有登场/退场渐入渐出；列表位移用 `.toast-move`
+- **必须**右侧叉号可手动关闭；关闭时清掉该条定时器
 - **业务错误 → toast**，禁止弹窗报错
 - 破坏操作 → `confirmDialog`（不用 `window.confirm`）
 
@@ -182,16 +189,47 @@ app-frame (column, 100%)
 
 | 侧栏 | 职责 |
 |------|------|
-| 文生图 | 参数 + 预览；生成在参数 panel-header |
+| 文生图 | 参数 + 预览；生成 / 格式化等在参数 panel-header |
+| 提示词池 | 池管理、条目权重、预览；路由 `/pools` |
 | 控制台 | ComfyUI 进程：启动命令、启停、日志 |
-| 设置 | 服务地址、输出目录等客户端配置（单行 header） |
+| 设置 | 服务地址、输出目录、提示词预览目录等（单行 header） |
 
 - 启动命令一行可编辑；退出应用须杀掉由客户端拉起的进程树
 - Batch 等文案可保持英文短标签（如 `Batch`），与脚本参数对齐
 
 ---
 
-## 9. UI/UX 偏好（必须）
+## 9. 图片元数据（image-meta）
+
+PNG 文本块（`tEXt` / `zTXt` / `iTXt`）由主进程 `extractPngInfo` 抽出；**语义层是各家方言**，无统一 API。调用方只能解析或自己写出，不能改对方 schema。
+
+| 来源 | 典型键 | 解析器 |
+|------|--------|--------|
+| ComfyUI | `prompt` / `workflow` 图 JSON | `comfyui.ts`（完整表单映射） |
+| NovelAI | `Software=NovelAI` + `Comment` JSON | `novelai.ts` |
+| A1111 | `parameters` 文本，或离散 `prompt`/`steps`/`cfg_scale`… | `a1111.ts` |
+
+- 模块：`web/src/utils/image-meta/`（`parse` → Comfy → NovelAI → A1111 字段 → parameters）
+- 入口：`parseImageMeta`（摘要）/ `parseWorkflowParams`（→ 表单）
+- **应用图片/剪贴板到参数**（非 Comfy）：`preferFamily` + `base` 合并，**保留当前 family 与模型槽**；Comfy 图仍整表替换
+- 预览「图片信息」：摘要 chips（含来源）+ 始终展示原始 JSON
+- 新格式 → 在 `image-meta` 加解析器，不要散落在 View 里
+- 预览图：`draggable="false"` + `-webkit-user-drag: none`
+
+---
+
+## 10. 提示词格式化 / 家族
+
+- `formatPromptByFamily`（`web/src/utils/prompt-format.ts`）按当前 family
+- **Anima**：先走 `prompt-canon`（NAI `[]`/`{}` → 权重，`artist:` → `@`），再 polish（`_`→空格、小写）
+- **SDXL**：同样走 NAI 语义，但 artist **不带** `@`
+- 参数区 header 提供 `{}` 格式化按钮；作用于**当前聚焦**的 Prompt / Negative（与右键「格式化」一致）
+- 右键菜单用 `elementFromPoint` 命中 `[data-prompt-field]`，勿只靠 `activeElement`
+- 池子/随机输出走 `adaptRandomPrompt`（与格式化语义对齐）
+
+---
+
+## 11. UI/UX 偏好（必须）
 
 ### 密度
 
@@ -211,50 +249,66 @@ app-frame (column, 100%)
 - 无 emoji；扁平 SVG
 - sparkle 用四角星
 
+### 工程偏好
+
+- **绿地项目**：不做兼容/迁移 shim（无旧字段 fallback、无 redirect 凑合）
+- 偏好稳定后同步本 skill，勿另起散落文档
+
 ### 反面案例
 
 - 第三方 UI 库 / 原生 select / TopBar（内容顶栏）
 - 大块 page-header、松散 gutter、宽空 panel-header
 - 表单混用 Inter 与 mono
 - 文字按钮堆叠（优先 icon）
+- 在 View 内手写多格式 PNG 解析（应进 `image-meta`）
+- 应用外来图元数据时强行改掉用户当前 family（非 Comfy）
 - DevTools 深色三栏皮肤伪装产品 UI
 
 ---
 
-## 10. 禁止项
+## 12. 禁止项
 
 - ❌ 第三方 UI 库 / 原生 `<select>`
 - ❌ 内容区 TopBar / page-header 堆标题文案
 - ❌ 弹窗报业务错
 - ❌ 偏离 token 的 accent（除非用户明确要求）
 - ❌ 侧栏折叠轨（本项目固定窄侧栏）
+- ❌ 为旧协议堆兼容层（本项目不维护迁移路径）
 
 ---
 
-## 11. 关键文件
+## 13. 关键文件
 
 | 文件 | 职责 |
 |------|------|
 | `web/src/styles/index.css` | token |
-| `web/src/styles/app.css` | 布局 + 组件 |
+| `web/src/styles/app.css` | 布局 + 组件 + Toast |
 | `web/src/App.vue` | app-frame + TitleBar + shell |
 | `web/src/components/layout/TitleBar.vue` | 一体化标题栏 |
 | `web/src/components/layout/Sidebar.vue` | 窄侧栏 |
 | `web/src/components/common/AppSelect.vue` | 下拉 |
+| `web/src/components/common/ToastHost.vue` | Toast 宿主（动画 + 关闭） |
+| `web/src/composables/useToast.ts` | Toast 状态 |
+| `web/src/utils/image-meta/` | PNG 元数据多格式解析 |
+| `web/src/utils/prompt-format.ts` | 按家族格式化提示词 |
+| `web/src/random/prompt-canon.ts` | NAI → canon 段 |
+| `electron/main/png-info.ts` | PNG 文本块抽取 |
 | `electron/main/index.ts` | 窗口、IPC、F12、右键检查、退出杀进程 |
 
 ---
 
-## 12. 检查清单
+## 14. 检查清单
 
 ```
 - [ ] 无 page-header；操作在 panel-header
 - [ ] 侧栏方形 icon+文字；设置在底部；不折叠
 - [ ] input / textarea / AppSelect = mono 12.5px
-- [ ] 工具操作用 btn-icon + SVG（播放/停止/保存…）
+- [ ] 工具操作用 btn-icon + SVG（播放/停止/保存/{}…）
 - [ ] 简单配置优先单行 path-row
-- [ ] 错误 toast；header 用 --bg-soft
+- [ ] Toast：渐入渐出 + 可关闭；错误走 toast；header 用 --bg-soft
+- [ ] 新 PNG 格式进 image-meta；应用非 Comfy 图保留 family
+- [ ] Anima/SDXL 格式化走 prompt-canon 语义
 - [ ] flex/grid + min-height:0，无 calc(100vh)
-- [ ] 不要 emoji
+- [ ] 不要 emoji；无兼容 shim
 - [ ] npm run build 通过
 ```

@@ -8,6 +8,11 @@ contextBridge.exposeInMainWorld('api', {
     set: (patch: Record<string, unknown>) => ipcRenderer.invoke('settings:set', patch),
     pickOutputDir: () => ipcRenderer.invoke('settings:pickOutputDir'),
     openOutputDir: () => ipcRenderer.invoke('settings:openOutputDir'),
+    pickPromptPreviewDir: () => ipcRenderer.invoke('settings:pickPromptPreviewDir'),
+    openPromptPreviewDir: () => ipcRenderer.invoke('settings:openPromptPreviewDir'),
+  },
+  promptPreview: {
+    resolve: (prompt: string) => ipcRenderer.invoke('promptPreview:resolve', prompt),
   },
   shell: {
     showItemInFolder: (filePath: string) => ipcRenderer.invoke('shell:showItemInFolder', filePath),

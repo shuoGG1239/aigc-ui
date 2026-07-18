@@ -8,6 +8,7 @@ import type { ModelFamily } from '@/models/family'
 import { nextPoolPrompt } from '@/random/prompt-pool-engine'
 import { usePromptPoolStore } from '@/stores/promptPool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
+import { parseImageMeta } from '@/utils/image-meta'
 import { formatHms, promptSummary } from '@/utils/param-history'
 import { formatPromptByFamily } from '@/utils/prompt-format'
 import { parseWorkflowParams } from '@/utils/workflow-params'
@@ -34,7 +35,22 @@ const negTaRef = ref<HTMLTextAreaElement | null>(null)
 /** null = insert at end of field. */
 const promptCaret = ref<{ start: number; end: number } | null>(null)
 const infoOpen = ref(false)
-const infoText = ref('')
+const infoRaw = ref('')
+const infoSummary = ref<{
+  source: string
+  prompt: string
+  negativePrompt: string
+  size: string
+  steps: string
+  cfg: string
+  sampler: string
+  scheduler: string
+  seed: string
+  family: string
+  model: string
+  filename: string
+  path: string
+} | null>(null)
 const previewDragOver = ref(false)
 let previewDragDepth = 0
 
@@ -119,6 +135,10 @@ function onFormatField(field: 'prompt' | 'negativePrompt'): void {
   toast.ok(result.kind === 'anima' ? '已按 Anima 规范格式化' : '已按 SDXL 规范格式化')
 }
 
+function onFormatParams(): void {
+  onFormatField(focusedPromptField.value)
+}
+
 function onFamilyChange(family: ModelFamily): void {
   store.setFamily(family)
 }
@@ -200,7 +220,10 @@ async function onApplyClipboard(): Promise<void> {
       toast.error('剪贴板为空')
       return
     }
-    const next = parseWorkflowParams(text)
+    const next = parseWorkflowParams(text, {
+      preferFamily: store.form.family,
+      base: store.form,
+    })
     store.applyForm(next)
     toast.ok('已从剪贴板应用参数')
   } catch (err) {
@@ -310,7 +333,12 @@ async function onApplyImageMeta(): Promise<void> {
   if (!path) return
   try {
     const info = await window.api.image.readMetadata(path)
-    store.applyForm(parseWorkflowParams(JSON.stringify(info)))
+    store.applyForm(
+      parseWorkflowParams(JSON.stringify(info), {
+        preferFamily: store.form.family,
+        base: store.form,
+      }),
+    )
     toast.ok('已应用图片到参数')
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))
@@ -326,15 +354,35 @@ async function onToggleImageInfo(): Promise<void> {
   if (!img) return
   try {
     const info = await window.api.image.readMetadata(img.path)
-    infoText.value = JSON.stringify(
-      {
-        path: img.path,
-        filename: img.filename,
-        ...info,
-      },
-      null,
-      2,
-    )
+    const payload = { path: img.path, filename: img.filename, ...info }
+    infoRaw.value = JSON.stringify(payload, null, 2)
+
+    const { meta } = parseImageMeta(info)
+    const sourceLabel =
+      meta.source === 'comfyui'
+        ? 'ComfyUI'
+        : meta.source === 'a1111'
+          ? 'A1111'
+          : meta.source === 'novelai'
+            ? 'NovelAI'
+            : 'Unknown'
+    infoSummary.value = {
+      source: sourceLabel,
+      prompt: meta.prompt.trim() || '—',
+      negativePrompt: meta.negativePrompt.trim() || '—',
+      size:
+        meta.width != null && meta.height != null ? `${meta.width} × ${meta.height}` : '—',
+      steps: meta.steps != null ? String(meta.steps) : '—',
+      cfg: meta.cfg != null ? String(meta.cfg) : '—',
+      sampler: meta.sampler || '—',
+      scheduler: meta.scheduler || '—',
+      seed: meta.seed.trim() ? meta.seed : '—',
+      family: meta.family ? meta.family.toUpperCase() : '—',
+      model: meta.model || '—',
+      filename: img.filename,
+      path: img.path,
+    }
+
     infoOpen.value = true
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))
@@ -345,6 +393,8 @@ watch(
   () => store.selectedImage?.path,
   () => {
     infoOpen.value = false
+    infoSummary.value = null
+    infoRaw.value = ''
   },
 )
 
@@ -454,6 +504,15 @@ function onResultListWheel(e: WheelEvent): void {
                   d="M14.5 8H10.5C10.224 8 10 8.224 10 8.5C10 9.603 9.103 10.5 8 10.5C6.897 10.5 6 9.603 6 8.5C6 8.224 5.776 8 5.5 8H1.5C1.224 8 1 8.224 1 8.5V12.5C1 13.878 2.121 15 3.5 15H12.5C13.879 15 15 13.878 15 12.5V8.5C15 8.224 14.776 8 14.5 8ZM14 12.5C14 13.327 13.327 14 12.5 14H3.5C2.673 14 2 13.327 2 12.5V9H5.042C5.28 10.417 6.517 11.5 8 11.5C9.483 11.5 10.72 10.417 10.958 9H14V12.5ZM5.646 1.146C5.451 1.341 5.451 1.658 5.646 1.853L7.646 3.853C7.841 4.048 8.158 4.048 8.353 3.853L10.353 1.853C10.548 1.658 10.548 1.341 10.353 1.146C10.255 1.048 10.127 1 9.999 1C9.871 1 9.743 1.049 9.645 1.146L8.499 2.292V1.499C8.499 1.223 8.275 0.999 7.999 0.999C7.723 0.999 7.499 1.223 7.499 1.499V2.292L6.353 1.146C6.158 0.951 5.841 0.951 5.646 1.146ZM8.5 5.5C8.5 5.776 8.276 6 8 6C7.724 6 7.5 5.776 7.5 5.5C7.5 5.224 7.724 5 8 5C8.276 5 8.5 5.224 8.5 5.5ZM8.5 7.5C8.5 7.776 8.276 8 8 8C7.724 8 7.5 7.776 7.5 7.5C7.5 7.224 7.724 7 8 7C8.276 7 8.5 7.224 8.5 7.5Z"
                 />
               </svg>
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost btn-icon"
+              title="格式化当前提示词"
+              aria-label="格式化当前提示词"
+              @click="onFormatParams"
+            >
+              <span class="btn-icon-braces" aria-hidden="true">{}</span>
             </button>
             <button
               ref="randomBtnRef"
@@ -830,6 +889,8 @@ function onResultListWheel(e: WheelEvent): void {
                 :src="store.selectedImage.dataUrl"
                 :alt="store.selectedImage.filename"
                 :data-image-path="store.selectedImage.path"
+                draggable="false"
+                @dragstart.prevent
               />
               <div v-else class="empty-state">
                 <div class="title">尚未生成</div>
@@ -870,7 +931,7 @@ function onResultListWheel(e: WheelEvent): void {
                 </button>
               </div>
 
-              <div v-if="infoOpen && store.selectedImage" class="preview-info-panel">
+              <div v-if="infoOpen && infoSummary" class="preview-info-panel">
                 <div class="preview-info-header">
                   <span>图片信息</span>
                   <button
@@ -890,7 +951,49 @@ function onResultListWheel(e: WheelEvent): void {
                     </svg>
                   </button>
                 </div>
-                <pre class="preview-info-body">{{ infoText }}</pre>
+                <div class="preview-info-body">
+                  <div class="preview-info-summary">
+                    <div class="preview-info-block">
+                      <div class="preview-info-label">Prompt</div>
+                      <div class="preview-info-prompt">{{ infoSummary.prompt }}</div>
+                    </div>
+                    <div class="preview-info-block">
+                      <div class="preview-info-label">Negative</div>
+                      <div class="preview-info-prompt is-muted">{{ infoSummary.negativePrompt }}</div>
+                    </div>
+                    <div class="preview-info-chips">
+                      <span class="preview-info-chip">{{ infoSummary.source }}</span>
+                      <span v-if="infoSummary.family !== '—'" class="preview-info-chip">{{
+                        infoSummary.family
+                      }}</span>
+                      <span class="preview-info-chip">{{ infoSummary.size }}</span>
+                      <span class="preview-info-chip">{{ infoSummary.steps }} steps</span>
+                      <span class="preview-info-chip">CFG {{ infoSummary.cfg }}</span>
+                      <span class="preview-info-chip">{{ infoSummary.sampler }}</span>
+                      <span class="preview-info-chip">{{ infoSummary.scheduler }}</span>
+                      <span class="preview-info-chip">seed {{ infoSummary.seed }}</span>
+                    </div>
+                    <div class="preview-info-meta">
+                      <div class="preview-info-row">
+                        <span class="preview-info-label">Model</span>
+                        <span class="preview-info-value" :title="infoSummary.model">{{
+                          infoSummary.model
+                        }}</span>
+                      </div>
+                      <div class="preview-info-row">
+                        <span class="preview-info-label">File</span>
+                        <span class="preview-info-value" :title="infoSummary.path">{{
+                          infoSummary.filename
+                        }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="preview-info-block">
+                    <div class="preview-info-label">原始详情</div>
+                    <pre class="preview-info-raw">{{ infoRaw }}</pre>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -905,9 +1008,16 @@ function onResultListWheel(e: WheelEvent): void {
                 type="button"
                 class="result-thumb"
                 :class="{ active: i === store.selectedIndex }"
+                draggable="false"
                 @click="store.selectImage(i)"
+                @dragstart.prevent
               >
-                <img :src="img.dataUrl" :alt="img.filename" :data-image-path="img.path" />
+                <img
+                  :src="img.dataUrl"
+                  :alt="img.filename"
+                  :data-image-path="img.path"
+                  draggable="false"
+                />
               </button>
             </div>
           </div>

@@ -3,6 +3,8 @@ export interface AppSettings {
   outputDir: string
   /** 一行启动命令（可含 cd && …） */
   launchCommand: string
+  /** Directory of prompt preview images (filename stem ↔ normalized prompt). */
+  promptPreviewDir: string
 }
 
 export interface ComfyProcessStatus {

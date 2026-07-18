@@ -1,5 +1,6 @@
 import type { ModelFamily } from '@/models/family'
 import { resolveFamily } from '@/models/family'
+import { parseNaiToSegments, segmentsToCanon } from '@/random/prompt-canon'
 
 export interface FormatPromptResult {
   kind: ModelFamily
@@ -32,7 +33,17 @@ export function formatPromptByFamily(
   return { kind: 'sdxl', prompt: next, changed: next !== prompt }
 }
 
+/**
+ * Anima: NovelAI braces / artist: → canon weights / @artist, then polish
+ * (underscore → space, lowercase tags).
+ */
 export function formatAnimaPrompt(raw: string): string {
+  const canon = segmentsToCanon(parseNaiToSegments(raw))
+  return polishAnimaPrompt(canon)
+}
+
+/** Tag polish only (assumes already canon / brace-free). */
+function polishAnimaPrompt(raw: string): string {
   return raw
     .replace(/[\r\n]+/g, ', ')
     .split(',')
@@ -43,9 +54,17 @@ export function formatAnimaPrompt(raw: string): string {
     .join(', ')
 }
 
-/** Light SDXL normalize: comma spacing, drop empty segments. */
+/**
+ * SDXL: NovelAI braces / artist: → weights (bare artist name, no @),
+ * then light comma normalize.
+ */
 export function formatSdxlPrompt(raw: string): string {
-  return raw
+  const segments = parseNaiToSegments(raw).map((seg) => {
+    let text = seg.text.trim()
+    if (text.startsWith('@')) text = text.slice(1).trim()
+    return { ...seg, text }
+  })
+  return segmentsToCanon(segments)
     .replace(/[\r\n]+/g, ', ')
     .split(',')
     .map((p) => p.trim())

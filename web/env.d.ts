@@ -10,7 +10,19 @@ interface AppSettings {
   serverUrl: string
   outputDir: string
   launchCommand: string
+  /** Directory of prompt preview images (filename stem ↔ normalized prompt). */
+  promptPreviewDir: string
 }
+
+interface PromptPreviewImage {
+  path: string
+  dataUrl: string
+  filename: string
+}
+
+type PromptPreviewResolveResult =
+  | { ok: true; images: PromptPreviewImage[] }
+  | { ok: false; reason: 'no_dir' | 'not_found' }
 
 type ModelFamily = 'anima' | 'sdxl'
 
@@ -78,6 +90,11 @@ interface Window {
       set: (patch: Partial<AppSettings>) => Promise<AppSettings>
       pickOutputDir: () => Promise<string | null>
       openOutputDir: () => Promise<void>
+      pickPromptPreviewDir: () => Promise<string | null>
+      openPromptPreviewDir: () => Promise<void>
+    }
+    promptPreview: {
+      resolve: (prompt: string) => Promise<PromptPreviewResolveResult>
     }
     shell: {
       showItemInFolder: (filePath: string) => Promise<void>

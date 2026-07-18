@@ -3,7 +3,8 @@ import { basename, dirname, extname, join } from 'path'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
 import { ComfyUIClient } from './comfyui'
 import { extractPngInfo } from './png-info'
-import { getSettings, setSettings, defaultOutputDir } from './settings'
+import { getSettings, setSettings, defaultOutputDir, defaultPromptPreviewDir } from './settings'
+import { resolvePromptPreview } from './prompt-preview'
 import { buildWorkflow } from './workflow'
 import {
   clearLogs,
@@ -82,11 +83,20 @@ function createWindow(): void {
           const imagePath = img && typeof img.getAttribute === 'function'
             ? img.getAttribute('data-image-path')
             : null;
-          const el = document.activeElement;
           let promptField = null;
-          if (el && typeof el.getAttribute === 'function') {
-            const attr = el.getAttribute('data-prompt-field');
+          const fieldEl = at && typeof at.closest === 'function'
+            ? at.closest('[data-prompt-field]')
+            : null;
+          if (fieldEl && typeof fieldEl.getAttribute === 'function') {
+            const attr = fieldEl.getAttribute('data-prompt-field');
             if (attr === 'prompt' || attr === 'negativePrompt') promptField = attr;
+          }
+          if (!promptField) {
+            const el = document.activeElement;
+            if (el && typeof el.getAttribute === 'function') {
+              const attr = el.getAttribute('data-prompt-field');
+              if (attr === 'prompt' || attr === 'negativePrompt') promptField = attr;
+            }
           }
           return { imagePath, promptField };
         })()`,
@@ -193,6 +203,35 @@ function registerIpc(): void {
       throw new Error(err)
     }
   })
+
+  ipcMain.handle('settings:pickPromptPreviewDir', async () => {
+    const current = getSettings().promptPreviewDir || defaultPromptPreviewDir() || undefined
+    const result = await dialog.showOpenDialog(mainWindow!, {
+      title: '选择提示词预览图目录',
+      defaultPath: current,
+      properties: ['openDirectory'],
+    })
+    if (result.canceled || !result.filePaths[0]) {
+      return null
+    }
+    return setSettings({ promptPreviewDir: result.filePaths[0] }).promptPreviewDir
+  })
+
+  ipcMain.handle('settings:openPromptPreviewDir', async () => {
+    const dir = getSettings().promptPreviewDir?.trim()
+    if (!dir) {
+      throw new Error('未配置预览图目录')
+    }
+    if (!existsSync(dir)) {
+      throw new Error('预览图目录不存在')
+    }
+    const err = await shell.openPath(dir)
+    if (err) {
+      throw new Error(err)
+    }
+  })
+
+  ipcMain.handle('promptPreview:resolve', (_event, prompt: string) => resolvePromptPreview(prompt))
 
   ipcMain.handle('promptPools:list', () => listPromptPools())
   ipcMain.handle('promptPools:write', (_event, pool: PromptPoolFile) => writePromptPool(pool))
