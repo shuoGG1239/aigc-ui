@@ -181,6 +181,15 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     lastPromptId.value = ''
   }
 
+  /** 将新图插到列表最前（最新），保留已有预览 */
+  function prependResults(images: ResultImage[]): void {
+    if (!images.length) return
+    const seen = new Set(images.map((img) => img.path))
+    const rest = results.value.filter((img) => !seen.has(img.path))
+    results.value = [...images, ...rest].slice(0, 24)
+    selectedIndex.value = 0
+  }
+
   return {
     form,
     status,
@@ -198,5 +207,6 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     cancel,
     clearResults,
     setResults,
+    prependResults,
   }
 })

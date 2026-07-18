@@ -231,7 +231,7 @@ async function onPreviewDrop(e: DragEvent): Promise<void> {
       throw new Error('无法读取拖入路径')
     }
     const images = await window.api.image.loadPreviewFromPath(targetPath, 5)
-    store.setResults(images)
+    store.prependResults(images)
     toast.ok(images.length === 1 ? '已加载 PNG' : `已加载 ${images.length} 张 PNG`)
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))
