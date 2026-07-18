@@ -115,22 +115,22 @@ interface Window {
       loadPreviewFromPath: (targetPath: string, limit?: number) => Promise<GeneratedImage[]>
       onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => () => void
     }
-    rollWorkflows: {
-      list: () => Promise<RollWorkflowDto[]>
-      read: (name: string) => Promise<RollWorkflowDto | null>
-      write: (wf: RollWorkflowDto) => Promise<RollWorkflowDto>
+    promptPools: {
+      list: () => Promise<PromptPoolDto[]>
+      read: (name: string) => Promise<PromptPoolDto | null>
+      write: (pool: PromptPoolDto) => Promise<PromptPoolDto>
       remove: (name: string) => Promise<boolean>
-      rename: (oldName: string, newName: string) => Promise<RollWorkflowDto>
-      importList: (list: unknown[]) => Promise<RollWorkflowDto[]>
+      rename: (oldName: string, newName: string) => Promise<PromptPoolDto>
     }
   }
 }
 
-interface RollWorkflowDto {
+interface PromptPoolDto {
   name: string
   entries: Array<{
-    tag: string
+    prompt: string
     weight: number
   }>
   updatedAt: number
+  builtin?: boolean
 }

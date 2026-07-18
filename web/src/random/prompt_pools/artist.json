@@ -2,563 +2,563 @@
   "name": "artist",
   "entries": [
     {
-      "tag": "@akakura",
+      "prompt": "@akakura",
       "weight": 3000
     },
     {
-      "tag": "@akamoku",
+      "prompt": "@akamoku",
       "weight": 100
     },
     {
-      "tag": "@alphonse_(white_datura)",
+      "prompt": "@alphonse_(white_datura)",
       "weight": 1000
     },
     {
-      "tag": "@ama_mitsuki",
+      "prompt": "@ama_mitsuki",
       "weight": 500
     },
     {
-      "tag": "@amagasa_yun",
+      "prompt": "@amagasa_yun",
       "weight": 1000
     },
     {
-      "tag": "@amazuyu_tatsuki",
+      "prompt": "@amazuyu_tatsuki",
       "weight": 2000
     },
     {
-      "tag": "@anmi",
+      "prompt": "@anmi",
       "weight": 1000
     },
     {
-      "tag": "@as109",
+      "prompt": "@as109",
       "weight": 50
     },
     {
-      "tag": "@ask_(askzy)",
+      "prompt": "@ask_(askzy)",
       "weight": 3000
     },
     {
-      "tag": "@azuuru",
+      "prompt": "@azuuru",
       "weight": 100
     },
     {
-      "tag": "@bbolalus",
+      "prompt": "@bbolalus",
       "weight": 2000
     },
     {
-      "tag": "@bison_cangshu",
+      "prompt": "@bison_cangshu",
       "weight": 2000
     },
     {
-      "tag": "@bukurote",
+      "prompt": "@bukurote",
       "weight": 1000
     },
     {
-      "tag": "@chen_bin",
+      "prompt": "@chen_bin",
       "weight": 2000
     },
     {
-      "tag": "@cierra_(ra-bit)",
+      "prompt": "@cierra_(ra-bit)",
       "weight": 1000
     },
     {
-      "tag": "@ciloranko",
+      "prompt": "@ciloranko",
       "weight": 5000
     },
     {
-      "tag": "@cogecha",
+      "prompt": "@cogecha",
       "weight": 2000
     },
     {
-      "tag": "@cyenmi3",
+      "prompt": "@cyenmi3",
       "weight": 2000
     },
     {
-      "tag": "@dampi",
+      "prompt": "@dampi",
       "weight": 2000
     },
     {
-      "tag": "@danimaru",
+      "prompt": "@danimaru",
       "weight": 3000
     },
     {
-      "tag": "@daram_(shappydude)",
+      "prompt": "@daram_(shappydude)",
       "weight": 200
     },
     {
-      "tag": "@deadnooodles",
+      "prompt": "@deadnooodles",
       "weight": 2000
     },
     {
-      "tag": "@dishwasher1910",
+      "prompt": "@dishwasher1910",
       "weight": 2000
     },
     {
-      "tag": "@dsmile",
+      "prompt": "@dsmile",
       "weight": 3000
     },
     {
-      "tag": "@eluthel",
+      "prompt": "@eluthel",
       "weight": 100
     },
     {
-      "tag": "@fujiyama",
+      "prompt": "@fujiyama",
       "weight": 1000
     },
     {
-      "tag": "@fukahire_(ruinon)",
+      "prompt": "@fukahire_(ruinon)",
       "weight": 100
     },
     {
-      "tag": "@fusuma_(ramunezake)",
+      "prompt": "@fusuma_(ramunezake)",
       "weight": 100
     },
     {
-      "tag": "@fuzichoco",
+      "prompt": "@fuzichoco",
       "weight": 3000
     },
     {
-      "tag": "@gaou_(umaiyo_puyoman)",
+      "prompt": "@gaou_(umaiyo_puyoman)",
       "weight": 100
     },
     {
-      "tag": "@gin00",
+      "prompt": "@gin00",
       "weight": 500
     },
     {
-      "tag": "@gomzi",
+      "prompt": "@gomzi",
       "weight": 2000
     },
     {
-      "tag": "@gou_lianlian_dogface",
+      "prompt": "@gou_lianlian_dogface",
       "weight": 2000
     },
     {
-      "tag": "@hagi_(ame_hagi)",
+      "prompt": "@hagi_(ame_hagi)",
       "weight": 5000
     },
     {
-      "tag": "@haimura_kiyotaka",
+      "prompt": "@haimura_kiyotaka",
       "weight": 500
     },
     {
-      "tag": "@hanekoto",
+      "prompt": "@hanekoto",
       "weight": 100
     },
     {
-      "tag": "@heripiro",
+      "prompt": "@heripiro",
       "weight": 500
     },
     {
-      "tag": "@himitsu_(hi_mi_tsu_2)",
+      "prompt": "@himitsu_(hi_mi_tsu_2)",
       "weight": 5000
     },
     {
-      "tag": "@hiten_(hitenkei)",
+      "prompt": "@hiten_(hitenkei)",
       "weight": 100
     },
     {
-      "tag": "@hoji_(hooooooooji1029)",
+      "prompt": "@hoji_(hooooooooji1029)",
       "weight": 1000
     },
     {
-      "tag": "@hokori_sakuni",
+      "prompt": "@hokori_sakuni",
       "weight": 2000
     },
     {
-      "tag": "@houkisei",
+      "prompt": "@houkisei",
       "weight": 2000
     },
     {
-      "tag": "@ibara_riato",
+      "prompt": "@ibara_riato",
       "weight": 2000
     },
     {
-      "tag": "@icomochi",
+      "prompt": "@icomochi",
       "weight": 2000
     },
     {
-      "tag": "@ideolo",
+      "prompt": "@ideolo",
       "weight": 4000
     },
     {
-      "tag": "@ikeuchi_tanuma",
+      "prompt": "@ikeuchi_tanuma",
       "weight": 1000
     },
     {
-      "tag": "@infukun",
+      "prompt": "@infukun",
       "weight": 100
     },
     {
-      "tag": "@iwashi_(iwashi008)",
+      "prompt": "@iwashi_(iwashi008)",
       "weight": 100
     },
     {
-      "tag": "@jako_(jakoo21)",
+      "prompt": "@jako_(jakoo21)",
       "weight": 500
     },
     {
-      "tag": "@jyt",
+      "prompt": "@jyt",
       "weight": 5000
     },
     {
-      "tag": "@kaede_(yumesaki_kaede)",
+      "prompt": "@kaede_(yumesaki_kaede)",
       "weight": 1000
     },
     {
-      "tag": "@kamizaki_hibana",
+      "prompt": "@kamizaki_hibana",
       "weight": 100
     },
     {
-      "tag": "@kani_biimu",
+      "prompt": "@kani_biimu",
       "weight": 1000
     },
     {
-      "tag": "@kantoku",
+      "prompt": "@kantoku",
       "weight": 1000
     },
     {
-      "tag": "@kanzaki_hiro",
+      "prompt": "@kanzaki_hiro",
       "weight": 500
     },
     {
-      "tag": "@karory",
+      "prompt": "@karory",
       "weight": 200
     },
     {
-      "tag": "@kawacy",
+      "prompt": "@kawacy",
       "weight": 1000
     },
     {
-      "tag": "@kazutake_hazano",
+      "prompt": "@kazutake_hazano",
       "weight": 4000
     },
     {
-      "tag": "@ke-ta",
+      "prompt": "@ke-ta",
       "weight": 5000
     },
     {
-      "tag": "@kedama_milk",
+      "prompt": "@kedama_milk",
       "weight": 20000
     },
     {
-      "tag": "@liduke",
+      "prompt": "@liduke",
       "weight": 2000
     },
     {
-      "tag": "@makihitsuji",
+      "prompt": "@makihitsuji",
       "weight": 2000
     },
     {
-      "tag": "@mankai_kaika",
+      "prompt": "@mankai_kaika",
       "weight": 200
     },
     {
-      "tag": "@mika_pikazo",
+      "prompt": "@mika_pikazo",
       "weight": 3000
     },
     {
-      "tag": "@mikaze_oto",
+      "prompt": "@mikaze_oto",
       "weight": 500
     },
     {
-      "tag": "@mikisai",
+      "prompt": "@mikisai",
       "weight": 2000
     },
     {
-      "tag": "@mikozin",
+      "prompt": "@mikozin",
       "weight": 700
     },
     {
-      "tag": "@mimelond",
+      "prompt": "@mimelond",
       "weight": 100
     },
     {
-      "tag": "@minaba_hideo",
+      "prompt": "@minaba_hideo",
       "weight": 3000
     },
     {
-      "tag": "@misaki_kurehito",
+      "prompt": "@misaki_kurehito",
       "weight": 50
     },
     {
-      "tag": "@mitsumi_misato",
+      "prompt": "@mitsumi_misato",
       "weight": 2000
     },
     {
-      "tag": "@miv4t",
+      "prompt": "@miv4t",
       "weight": 500
     },
     {
-      "tag": "@miwabe_sakura",
+      "prompt": "@miwabe_sakura",
       "weight": 200
     },
     {
-      "tag": "@miwano_rag",
+      "prompt": "@miwano_rag",
       "weight": 2000
     },
     {
-      "tag": "@miyoshino",
+      "prompt": "@miyoshino",
       "weight": 100
     },
     {
-      "tag": "@miyuki_(miyuki0529)",
+      "prompt": "@miyuki_(miyuki0529)",
       "weight": 4000
     },
     {
-      "tag": "@modare",
+      "prompt": "@modare",
       "weight": 2000
     },
     {
-      "tag": "@monochrome",
+      "prompt": "@monochrome",
       "weight": 100
     },
     {
-      "tag": "@morikura_en",
+      "prompt": "@morikura_en",
       "weight": 1000
     },
     {
-      "tag": "@muninshiki",
+      "prompt": "@muninshiki",
       "weight": 500
     },
     {
-      "tag": "@muryotaro",
+      "prompt": "@muryotaro",
       "weight": 3000
     },
     {
-      "tag": "@nanananana",
+      "prompt": "@nanananana",
       "weight": 1000
     },
     {
-      "tag": "@nanashi_(nlo)",
+      "prompt": "@nanashi_(nlo)",
       "weight": 1000
     },
     {
-      "tag": "@nardack",
+      "prompt": "@nardack",
       "weight": 2000
     },
     {
-      "tag": "@nekojira",
+      "prompt": "@nekojira",
       "weight": 3000
     },
     {
-      "tag": "@nima_(niru54)",
+      "prompt": "@nima_(niru54)",
       "weight": 2500
     },
     {
-      "tag": "@ningen_mame",
+      "prompt": "@ningen_mame",
       "weight": 100
     },
     {
-      "tag": "@noco_(adamas)",
+      "prompt": "@noco_(adamas)",
       "weight": 100
     },
     {
-      "tag": "@norizc",
+      "prompt": "@norizc",
       "weight": 2000
     },
     {
-      "tag": "@noyu_(noyu23386566)",
+      "prompt": "@noyu_(noyu23386566)",
       "weight": 3000
     },
     {
-      "tag": "@onineko",
+      "prompt": "@onineko",
       "weight": 500
     },
     {
-      "tag": "@paryi",
+      "prompt": "@paryi",
       "weight": 50
     },
     {
-      "tag": "@paseri",
+      "prompt": "@paseri",
       "weight": 1000
     },
     {
-      "tag": "@pkpkpppk",
+      "prompt": "@pkpkpppk",
       "weight": 100
     },
     {
-      "tag": "@ponnyu12",
+      "prompt": "@ponnyu12",
       "weight": 100
     },
     {
-      "tag": "@pottsness",
+      "prompt": "@pottsness",
       "weight": 500
     },
     {
-      "tag": "@qianqianjie",
+      "prompt": "@qianqianjie",
       "weight": 1000
     },
     {
-      "tag": "@qinghejunzi",
+      "prompt": "@qinghejunzi",
       "weight": 100
     },
     {
-      "tag": "@qtonagi",
+      "prompt": "@qtonagi",
       "weight": 2000
     },
     {
-      "tag": "@quan_(kurisu_tina)",
+      "prompt": "@quan_(kurisu_tina)",
       "weight": 500
     },
     {
-      "tag": "@qys3",
+      "prompt": "@qys3",
       "weight": 1000
     },
     {
-      "tag": "@rei_(sanbonzakura)",
+      "prompt": "@rei_(sanbonzakura)",
       "weight": 500
     },
     {
-      "tag": "@Rella",
+      "prompt": "@Rella",
       "weight": 2000
     },
     {
-      "tag": "@reoen",
+      "prompt": "@reoen",
       "weight": 2500
     },
     {
-      "tag": "@rhasta",
+      "prompt": "@rhasta",
       "weight": 3000
     },
     {
-      "tag": "@rika_(mikunopantsu)",
+      "prompt": "@rika_(mikunopantsu)",
       "weight": 100
     },
     {
-      "tag": "@rin31153336",
+      "prompt": "@rin31153336",
       "weight": 4000
     },
     {
-      "tag": "@rosumerii",
+      "prompt": "@rosumerii",
       "weight": 2000
     },
     {
-      "tag": "@rouka_(akatyann)",
+      "prompt": "@rouka_(akatyann)",
       "weight": 2500
     },
     {
-      "tag": "@rurudo",
+      "prompt": "@rurudo",
       "weight": 2000
     },
     {
-      "tag": "@saru",
+      "prompt": "@saru",
       "weight": 2000
     },
     {
-      "tag": "@sencha_(senta_10)",
+      "prompt": "@sencha_(senta_10)",
       "weight": 100
     },
     {
-      "tag": "@senji_(tegone_spike)",
+      "prompt": "@senji_(tegone_spike)",
       "weight": 2000
     },
     {
-      "tag": "@shacho_(ko_no_ha)",
+      "prompt": "@shacho_(ko_no_ha)",
       "weight": 1000
     },
     {
-      "tag": "@shirabi",
+      "prompt": "@shirabi",
       "weight": 500
     },
     {
-      "tag": "@shiroshi_(denpa_eshidan)",
+      "prompt": "@shiroshi_(denpa_eshidan)",
       "weight": 1500
     },
     {
-      "tag": "@sho_(sho_lwlw)",
+      "prompt": "@sho_(sho_lwlw)",
       "weight": 500
     },
     {
-      "tag": "@sincos",
+      "prompt": "@sincos",
       "weight": 1000
     },
     {
-      "tag": "@sofra",
+      "prompt": "@sofra",
       "weight": 1000
     },
     {
-      "tag": "@sogawa",
+      "prompt": "@sogawa",
       "weight": 3000
     },
     {
-      "tag": "@starshadowmagician",
+      "prompt": "@starshadowmagician",
       "weight": 100
     },
     {
-      "tag": "@suimya",
+      "prompt": "@suimya",
       "weight": 3000
     },
     {
-      "tag": "@suzumori_uina",
+      "prompt": "@suzumori_uina",
       "weight": 100
     },
     {
-      "tag": "@takenoko_no_you",
+      "prompt": "@takenoko_no_you",
       "weight": 2000
     },
     {
-      "tag": "@tianliang_duohe_fangdongye",
+      "prompt": "@tianliang_duohe_fangdongye",
       "weight": 5000
     },
     {
-      "tag": "@toosaka_asagi",
+      "prompt": "@toosaka_asagi",
       "weight": 2000
     },
     {
-      "tag": "@tsubasa_tsubasa",
+      "prompt": "@tsubasa_tsubasa",
       "weight": 500
     },
     {
-      "tag": "@u_u_zan",
+      "prompt": "@u_u_zan",
       "weight": 1000
     },
     {
-      "tag": "@wanke",
+      "prompt": "@wanke",
       "weight": 3000
     },
     {
-      "tag": "@weri",
+      "prompt": "@weri",
       "weight": 2000
     },
     {
-      "tag": "@wlop",
+      "prompt": "@wlop",
       "weight": 2000
     },
     {
-      "tag": "@xilmo",
+      "prompt": "@xilmo",
       "weight": 500
     },
     {
-      "tag": "@xiujia_yihuizi",
+      "prompt": "@xiujia_yihuizi",
       "weight": 2000
     },
     {
-      "tag": "@yamasan",
+      "prompt": "@yamasan",
       "weight": 2000
     },
     {
-      "tag": "@yoneyama_mai",
+      "prompt": "@yoneyama_mai",
       "weight": 2000
     },
     {
-      "tag": "@yoru_nai",
+      "prompt": "@yoru_nai",
       "weight": 2000
     },
     {
-      "tag": "@you_shimizu",
+      "prompt": "@you_shimizu",
       "weight": 1000
     },
     {
-      "tag": "@yunsang",
+      "prompt": "@yunsang",
       "weight": 2000
     },
     {
-      "tag": "@yuya_(night_lily)",
+      "prompt": "@yuya_(night_lily)",
       "weight": 2000
     },
     {
-      "tag": "@zuizi",
+      "prompt": "@zuizi",
       "weight": 3000
     }
   ],

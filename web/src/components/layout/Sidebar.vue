@@ -6,7 +6,7 @@ const router = useRouter()
 
 const primaryItems = [
   { path: '/', label: '文生图', icon: 'spark' as const },
-  { path: '/roll', label: '随机', icon: 'dice' as const },
+  { path: '/pools', label: '提示词池', icon: 'dice' as const },
   { path: '/console', label: '控制台', icon: 'console' as const },
 ]
 

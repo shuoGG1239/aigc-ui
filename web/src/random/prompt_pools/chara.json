@@ -1,0 +1,162 @@
+{
+  "name": "chara",
+  "entries": [
+    {
+      "prompt": "aris_(blue_archive)",
+      "weight": 30
+    },
+    {
+      "prompt": "aris_(maid)_(blue_archive)",
+      "weight": 800
+    },
+    {
+      "prompt": "arona_(blue_archive)",
+      "weight": 800
+    },
+    {
+      "prompt": "clara_(honkai:_star_rail), white_hair, red_eyes, bare_shoulders",
+      "weight": 50
+    },
+    {
+      "prompt": "elaina_(majo_no_tabitabi)",
+      "weight": 10
+    },
+    {
+      "prompt": "fu_xuan_(honkai:_star_rail)",
+      "weight": 10
+    },
+    {
+      "prompt": "ganyu_(genshin_impact)",
+      "weight": 200
+    },
+    {
+      "prompt": "hifumi_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "prompt": "hina_(blue_archive), bare_shoulders",
+      "weight": 100
+    },
+    {
+      "prompt": "izumi_sagiri",
+      "weight": 50
+    },
+    {
+      "prompt": "kamisato_ayaka, blue eyes, ponytail, blue hair",
+      "weight": 100
+    },
+    {
+      "prompt": "kasugano_sora, grey_eyes, grey_hair",
+      "weight": 10
+    },
+    {
+      "prompt": "keqing_(genshin_impact)",
+      "weight": 200
+    },
+    {
+      "prompt": "kisaki_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "prompt": "klee_(genshin_impact)",
+      "weight": 50
+    },
+    {
+      "prompt": "koharu_(blue_archive)",
+      "weight": 30
+    },
+    {
+      "prompt": "koharu_swimsuit_(blue_archive)",
+      "weight": 60
+    },
+    {
+      "prompt": "kokona_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "prompt": "le_malin_(azur_lane), blue_eyes, cross-shaped_pupils, rabbit_ears",
+      "weight": 100
+    },
+    {
+      "prompt": "lumine_(genshin_impact)",
+      "weight": 50
+    },
+    {
+      "prompt": "mari_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "prompt": "mari_(track)_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "prompt": "midori_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "prompt": "mika_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "prompt": "miyako_swimsuit_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "prompt": "miyu_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "prompt": "morino_rinze",
+      "weight": 10
+    },
+    {
+      "prompt": "mutsuki_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "prompt": "nahida_(genshin_impact), cross-shaped pupils, bra",
+      "weight": 5500
+    },
+    {
+      "prompt": "nilou_(genshin_impact), aqua_eyes",
+      "weight": 100
+    },
+    {
+      "prompt": "noelle_(kfc)_(genshin_impact)",
+      "weight": 400
+    },
+    {
+      "prompt": "plana_(blue_archive)",
+      "weight": 5000
+    },
+    {
+      "prompt": "sakurai_momoka, green_eyes, blonde_hair",
+      "weight": 50
+    },
+    {
+      "prompt": "sangonomiya_kokomi, pink hair, multicolored hair, blue horns",
+      "weight": 20
+    },
+    {
+      "prompt": "shun_small_(blue_archive), green_eyes, cross-shaped pupils",
+      "weight": 5000
+    },
+    {
+      "prompt": "suzuran_(spring_praise)_(arknights)",
+      "weight": 50
+    },
+    {
+      "prompt": "suzuran_arknights",
+      "weight": 5
+    },
+    {
+      "prompt": "tachibana_arisu, brown_eyes",
+      "weight": 100
+    },
+    {
+      "prompt": "unicorn_azur_lane",
+      "weight": 100
+    }
+  ],
+  "updatedAt": 0
+}

@@ -1,3 +1,4 @@
+import { isModelFamily, type ModelFamily } from '@/models/family'
 import type { Txt2ImgForm } from '@/stores/txt2img'
 
 export interface ParamHistoryEntry {
@@ -8,6 +9,10 @@ export interface ParamHistoryEntry {
 
 const STORAGE_KEY = 'aigc-ui:txt2img-param-history'
 const MAX_ENTRIES = 10
+
+function normalizeFamily(value: unknown): ModelFamily {
+  return isModelFamily(value) ? value : 'anima'
+}
 
 export function loadParamHistory(): ParamHistoryEntry[] {
   try {
@@ -25,13 +30,14 @@ export function loadParamHistory(): ParamHistoryEntry[] {
           !!(e as ParamHistoryEntry).form
         )
       })
-      .map((e) => {
-        const form = e.form as Txt2ImgForm & { checkpoint?: string }
+      .map((e): ParamHistoryEntry => {
+        const form = e.form as Txt2ImgForm
         return {
-          ...e,
+          fingerprint: e.fingerprint,
+          at: e.at,
           form: {
             ...form,
-            family: form.family === 'sdxl' ? 'sdxl' : 'anima',
+            family: normalizeFamily(form.family),
             checkpoint: typeof form.checkpoint === 'string' ? form.checkpoint : '',
           },
         }

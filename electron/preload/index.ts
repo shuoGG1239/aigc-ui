@@ -79,13 +79,12 @@ contextBridge.exposeInMainWorld('api', {
       return () => ipcRenderer.removeListener('image:metadata-copied', handler)
     },
   },
-  rollWorkflows: {
-    list: () => ipcRenderer.invoke('rollWorkflows:list'),
-    read: (name: string) => ipcRenderer.invoke('rollWorkflows:read', name),
-    write: (wf: unknown) => ipcRenderer.invoke('rollWorkflows:write', wf),
-    remove: (name: string) => ipcRenderer.invoke('rollWorkflows:remove', name),
+  promptPools: {
+    list: () => ipcRenderer.invoke('promptPools:list'),
+    read: (name: string) => ipcRenderer.invoke('promptPools:read', name),
+    write: (pool: unknown) => ipcRenderer.invoke('promptPools:write', pool),
+    remove: (name: string) => ipcRenderer.invoke('promptPools:remove', name),
     rename: (oldName: string, newName: string) =>
-      ipcRenderer.invoke('rollWorkflows:rename', oldName, newName),
-    importList: (list: unknown[]) => ipcRenderer.invoke('rollWorkflows:importList', list),
+      ipcRenderer.invoke('promptPools:rename', oldName, newName),
   },
 })

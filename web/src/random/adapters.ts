@@ -8,8 +8,8 @@ import {
 } from './prompt-canon'
 import { prettyPrompt } from './prompt-tool'
 
-/** Convert canon tags for the active family (`@artist` → bare on SDXL). */
-export function adaptRolledPrompt(raw: string, family: ModelFamily): string {
+/** Convert canon prompts for the active family (`@artist` → bare on SDXL). */
+export function adaptRandomPrompt(raw: string, family: ModelFamily): string {
   const cleaned = prettyPrompt(raw)
   const segments = parseCanonSegments(cleaned).map((seg) => adaptSegment(seg, family))
   const joined = segmentsToCanon(segments)

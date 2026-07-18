@@ -16,14 +16,13 @@ import {
 } from './comfy-process'
 import type { AppSettings, GenerateResult, Txt2ImgParams } from './types'
 import {
-  importWorkflows,
-  listWorkflows,
-  readWorkflow,
-  removeWorkflow,
-  renameWorkflow,
-  writeWorkflow,
-  type RollWorkflowFile,
-} from './roll-workflows'
+  listPromptPools,
+  readPromptPool,
+  removePromptPool,
+  renamePromptPool,
+  writePromptPool,
+  type PromptPoolFile,
+} from './prompt-pools'
 
 let mainWindow: BrowserWindow | null = null
 let activeClient: ComfyUIClient | null = null
@@ -196,14 +195,13 @@ function registerIpc(): void {
     }
   })
 
-  ipcMain.handle('rollWorkflows:list', () => listWorkflows())
-  ipcMain.handle('rollWorkflows:read', (_event, name: string) => readWorkflow(name))
-  ipcMain.handle('rollWorkflows:write', (_event, wf: RollWorkflowFile) => writeWorkflow(wf))
-  ipcMain.handle('rollWorkflows:remove', (_event, name: string) => removeWorkflow(name))
-  ipcMain.handle('rollWorkflows:rename', (_event, oldName: string, newName: string) =>
-    renameWorkflow(oldName, newName),
+  ipcMain.handle('promptPools:list', () => listPromptPools())
+  ipcMain.handle('promptPools:read', (_event, name: string) => readPromptPool(name))
+  ipcMain.handle('promptPools:write', (_event, pool: PromptPoolFile) => writePromptPool(pool))
+  ipcMain.handle('promptPools:remove', (_event, name: string) => removePromptPool(name))
+  ipcMain.handle('promptPools:rename', (_event, oldName: string, newName: string) =>
+    renamePromptPool(oldName, newName),
   )
-  ipcMain.handle('rollWorkflows:importList', (_event, list: unknown[]) => importWorkflows(list))
 
   ipcMain.handle('image:readMetadata', async (_event, filePath: string) => {
     const target = filePath?.trim()

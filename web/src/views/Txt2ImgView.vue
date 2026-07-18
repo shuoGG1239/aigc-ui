@@ -5,8 +5,8 @@ import ModelSelect from '@/components/common/ModelSelect.vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
 import type { ModelFamily } from '@/models/family'
-import { nextWorkflowPrompt } from '@/roll/workflow-engine'
-import { useRollWorkflowStore } from '@/stores/rollWorkflow'
+import { nextPoolPrompt } from '@/random/prompt-pool-engine'
+import { usePromptPoolStore } from '@/stores/promptPool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { formatHms, promptSummary } from '@/utils/param-history'
 import { formatPromptByFamily } from '@/utils/prompt-format'
@@ -19,14 +19,14 @@ import {
 } from '@/utils/select-options'
 
 const store = useTxt2ImgStore()
-const rollStore = useRollWorkflowStore()
+const poolStore = usePromptPoolStore()
 const toast = useToast()
 const historyOpen = ref(false)
 const historyBtnRef = ref<HTMLButtonElement | null>(null)
 const historyMenuStyle = ref<Record<string, string>>({})
-const rollOpen = ref(false)
-const rollBtnRef = ref<HTMLButtonElement | null>(null)
-const rollMenuStyle = ref<Record<string, string>>({})
+const randomOpen = ref(false)
+const randomBtnRef = ref<HTMLButtonElement | null>(null)
+const randomMenuStyle = ref<Record<string, string>>({})
 /** Last focused prompt field; dice inserts at saved caret. */
 const focusedPromptField = ref<'prompt' | 'negativePrompt'>('prompt')
 const promptTaRef = ref<HTMLTextAreaElement | null>(null)
@@ -111,10 +111,6 @@ function onFormatField(field: 'prompt' | 'negativePrompt'): void {
     unetModel: store.form.unetModel,
     checkpoint: store.form.checkpoint,
   })
-  if (result.kind === 'none') {
-    toast.info('当前模式暂无专属格式化规则')
-    return
-  }
   if (!result.changed) {
     toast.info('已是规范格式')
     return
@@ -140,13 +136,13 @@ function updateHistoryMenuPosition(): void {
   }
 }
 
-function updateRollMenuPosition(): void {
-  const el = rollBtnRef.value
+function updateRandomMenuPosition(): void {
+  const el = randomBtnRef.value
   if (!el) return
   const rect = el.getBoundingClientRect()
   const width = 240
   const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8)
-  rollMenuStyle.value = {
+  randomMenuStyle.value = {
     left: `${left}px`,
     top: `${rect.bottom + 4}px`,
     width: `${width}px`,
@@ -154,7 +150,7 @@ function updateRollMenuPosition(): void {
 }
 
 async function toggleHistory(): Promise<void> {
-  rollOpen.value = false
+  randomOpen.value = false
   historyOpen.value = !historyOpen.value
   if (historyOpen.value) {
     await nextTick()
@@ -162,30 +158,30 @@ async function toggleHistory(): Promise<void> {
   }
 }
 
-async function toggleRollMenu(): Promise<void> {
+async function toggleRandomMenu(): Promise<void> {
   historyOpen.value = false
-  await rollStore.hydrate()
-  if (!rollStore.workflows.length) {
-    toast.info('请先在「随机」页创建工作流')
+  await poolStore.hydrate()
+  if (!poolStore.pools.length) {
+    toast.info('请先在「提示词池」页创建')
     return
   }
-  rollOpen.value = !rollOpen.value
-  if (rollOpen.value) {
+  randomOpen.value = !randomOpen.value
+  if (randomOpen.value) {
     await nextTick()
-    updateRollMenuPosition()
+    updateRandomMenuPosition()
   }
 }
 
-function onPickRollWorkflow(name: string): void {
-  const wf = rollStore.getByName(name)
-  if (!wf) return
-  const rolled = nextWorkflowPrompt(wf, store.form.family).trim()
-  if (!rolled) {
-    toast.error('该工作流未产出内容（检查条目/权重）')
+function onPickPromptPool(name: string): void {
+  const pool = poolStore.getByName(name)
+  if (!pool) return
+  const sampled = nextPoolPrompt(pool, store.form.family).trim()
+  if (!sampled) {
+    toast.error('该提示词池未产出内容（检查条目/权重）')
     return
   }
-  appendToFocusedPrompt(rolled)
-  rollOpen.value = false
+  appendToFocusedPrompt(sampled)
+  randomOpen.value = false
   const target = focusedPromptField.value === 'negativePrompt' ? 'Negative' : 'Prompt'
   toast.ok(`已追加到 ${target}`)
 }
@@ -220,18 +216,18 @@ function onHistoryDocClick(e: MouseEvent): void {
   historyOpen.value = false
 }
 
-function onRollDocClick(e: MouseEvent): void {
+function onRandomDocClick(e: MouseEvent): void {
   const target = e.target as Node
-  if (rollBtnRef.value?.contains(target)) return
-  const menu = document.querySelector('.roll-pick-menu')
+  if (randomBtnRef.value?.contains(target)) return
+  const menu = document.querySelector('.random-pick-menu')
   if (menu?.contains(target)) return
-  rollOpen.value = false
+  randomOpen.value = false
 }
 
 function onPopupKey(e: KeyboardEvent): void {
   if (e.key === 'Escape') {
     historyOpen.value = false
-    rollOpen.value = false
+    randomOpen.value = false
   }
 }
 
@@ -245,20 +241,20 @@ watch(historyOpen, (open) => {
     window.removeEventListener('resize', updateHistoryMenuPosition)
     window.removeEventListener('scroll', updateHistoryMenuPosition, true)
     document.removeEventListener('mousedown', onHistoryDocClick)
-    if (!rollOpen.value) document.removeEventListener('keydown', onPopupKey)
+    if (!randomOpen.value) document.removeEventListener('keydown', onPopupKey)
   }
 })
 
-watch(rollOpen, (open) => {
+watch(randomOpen, (open) => {
   if (open) {
-    window.addEventListener('resize', updateRollMenuPosition)
-    window.addEventListener('scroll', updateRollMenuPosition, true)
-    document.addEventListener('mousedown', onRollDocClick)
+    window.addEventListener('resize', updateRandomMenuPosition)
+    window.addEventListener('scroll', updateRandomMenuPosition, true)
+    document.addEventListener('mousedown', onRandomDocClick)
     document.addEventListener('keydown', onPopupKey)
   } else {
-    window.removeEventListener('resize', updateRollMenuPosition)
-    window.removeEventListener('scroll', updateRollMenuPosition, true)
-    document.removeEventListener('mousedown', onRollDocClick)
+    window.removeEventListener('resize', updateRandomMenuPosition)
+    window.removeEventListener('scroll', updateRandomMenuPosition, true)
+    document.removeEventListener('mousedown', onRandomDocClick)
     if (!historyOpen.value) document.removeEventListener('keydown', onPopupKey)
   }
 })
@@ -266,17 +262,17 @@ watch(rollOpen, (open) => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateHistoryMenuPosition)
   window.removeEventListener('scroll', updateHistoryMenuPosition, true)
-  window.removeEventListener('resize', updateRollMenuPosition)
-  window.removeEventListener('scroll', updateRollMenuPosition, true)
+  window.removeEventListener('resize', updateRandomMenuPosition)
+  window.removeEventListener('scroll', updateRandomMenuPosition, true)
   document.removeEventListener('mousedown', onHistoryDocClick)
-  document.removeEventListener('mousedown', onRollDocClick)
+  document.removeEventListener('mousedown', onRandomDocClick)
   document.removeEventListener('keydown', onPopupKey)
 })
 
 let offFormat: (() => void) | undefined
 onMounted(() => {
   offFormat = window.api.txt2img.onFormat((field) => onFormatField(field))
-  void rollStore.hydrate()
+  void poolStore.hydrate()
 })
 onUnmounted(() => {
   offFormat?.()
@@ -460,14 +456,14 @@ function onResultListWheel(e: WheelEvent): void {
               </svg>
             </button>
             <button
-              ref="rollBtnRef"
+              ref="randomBtnRef"
               type="button"
               class="btn btn-ghost btn-icon"
-              title="随机工作流（追加到当前输入框）"
-              aria-label="随机工作流"
+              title="随机提示词池（追加到当前输入框）"
+              aria-label="随机提示词池"
               aria-haspopup="menu"
-              :aria-expanded="rollOpen"
-              @click="toggleRollMenu"
+              :aria-expanded="randomOpen"
+              @click="toggleRandomMenu"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <rect
@@ -535,29 +531,67 @@ function onResultListWheel(e: WheelEvent): void {
           </div>
         </Teleport>
         <Teleport to="body">
-          <div v-if="rollOpen" class="roll-pick-menu" role="menu" :style="rollMenuStyle">
+          <div v-if="randomOpen" class="random-pick-menu" role="menu" :style="randomMenuStyle">
             <button
-              v-for="item in rollStore.workflows"
+              v-for="item in poolStore.pools"
               :key="item.name"
               type="button"
-              class="roll-pick-item"
+              class="random-pick-item"
               role="menuitem"
-              @click="onPickRollWorkflow(item.name)"
+              @click="onPickPromptPool(item.name)"
             >
-              <span class="roll-pick-name">{{ item.name }}</span>
+              <span class="random-pick-name">{{ item.name }}</span>
             </button>
           </div>
         </Teleport>
         <div class="panel-body">
           <div class="field">
-            <label class="field-label">Prompt</label>
+            <div class="field-label-row">
+              <label class="field-label" for="txt2img-prompt">Prompt</label>
+              <span class="field-help" tabindex="0" aria-label="特殊语法说明">
+                <svg class="field-help-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4" />
+                  <path d="M8 7v4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                  <circle cx="8" cy="5.2" r="0.9" fill="currentColor" />
+                </svg>
+                <div class="field-help-pop" role="tooltip">
+                  <div class="field-help-title">特殊语法</div>
+                  <div class="field-help-block">
+                    <code>&lt;pool:名称&gt;</code>
+                    <span>从提示词池抽样</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;pool:名称:0.8,0.9&gt;</code>
+                    <span>附带强度池</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;pool:名称:0.8,0.9:2,3&gt;</code>
+                    <span>强度池 + 数量池</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;pool:名称:1,2,3&gt;</code>
+                    <span>纯整数为数量池</span>
+                  </div>
+                  <div class="field-help-sep"></div>
+                  <div class="field-help-block">
+                    <code>&lt;random:文本&gt;</code>
+                    <span>字面量，不查池</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;random:文本:0.8,0.9&gt;</code>
+                    <span>字面量 + 强度</span>
+                  </div>
+                </div>
+              </span>
+            </div>
             <textarea
+              id="txt2img-prompt"
               ref="promptTaRef"
               v-model="store.form.prompt"
               class="textarea"
               rows="5"
               data-prompt-field="prompt"
-              placeholder="可用 <random:chara> / <random:artist:0.8,0.9:3> / <random:my_tag:0.8,0.9>"
+              placeholder="可用 <pool:chara> / <pool:artist:0.8,0.9:3> / <random:my_tag:0.8,0.9>"
               @focus="onPromptFocus('prompt', $event)"
               @blur="onPromptBlur('prompt', $event)"
               @select="onPromptSelect('prompt', $event)"
@@ -573,7 +607,7 @@ function onResultListWheel(e: WheelEvent): void {
               class="textarea textarea--sm"
               rows="2"
               data-prompt-field="negativePrompt"
-              placeholder="同样可用 <random:chara:1,2,3> 或字面 <random:tag:0.9>"
+              placeholder="同样可用 <pool:chara:1,2,3> 或 <random:tag:0.9>"
               @focus="onPromptFocus('negativePrompt', $event)"
               @blur="onPromptBlur('negativePrompt', $event)"
               @select="onPromptSelect('negativePrompt', $event)"

@@ -1,10 +1,8 @@
 import type { ModelFamily } from '@/models/family'
 import { resolveFamily } from '@/models/family'
 
-export type PromptFormatKind = ModelFamily | 'none'
-
 export interface FormatPromptResult {
-  kind: PromptFormatKind
+  kind: ModelFamily
   prompt: string
   changed: boolean
 }
@@ -17,13 +15,8 @@ export function detectPromptFormat(opts: {
   family?: string | null
   unetModel?: string | null
   checkpoint?: string | null
-}): PromptFormatKind {
+}): ModelFamily {
   return resolveFamily(opts)
-}
-
-/** @deprecated Prefer formatPromptByFamily */
-export function formatPromptByUnet(prompt: string, unetModel: string): FormatPromptResult {
-  return formatPromptByFamily(prompt, { unetModel })
 }
 
 export function formatPromptByFamily(
@@ -35,11 +28,8 @@ export function formatPromptByFamily(
     const next = formatAnimaPrompt(prompt)
     return { kind, prompt: next, changed: next !== prompt }
   }
-  if (kind === 'sdxl') {
-    const next = formatSdxlPrompt(prompt)
-    return { kind, prompt: next, changed: next !== prompt }
-  }
-  return { kind: 'none', prompt, changed: false }
+  const next = formatSdxlPrompt(prompt)
+  return { kind: 'sdxl', prompt: next, changed: next !== prompt }
 }
 
 export function formatAnimaPrompt(raw: string): string {

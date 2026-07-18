@@ -21,43 +21,6 @@ export function defaultOutputDir(): string {
   return dir
 }
 
-function migrateLaunchCommand(raw: Record<string, unknown>): string {
-  if (typeof raw.launchCommand === 'string' && raw.launchCommand.trim()) {
-    return raw.launchCommand
-      .replace(/(^|\s)--auto-launch(\s|$)/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-  }
-
-  // 兼容旧版：工作目录 + python/main/args
-  const comfyRoot =
-    typeof raw.comfyRoot === 'string' && raw.comfyRoot.trim()
-      ? raw.comfyRoot.trim()
-      : DEFAULT_COMFY_ROOT
-  const pythonPath =
-    typeof raw.pythonPath === 'string' && raw.pythonPath.trim()
-      ? raw.pythonPath.trim()
-      : join(comfyRoot, 'python', 'python.exe')
-  const mainPy =
-    typeof raw.mainPy === 'string' && raw.mainPy.trim()
-      ? raw.mainPy.trim()
-      : join(comfyRoot, 'ComfyUI', 'main.py')
-  const launchArgs =
-    typeof raw.launchArgs === 'string' && raw.launchArgs.trim()
-      ? raw.launchArgs
-          .trim()
-          .replace(/(^|\s)--auto-launch(\s|$)/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-      : '--fast'
-
-  if (raw.comfyRoot || raw.pythonPath || raw.mainPy || raw.launchArgs) {
-    return `cd /d "${comfyRoot}" && "${pythonPath}" "${mainPy}" ${launchArgs}`.trim()
-  }
-
-  return DEFAULT_LAUNCH_COMMAND
-}
-
 export function getSettings(): AppSettings {
   const defaults: AppSettings = {
     serverUrl: DEFAULT_SERVER_URL,
@@ -80,7 +43,10 @@ export function getSettings(): AppSettings {
         typeof raw.outputDir === 'string' && raw.outputDir.trim()
           ? raw.outputDir.trim()
           : defaults.outputDir,
-      launchCommand: migrateLaunchCommand(raw),
+      launchCommand:
+        typeof raw.launchCommand === 'string' && raw.launchCommand.trim()
+          ? raw.launchCommand.trim()
+          : defaults.launchCommand,
     }
   } catch {
     return defaults

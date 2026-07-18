@@ -1,18 +1,18 @@
-export interface RollEntry {
-  /** Tag string as stored in the workflow file. */
-  tag: string
+export interface PromptPoolEntry {
+  /** Prompt fragment as stored in the pool file. */
+  prompt: string
   /** Weight for sampling; <= 0 means disabled. */
   weight: number
 }
 
-export interface RollWorkflow {
-  /** Unique key = filename stem = `<random:name>`. */
+export interface PromptPool {
+  /** Unique key = filename stem = `<pool:name>`. */
   name: string
-  entries: RollEntry[]
+  entries: PromptPoolEntry[]
   updatedAt: number
+  /** Embedded built-in pool (no userData override). */
+  builtin?: boolean
 }
-
-export const WORKFLOW_NAME_RE = /^[a-zA-Z0-9_-]+$/
 
 export function clampCount(n: number): number {
   return Math.max(1, Math.min(32, Math.floor(n) || 1))
@@ -44,8 +44,8 @@ export function parseStrengthsPool(raw: string): number[] {
   return out
 }
 
-/** Sanitize to a valid workflow filename / `<random:name>` key. */
-export function sanitizeWorkflowName(raw: string, fallback = 'workflow'): string {
+/** Sanitize to a valid pool filename / `<pool:name>` key. */
+export function sanitizePoolName(raw: string, fallback = 'pool'): string {
   const s = raw
     .trim()
     .replace(/\s+/g, '_')
@@ -54,10 +54,11 @@ export function sanitizeWorkflowName(raw: string, fallback = 'workflow'): string
   return s || fallback
 }
 
-export function createEmptyWorkflow(name = 'workflow'): RollWorkflow {
+export function createEmptyPromptPool(name = 'pool'): PromptPool {
   return {
-    name: sanitizeWorkflowName(name),
+    name: sanitizePoolName(name),
     entries: [],
     updatedAt: Date.now(),
+    builtin: false,
   }
 }

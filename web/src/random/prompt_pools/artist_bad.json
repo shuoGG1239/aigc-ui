@@ -1,0 +1,54 @@
+{
+  "name": "artist_bad",
+  "entries": [
+    {
+      "prompt": "(@fujiyama:0.85), @wlop",
+      "weight": 1
+    },
+    {
+      "prompt": "(@karory:0.95), (@rouka_(akatyann):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ke-ta:0.95), (@chen_bin:0.95), @senji_(tegone_spike), @Rella",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ke-ta:0.95), @ningen_mame, (@amazuyu_tatsuki:0.95), (@senji_(tegone_spike):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@mika_pikazo:0.95), (@rouka_(akatyann):0.9)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@mitsumi_misato:0.95), (@mikozin:0.9), @senji_(tegone_spike), @kaede_(yumesaki_kaede)",
+      "weight": 1
+    },
+    {
+      "prompt": "@chen_bin, (@amazuyu_tatsuki:0.95), @mitsumi_misato, (@karory:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), @kanzaki_hiro, (@rurudo:0.95), (@misaki_kurehito:0.9)",
+      "weight": 1
+    },
+    {
+      "prompt": "@mitsumi_misato, @rurudo, (@senji_(tegone_spike):0.95), (@ningen_mame:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@rurudo, (@paryi:0.95), (@wlop:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@senji_(tegone_spike), (@kaede_(yumesaki_kaede):0.85)",
+      "weight": 1
+    },
+    {
+      "prompt": "@xiujia_yihuizi, @minaba_hideo, (@kanzaki_hiro:0.95)",
+      "weight": 1
+    }
+  ],
+  "updatedAt": 0
+}

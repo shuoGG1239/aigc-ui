@@ -1,4 +1,4 @@
-/** Family-neutral roll tag segments (storage dialect). */
+/** Family-neutral prompt segments (storage dialect). */
 
 export interface PromptSegment {
   text: string
@@ -61,7 +61,7 @@ export function splitTopLevel(raw: string): string[] {
 
 const WEIGHT_RE = /^\((.+):([\d.]+)\)$/
 
-/** Legacy NAI `artist:name` → canon `@name`. */
+/** NAI `artist:name` → canon `@name`. */
 export function canonArtistText(text: string): string {
   const t = text.trim()
   const m = t.match(/^artist:\s*(.+)$/i)
@@ -114,12 +114,11 @@ export function preprocessNaiBraces(raw: string): string {
     return n ? (n.startsWith('@') ? n : `@${n}`) : ''
   })
 
-  // Heal legacy corruption: `name_(a), _(b)` → `name_(a)_(b)` (Danbooru qualifiers).
+  // Join Danbooru qualifier chains written with a comma: `name_(a), _(b)` → `name_(a)_(b)`.
   s = s.replace(/\)\s*,\s*_\(/g, ')_(')
 
   // Insert commas between abutting groups / group+token.
-  // Do not treat `_(…)` as a boundary — that is Danbooru qualifier syntax
-  // (e.g. aris_(maid)_(blue_archive)).
+  // Do not treat `_(…)` as a boundary — Danbooru qualifier syntax.
   s = s.replace(/([}\])])\s*([{\[(])/g, '$1, $2')
   s = s.replace(/([}\])])\s*([A-Za-z0-9@])/g, '$1, $2')
   s = s.replace(/([A-Za-z0-9@])\s*([{\[])/g, '$1, $2')
@@ -221,14 +220,9 @@ export function segmentsToCanon(segments: PromptSegment[]): string {
     .join(', ')
 }
 
-/** Normalize any roll tag string into family-neutral canon. */
-export function normalizeRollTag(raw: string): string {
-  return segmentsToCanon(parseNaiToSegments(raw))
-}
-
 /** Parse a canon (or NAI) string into segments for sampling. */
-export function parseCanonSegments(tag: string): PromptSegment[] {
-  return parseNaiToSegments(tag)
+export function parseCanonSegments(prompt: string): PromptSegment[] {
+  return parseNaiToSegments(prompt)
 }
 
 export function applyStrengthPool(
@@ -240,35 +234,4 @@ export function applyStrengthPool(
     if (seg.strength !== null) return seg
     return { text: seg.text, strength: poolStrength }
   })
-}
-
-export function segmentsToPrompt(segments: PromptSegment[]): string {
-  return segmentsToCanon(segments)
-}
-
-/** Parse UI strengths field: "0.8, 0.9, 1.0" */
-export function parseStrengthsInput(raw: string): number[] {
-  if (!raw.trim()) return []
-  const out: number[] = []
-  for (const part of raw.split(/[,，\s]+/)) {
-    if (!part) continue
-    const n = Number(part)
-    if (!Number.isFinite(n)) continue
-    out.push(roundStrength(n))
-  }
-  return out
-}
-
-export function formatStrengthsInput(strengths: number[] | undefined): string {
-  if (!strengths?.length) return ''
-  return strengths.map(formatStrength).join(', ')
-}
-
-export function normalizeStrengths(raw: unknown): number[] | undefined {
-  if (!Array.isArray(raw) || !raw.length) return undefined
-  const out = raw
-    .map((x) => Number(x))
-    .filter((n) => Number.isFinite(n))
-    .map(roundStrength)
-  return out.length ? out : undefined
 }

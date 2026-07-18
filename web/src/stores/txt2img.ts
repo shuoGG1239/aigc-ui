@@ -8,8 +8,8 @@ import {
 import {
   expandPromptTemplate,
   hasPromptPlaceholders,
-} from '@/roll/prompt-template'
-import { useRollWorkflowStore } from '@/stores/rollWorkflow'
+} from '@/random/prompt-template'
+import { usePromptPoolStore } from '@/stores/promptPool'
 import {
   loadParamHistory,
   pushParamHistory,
@@ -141,17 +141,17 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
 
   function expandField(template: string): string {
     if (!hasPromptPlaceholders(template)) return template
-    const rollStore = useRollWorkflowStore()
+    const poolStore = usePromptPoolStore()
     const { prompt, missing } = expandPromptTemplate(template, form.value.family, (name) =>
-      rollStore.getByName(name),
+      poolStore.getByName(name),
     )
     if (missing.length) {
-      throw new Error(`未找到随机工作流：${missing.join(', ')}`)
+      throw new Error(`未找到提示词池：${missing.join(', ')}`)
     }
     return prompt
   }
 
-  function resolveRollPrompts(batchSize: number): {
+  function resolveRandomPrompts(batchSize: number): {
     prompt: string
     prompts?: string[]
     negativePrompt: string
@@ -216,8 +216,8 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     let negativePrompts: string[] | undefined
 
     try {
-      await useRollWorkflowStore().hydrate()
-      const resolved = resolveRollPrompts(batchSize)
+      await usePromptPoolStore().hydrate()
+      const resolved = resolveRandomPrompts(batchSize)
       prompt = resolved.prompt
       prompts = resolved.prompts
       negativePrompt = resolved.negativePrompt

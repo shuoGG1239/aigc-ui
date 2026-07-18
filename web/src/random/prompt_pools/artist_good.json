@@ -1,0 +1,330 @@
+{
+  "name": "artist_good",
+  "entries": [
+    {
+      "prompt": "(@akakura:0.9), @kawacy, (@zuizi:0.95), @yamasan",
+      "weight": 1
+    },
+    {
+      "prompt": "(@akakura:0.9), @noyu_(noyu23386566), @ciloranko",
+      "weight": 1
+    },
+    {
+      "prompt": "(@amazuyu_tatsuki:0.95), @hagi_(ame_hagi), (@ciloranko:0.95), @kedama_milk, (@kazutake_hazano:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.85), (@tianliang_duohe_fangdongye:0.95), @jyt, (@himitsu_(hi_mi_tsu_2):0.9), (@ke-ta:0.95), @hagi_(ame_hagi)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.9), (@wlop:0.95), @hagi_(ame_hagi), @miwabe_sakura",
+      "weight": 2
+    },
+    {
+      "prompt": "(@ciloranko:0.9), @ningen_mame, @hagi_(ame_hagi)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.9), @wlop, (@hagi_(ame_hagi):0.95), @amazuyu_tatsuki",
+      "weight": 2
+    },
+    {
+      "prompt": "(@ciloranko:0.95), (@amazuyu_tatsuki:0.9), @ningen_mame",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.95), (@hagi_(ame_hagi):0.9), @mitsumi_misato",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.95), (@ningen_mame:0.9), @hagi_(ame_hagi), @paseri, @mitsumi_misato",
+      "weight": 2
+    },
+    {
+      "prompt": "(@ciloranko:0.95), (@ningen_mame:0.95), (@miyuki_(miyuki0529):0.95), @hagi_(ame_hagi)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.95), @hagi_(ame_hagi), @amazuyu_tatsuki",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.95), @hagi_(ame_hagi), @wlop, (@kazutake_hazano:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ciloranko:0.95), @kazutake_hazano, @kedama milk, (@ask_(askzy):0.95), @wanke, @wlop, @fujiyama, @hiten_(hitenkei)",
+      "weight": 2
+    },
+    {
+      "prompt": "(@ciloranko:0.95), @noyu_(noyu23386566), (@ningen_mame:0.95), (@danimaru:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@fuzichoco:1.05), @ciloranko, (@hagi_(ame_hagi):1.05), (@hanekoto:1.05)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@hagi_(ame_hagi):0.9), (@wlop:0.95), @rurudo, @ciloranko",
+      "weight": 1
+    },
+    {
+      "prompt": "(@hagi_(ame_hagi):0.9), @amazuyu_tatsuki, (@ciloranko:0.95)",
+      "weight": 3
+    },
+    {
+      "prompt": "(@hagi_(ame_hagi):0.95), (@ciloranko:0.95), (@tianliang duohe fangdongye:0.9), (@ke-ta:0.95), @jyt, @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@hagi_(ame_hagi):0.95), (@kani_biimu:0.95), @ciloranko, @wlop, (@ningen_mame:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@hagi_(ame_hagi):1.1), (@atdan:0.9), (@chocoan:1.1), (@nullma:0.9), @cocozasa, (@kanikama:0.9)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@icomochi:1.05), (@hagi_(ame_hagi):1.05), @mikisai, (@nardack:1.05), (@ke-ta:1.05)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@kazutake_hazano:0.9), @wlop, @rin31153336, (@hagi_(ame_hagi):0.95), @ciloranko",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ke-ta:0.9), (@amazuyu_tatsuki:0.95), @noyu_(noyu23386566), @kaede_(yumesaki_kaede)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ke-ta:0.95), (@Rella:0.95), (@hokori_sakuni:0.95), @rin31153336",
+      "weight": 1
+    },
+    {
+      "prompt": "(@kedama milk:0.95), (@ask_(askzy):0.95), @wanke, @wlop",
+      "weight": 1
+    },
+    {
+      "prompt": "(@kedama milk:0.95), (@tianliang_duohe_fangdongye:0.95), (@ningen_mame:0.95), (@sho_(sho_lwlw):0.95), @ciloranko, (@rhasta:0.9), (@as109:0.9), (@wlop:0.95), (@ke-ta:0.9), @chen_bin",
+      "weight": 1
+    },
+    {
+      "prompt": "(@mignon:1.05), (@fuzichoco:1.05), (@ningen_mame:0.9), @ciloranko",
+      "weight": 1
+    },
+    {
+      "prompt": "(@miyuki_(miyuki0529):0.95), @hagi_(ame_hagi), @wlop",
+      "weight": 1
+    },
+    {
+      "prompt": "(@miyuki_(miyuki0529):0.95), @saru, (@hagi_(ame_hagi):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@muryotaro:1.1), (@arsenixc:0.9), (@nima (niru54):1.05), (@azuumori:0.9), (@sofra:0.95), (@hamsterfragment:0.9), (@hana_kazari:0.95), @sogawa",
+      "weight": 1
+    },
+    {
+      "prompt": "(@nardack:0.95), (@hagi_(ame_hagi):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.85), @hagi_(ame_hagi), @wlop, @hokori_sakuni",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.9), @hagi_(ame_hagi), @mitsumi_misato, @ciloranko",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.9), @kanzaki_hiro, @kazutake_hazano, (@hagi_(ame_hagi):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.95), (@ciloranko:0.95), (@hagi_(ame_hagi):0.95), @wlop",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.95), (@ciloranko:0.95), @sho_(sho_lwlw), (@wlop:1.1)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.95), @ciloranko, (@anmi:0.95), @wlop",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.95), @ciloranko, (@sho_(sho_lwlw):0.95), (@rhasta:0.95), (@chen_bin:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.95), @ciloranko, (@wlop:0.95), @heripiro, @kazutake_hazano",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.95), @hagi_(ame_hagi), (@miyuki_(miyuki0529):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@ningen_mame:0.95), @wlop, @ciloranko, (@hagi_(ame_hagi):0.95)",
+      "weight": 2
+    },
+    {
+      "prompt": "(@senji_(tegone_spike):0.95), @fujiyama, @tianliang_duohe_fangdongye",
+      "weight": 1
+    },
+    {
+      "prompt": "(@tianliang_duohe_fangdongye:0.95), @ciloranko, (@kazutake_hazano:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@wlop:0.85), @ciloranko, @hagi_(ame_hagi), @amazuyu_tatsuki",
+      "weight": 1
+    },
+    {
+      "prompt": "(@wlop:0.9), (@ponnyu12:0.95), @ningen_mame",
+      "weight": 1
+    },
+    {
+      "prompt": "(@wlop:0.95), @hagi_(ame_hagi), (@miyuki_(miyuki0529):0.9), @rin31153336",
+      "weight": 1
+    },
+    {
+      "prompt": "(@yoru_nai:1.1), @daram_(shappydude), (@miwano_rag:0.95), (@dsmile:0.9), (@optionaltypo:0.9), (@sarasadou dan:0.9), @yago8, (@norizc:0.9)",
+      "weight": 1
+    },
+    {
+      "prompt": "(@zuizi:0.95), (@mika_pikazo:0.95), (@starshadowmagician:0.95), @hagi_(ame_hagi)",
+      "weight": 1
+    },
+    {
+      "prompt": "@amazuyu_tatsuki, (@minaba_hideo:0.95), @akakura, (@kawacy:0.9)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ciloranko, (@hagi_(ame_hagi):0.9), @ningen_mame, (@wlop:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ciloranko, (@heripiro:0.9), @rin31153336, (@paseri:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ciloranko, (@ningen_mame:0.95), (@wlop:0.95), (@hagi_(ame_hagi):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ciloranko, @jyt, (@ke-ta:1.05), (@himitsu_(hi_mi_tsu_2):1.05), (@miyuki_(miyuki0529):1.05), (@hagi_(ame_hagi):1.05)",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), (@ciloranko:0.85), @ningen_mame, @wlop",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), (@hanekoto:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), @ciloranko, (@tianliang duohe fangdongye:0.9), (@ke-ta:0.95), @jyt, (@himitsu_(hi_mi_tsu_2):0.95)",
+      "weight": 2
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), @dsmile, (@tianliang duohe fangdongye:0.9), (@ke-ta:0.9), @jyt, @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), @fujiyama, @ciloranko, (@ningen_mame:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), @gomzi, (@ke-ta:0.9), @jyt, @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), @gomzi, (@tianliang duohe fangdongye:0.9), (@ke-ta:0.9), @jyt, @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "prompt": "@hagi_(ame_hagi), @rin31153336, (@minaba_hideo:0.95), @bbolalus",
+      "weight": 1
+    },
+    {
+      "prompt": "@haimura_kiyotaka, (@zuizi:0.95), @akakura, @miyuki_(miyuki0529)",
+      "weight": 1
+    },
+    {
+      "prompt": "@iwashi_(iwashi008), (@hagi_(ame_hagi):0.95), (@kamizaki_hibana:0.95), @ciloranko",
+      "weight": 1
+    },
+    {
+      "prompt": "@kazutake_hazano, @danimaru, (@ask_(askzy):0.95), @wanke, @wlop, @fujiyama, artisit:yuyu_(yuyuworks), @hiten_(hitenkei)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ke-ta, (@kedama milk:0.85), @ciloranko, @Hiten, (@ask(askzy):0.9), @chen bin",
+      "weight": 1
+    },
+    {
+      "prompt": "@kedama milk, @chen_bin, (@ke-ta:0.95), @jyt, @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ningen_mame, (@hagi_(ame_hagi):0.95), @ciloranko, @amazuyu_tatsuki, @wlop",
+      "weight": 1
+    },
+    {
+      "prompt": "@ningen_mame, @ciloranko, (@senji_(tegone_spike):0.9)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ningen_mame, @ciloranko, (@sho_(sho_lwlw):0.95), @wlop, (@gin00:0.9)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ningen_mame, @hagi_(ame_hagi), (@ama_mitsuki:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ningen_mame, @hagi_(ame_hagi), (@wlop:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@ningen_mame, @miyuki_(miyuki0529), @wlop, (@hagi_(ame_hagi):0.95)",
+      "weight": 2
+    },
+    {
+      "prompt": "@ningen_mame, @wlop, (@hagi_(ame_hagi):0.95), @kazutake_hazano",
+      "weight": 1
+    },
+    {
+      "prompt": "@noco_(adamas), (@ningen_mame:0.95), @fujiyama, (@amazuyu_tatsuki:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@rhasta, @zuizi, @gomzi, (@rin31153336:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@rurudo, @mitsumi_misato, @wanke, (@qys3:0.95), @fuzichoco",
+      "weight": 1
+    },
+    {
+      "prompt": "@shiroshi_(denpa_eshidan), (@wlop:0.95), (@qtonagi:0.9), @hagi_(ame_hagi)",
+      "weight": 1
+    },
+    {
+      "prompt": "@sho_(sho_lwlw), (@hagi_(ame_hagi):0.95), (@tianliang_duohe_fangdongye:0.95), @ciloranko, (@ningen_mame:0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@tianliang_duohe_fangdongye, (@hagi_(ame_hagi):0.9), (@ciloranko:0.95), @ke-ta, (@jyt:0.9), (@himitsu_(hi_mi_tsu_2):0.95)",
+      "weight": 1
+    },
+    {
+      "prompt": "@yuya_(night_lily), (@hagi_(ame_hagi):0.95), (@hanekoto:0.95), @shirabi",
+      "weight": 1
+    }
+  ],
+  "updatedAt": 0
+}
