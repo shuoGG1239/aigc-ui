@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { IconSave, IconShredder } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
 import { useComfyProcessStore } from '@/stores/comfyProcess'
 import { useSettingsStore } from '@/stores/settings'
@@ -110,43 +111,25 @@ function formatTime(ts: number): string {
         <div class="form-actions">
           <button
             type="button"
-            class="btn btn-primary btn-icon"
-            title="启动"
-            aria-label="启动"
-            :disabled="processStore.busy || processStore.running"
-            @click="onStart"
+            class="btn btn-icon"
+            :class="processStore.running ? 'btn-danger btn-icon--running' : 'btn-primary'"
+            :title="processStore.running ? '运行中，点击停止' : '启动'"
+            :aria-label="processStore.running ? '运行中，点击停止' : '启动'"
+            :disabled="processStore.busy"
+            @click="processStore.running ? onStop() : onStart()"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M5 3.5v9l8-4.5-8-4.5z" fill="currentColor" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            class="btn btn-danger btn-icon"
-            title="停止"
-            aria-label="停止"
-            :disabled="processStore.busy || !processStore.running"
-            @click="onStop"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <svg
+              v-if="processStore.running"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
               <rect x="4" y="4" width="8" height="8" rx="1" fill="currentColor" />
             </svg>
-          </button>
-          <button
-            type="button"
-            class="btn btn-ghost btn-icon"
-            title="清空日志"
-            aria-label="清空日志"
-            @click="onClear"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M2.5 4.5h11M5.25 4.5V3.4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1.1M4.25 4.5l.55 8.25h6.4l.55-8.25"
-                stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
+            <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M5 3.5v9l8-4.5-8-4.5z" fill="currentColor" />
             </svg>
           </button>
         </div>
@@ -170,33 +153,36 @@ function formatTime(ts: number): string {
                 :disabled="saving"
                 @click="onSave"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path
-                    d="M3.5 3.5h7.2L12.5 5.3V12.5h-9V3.5z"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linejoin="round"
-                  />
-                  <path d="M5.5 3.5v3h4v-3M5.5 12.5v-4h5v4" stroke="currentColor" stroke-width="1.4" />
-                </svg>
+                <IconSave />
               </button>
             </div>
           </div>
         </div>
 
-        <div ref="logEl" class="console-log">
-          <div v-if="!processStore.logs.length" class="empty-state">
-            <div class="title">暂无日志</div>
-            <div class="hint">点击启动运行 ComfyUI</div>
-          </div>
-          <div
-            v-for="line in processStore.logs"
-            :key="line.id"
-            class="console-line"
-            :class="line.level"
+        <div class="console-log-wrap">
+          <button
+            type="button"
+            class="console-log-clear"
+            title="清空日志"
+            aria-label="清空日志"
+            @click="onClear"
           >
-            <span class="console-time">{{ formatTime(line.ts) }}</span>
-            <span class="console-text">{{ line.text }}</span>
+            <IconShredder />
+          </button>
+          <div ref="logEl" class="console-log">
+            <div v-if="!processStore.logs.length" class="empty-state">
+              <div class="title">暂无日志</div>
+              <div class="hint">点击启动运行 ComfyUI</div>
+            </div>
+            <div
+              v-for="line in processStore.logs"
+              :key="line.id"
+              class="console-line"
+              :class="line.level"
+            >
+              <span class="console-time">{{ formatTime(line.ts) }}</span>
+              <span class="console-text">{{ line.text }}</span>
+            </div>
           </div>
         </div>
       </div>

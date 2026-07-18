@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { IconTrash } from '@/components/icons'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
 import { nextPoolPrompt } from '@/prompt/prompt-pool-engine'
@@ -88,7 +89,7 @@ function onRunSample(): void {
   if (!pool.value) return
   const sampled = nextPoolPrompt(pool.value, txt2img.form.family).trim()
   if (!sampled) {
-    toast.error('未产出内容（检查条目/权重）')
+    toast.error('未产出内容（检查条目/占比）')
     return
   }
   toast.info(sampled, 8000)
@@ -415,15 +416,7 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                 aria-label="删除提示词池"
                 @click="onRemove"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path
-                    d="M2.5 4.5h11M5.25 4.5V3.4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1.1M4.25 4.5l.55 8.25h6.4l.55-8.25"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <IconTrash />
               </button>
             </div>
             <button
@@ -470,7 +463,7 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                     />
                   </label>
                 </div>
-                <span title="抽样权重；0=禁用">权重</span>
+                <span title="相对抽选占比；越大越容易被抽到，0=禁用">占比</span>
                 <button
                   type="button"
                   class="btn btn-ghost btn-icon"
@@ -499,14 +492,10 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                     :disabled="previewLoading || !entry.prompt.trim()"
                     @click="onPreviewEntry(entry.prompt)"
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
                       <path
-                        d="M1.75 8s2.25-3.75 6.25-3.75S14.25 8 14.25 8s-2.25 3.75-6.25 3.75S1.75 8 1.75 8z"
-                        stroke="currentColor"
-                        stroke-width="1.4"
-                        stroke-linejoin="round"
+                        d="M511.5 203c150.289 0 286.149 81.46 407.028 241.344l4.042 5.383 1.233 1.67 1.595 2.188 1.764 2.444 2.812 3.937 3.491 4.936L937 469.94l5.948 8.54 4.854 7.012 5.77 8.374a32 32 0 0 1 0.263 35.876l-0.265 0.391-8.979 13.01-6.205 8.925-4.055 5.79-3.635 5.151-2.096 2.945-2.698 3.76-1.91 2.626-1.489 2.021-0.586 0.787C800.19 738.008 663.195 821 511.5 821c-149.696 0-285.077-80.82-405.598-239.456l-3.843-5.092-1.918-2.589-2.195-3.01-3.357-4.673-2.841-3.997-4.219-5.987-6.391-9.15-8.727-12.602-3.012-4.37a32 32 0 0 1-0.336-35.795l0.263-0.392 8.24-12.036 5.402-7.835 3.354-4.826 2.758-3.925 1.676-2.353 0.484-0.671C215.41 290.542 355.702 203 511.5 203z m0 63.931c-134.122 0-257.796 77.938-371.65 237.278l-3.447 4.853-2.061 2.938 2.061 2.938c112.472 159.308 234.554 238.866 366.855 242.033l4.012 0.072 4.23 0.026c134.122 0 257.796-77.938 371.65-237.278l3.447-4.853 2.06-2.938-2.06-2.938C774.125 349.754 652.043 270.196 519.742 267.029l-4.012-0.072-4.23-0.026z m0.5 108.402c75.11 0 136 60.89 136 136 0 75.111-60.89 136-136 136s-136-60.889-136-136c0-75.11 60.89-136 136-136z m0 64c-39.765 0-72 32.236-72 72 0 39.765 32.235 72 72 72s72-32.235 72-72c0-39.764-32.235-72-72-72z"
                       />
-                      <circle cx="8" cy="8" r="1.75" stroke="currentColor" stroke-width="1.4" />
                     </svg>
                   </button>
                   <input
@@ -537,15 +526,7 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                     aria-label="删除"
                     @click="removeEntry(index)"
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <path
-                        d="M2.5 4.5h11M5.25 4.5V3.4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1.1M4.25 4.5l.55 8.25h6.4l.55-8.25"
-                        stroke="currentColor"
-                        stroke-width="1.4"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
+                    <IconTrash />
                   </button>
                 </div>
                 <div v-if="!entries.length" class="pool-entry-empty">暂无条目，点击右上角 + 新建</div>

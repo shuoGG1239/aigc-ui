@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import AppSelect from '@/components/common/AppSelect.vue'
+import { IconShredder } from '@/components/icons'
 import ModelSelect from '@/components/common/ModelSelect.vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
@@ -367,7 +368,7 @@ function onMenuFilterBlur(): void {
 function finishAppendSample(sampled: string): void {
   const text = sampled.trim()
   if (!text) {
-    toast.error('该提示词池未产出内容（检查条目/权重）')
+    toast.error('该提示词池未产出内容（检查条目/占比）')
     return
   }
   appendToFocusedPrompt(text)
@@ -721,14 +722,9 @@ function onResultListWheel(e: WheelEvent): void {
               :aria-expanded="historyOpen"
               @click="toggleHistory"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="8.5" r="5.25" stroke="currentColor" stroke-width="1.5" />
+              <svg width="16" height="16" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
                 <path
-                  d="M8 5.75V8.5l2 1.25"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  d="M512 64c247.424 0 448 200.576 448 448S759.424 960 512 960 64 759.424 64 512 264.576 64 512 64z m0 64c-212.077 0-384 171.923-384 384s171.923 384 384 384 384-171.923 384-384-171.923-384-384-384z m-32 160c35.346 0 64 28.654 64 64v128h128c34.993 0 63.426 28.084 63.991 62.942L736 544H512c-17.673 0-32-14.327-32-32V288z"
                 />
               </svg>
             </button>
@@ -739,9 +735,9 @@ function onResultListWheel(e: WheelEvent): void {
               aria-label="从剪贴板应用参数"
               @click="onApplyClipboard"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
                 <path
-                  d="M14.5 8H10.5C10.224 8 10 8.224 10 8.5C10 9.603 9.103 10.5 8 10.5C6.897 10.5 6 9.603 6 8.5C6 8.224 5.776 8 5.5 8H1.5C1.224 8 1 8.224 1 8.5V12.5C1 13.878 2.121 15 3.5 15H12.5C13.879 15 15 13.878 15 12.5V8.5C15 8.224 14.776 8 14.5 8ZM14 12.5C14 13.327 13.327 14 12.5 14H3.5C2.673 14 2 13.327 2 12.5V9H5.042C5.28 10.417 6.517 11.5 8 11.5C9.483 11.5 10.72 10.417 10.958 9H14V12.5ZM5.646 1.146C5.451 1.341 5.451 1.658 5.646 1.853L7.646 3.853C7.841 4.048 8.158 4.048 8.353 3.853L10.353 1.853C10.548 1.658 10.548 1.341 10.353 1.146C10.255 1.048 10.127 1 9.999 1C9.871 1 9.743 1.049 9.645 1.146L8.499 2.292V1.499C8.499 1.223 8.275 0.999 7.999 0.999C7.723 0.999 7.499 1.223 7.499 1.499V2.292L6.353 1.146C6.158 0.951 5.841 0.951 5.646 1.146ZM8.5 5.5C8.5 5.776 8.276 6 8 6C7.724 6 7.5 5.776 7.5 5.5C7.5 5.224 7.724 5 8 5C8.276 5 8.5 5.224 8.5 5.5ZM8.5 7.5C8.5 7.776 8.276 8 8 8C7.724 8 7.5 7.776 7.5 7.5C7.5 7.224 7.724 7 8 7C8.276 7 8.5 7.224 8.5 7.5Z"
+                  d="M480 112c0 35.346-28.654 64-64 64H176v672h672V578c0-34.993 28.084-63.426 62.942-63.991L912 514v366c0 17.673-14.327 32-32 32H144c-17.673 0-32-14.327-32-32V144c0-17.673 14.327-32 32-32h336z m-22.627 460.118c-17.674 0-32-14.327-32-32v-240c35.346 0 64 28.654 64 64v98.746L821.49 130.745c24.744-24.743 64.708-24.99 89.756-0.742l0.754 0.742-377.371 377.373h98.744c34.992 0 63.426 28.083 63.991 62.941l0.009 1.059h-240z"
                 />
               </svg>
             </button>
@@ -764,24 +760,12 @@ function onResultListWheel(e: WheelEvent): void {
               :aria-expanded="randomOpen"
               @click="toggleRandomMenu"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
                 <path
-                  d="M3.5 3h8A1.5 1.5 0 0 1 13 4.5V13H4.5A1 1 0 0 0 3.5 14V3z"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  stroke-linejoin="round"
+                  d="M864 64H704V32c0-17.066667-14.933333-32-32-32S640 14.933333 640 32V64H384V32c0-17.066667-14.933333-32-32-32S320 14.933333 320 32V64H160C142.933333 64 128 78.933333 128 96v896c0 17.066667 14.933333 32 32 32h704c17.066667 0 32-14.933333 32-32v-896c0-17.066667-14.933333-32-32-32zM832 960H192V128h128v64c0 17.066667 14.933333 32 32 32S384 209.066667 384 192V128h256v64c0 17.066667 14.933333 32 32 32S704 209.066667 704 192V128h128v832z"
                 />
                 <path
-                  d="M3.5 3A1 1 0 0 1 4.5 2H13"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M6 6.5h4.5M6 9h4.5M6 11.5h3"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  stroke-linecap="round"
+                  d="M704 384H320c-17.066667 0-32 14.933333-32 32S302.933333 448 320 448h384c17.066667 0 32-14.933333 32-32S721.066667 384 704 384zM704 640H320c-17.066667 0-32 14.933333-32 32S302.933333 704 320 704h384c17.066667 0 32-14.933333 32-32S721.066667 640 704 640z"
                 />
               </svg>
             </button>
@@ -1226,15 +1210,7 @@ function onResultListWheel(e: WheelEvent): void {
               aria-label="清空预览"
               @click="store.clearResults()"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M2.5 4.5h11M5.25 4.5V3.4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1.1M4.25 4.5l.55 8.25h6.4l.55-8.25"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+              <IconShredder />
             </button>
           </div>
         </div>
@@ -1262,9 +1238,9 @@ function onResultListWheel(e: WheelEvent): void {
                   aria-label="应用图片到参数"
                   @click="onApplyImageMeta"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
                     <path
-                      d="M14.5 8H10.5C10.224 8 10 8.224 10 8.5C10 9.603 9.103 10.5 8 10.5C6.897 10.5 6 9.603 6 8.5C6 8.224 5.776 8 5.5 8H1.5C1.224 8 1 8.224 1 8.5V12.5C1 13.878 2.121 15 3.5 15H12.5C13.879 15 15 13.878 15 12.5V8.5C15 8.224 14.776 8 14.5 8ZM14 12.5C14 13.327 13.327 14 12.5 14H3.5C2.673 14 2 13.327 2 12.5V9H5.042C5.28 10.417 6.517 11.5 8 11.5C9.483 11.5 10.72 10.417 10.958 9H14V12.5ZM5.646 3.854C5.451 3.659 5.451 3.342 5.646 3.147L7.646 1.147C7.841 0.952 8.158 0.952 8.353 1.147L10.353 3.147C10.548 3.342 10.548 3.659 10.353 3.854C10.255 3.952 10.127 4 9.999 4C9.871 4 9.743 3.951 9.645 3.854L8.499 2.708V3.501C8.499 3.777 8.275 4.001 7.999 4.001C7.723 4.001 7.499 3.777 7.499 3.501V2.708L6.353 3.854C6.158 4.049 5.841 4.049 5.646 3.854ZM8.5 5.5C8.5 5.776 8.276 6 8 6C7.724 6 7.5 5.776 7.5 5.5C7.5 5.224 7.724 5 8 5C8.276 5 8.5 5.224 8.5 5.5ZM8.5 7.5C8.5 7.776 8.276 8 8 8C7.724 8 7.5 7.776 7.5 7.5C7.5 7.224 7.724 7 8 7C8.276 7 8.5 7.224 8.5 7.5Z"
+                      d="M744 112c17.673 0 32 14.327 32 32v240.873c-35.346 0-64-28.653-64-64L711.999 176h-536v672h229.582c34.993 0 63.426 28.084 63.991 62.942l0.01 1.058H144c-17.673 0-32-14.327-32-32V144c0-17.673 14.327-32 32-32h600z m23.243 419.26l135.764 135.764c12.497 12.497 12.497 32.758 0 45.255L767.243 848.043c-24.994-24.993-24.994-65.516 0-90.51L802.773 722H310c-35.346 0-64-28.654-64-64h557.474l-36.231-36.23c-24.744-24.744-24.991-64.708-0.743-89.756l0.743-0.754zM408 424c30.619 0 55.498 24.573 55.992 55.074L464 480H302c-30.928 0-56-25.072-56-56h162z m178-156c30.619 0 55.498 24.573 55.992 55.074L642 324H302c-30.928 0-56-25.072-56-56h340z"
                     />
                   </svg>
                 </button>

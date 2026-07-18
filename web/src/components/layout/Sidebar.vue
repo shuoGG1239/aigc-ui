@@ -48,27 +48,15 @@ function go(path: string): void {
         <svg
           v-else-if="item.icon === 'book'"
           class="nav-icon"
-          viewBox="0 0 24 24"
-          fill="none"
+          viewBox="0 0 1024 1024"
+          fill="currentColor"
           aria-hidden="true"
         >
           <path
-            d="M5 4.5h12.5A1.5 1.5 0 0 1 19 6v13.5H6.5A1.5 1.5 0 0 0 5 21V4.5z"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linejoin="round"
+            d="M864 64H704V32c0-17.066667-14.933333-32-32-32S640 14.933333 640 32V64H384V32c0-17.066667-14.933333-32-32-32S320 14.933333 320 32V64H160C142.933333 64 128 78.933333 128 96v896c0 17.066667 14.933333 32 32 32h704c17.066667 0 32-14.933333 32-32v-896c0-17.066667-14.933333-32-32-32zM832 960H192V128h128v64c0 17.066667 14.933333 32 32 32S384 209.066667 384 192V128h256v64c0 17.066667 14.933333 32 32 32S704 209.066667 704 192V128h128v832z"
           />
           <path
-            d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
-          />
-          <path
-            d="M9 9h6.5M9 12.5h6.5M9 16h4"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
+            d="M704 384H320c-17.066667 0-32 14.933333-32 32S302.933333 448 320 448h384c17.066667 0 32-14.933333 32-32S721.066667 384 704 384zM704 640H320c-17.066667 0-32 14.933333-32 32S302.933333 704 320 704h384c17.066667 0 32-14.933333 32-32S721.066667 640 704 640z"
           />
         </svg>
         <svg v-else class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">

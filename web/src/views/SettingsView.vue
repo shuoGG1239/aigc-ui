@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { IconFolderPick, IconSave } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
 import { useSettingsStore } from '@/stores/settings'
 
@@ -84,15 +85,7 @@ async function onSaveServerUrl(): Promise<void> {
             :disabled="savingUrl"
             @click="onSaveServerUrl"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M3.5 3.5h7.2L12.5 5.3V12.5h-9V3.5z"
-                stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linejoin="round"
-              />
-              <path d="M5.5 3.5v3h4v-3M5.5 12.5v-4h5v4" stroke="currentColor" stroke-width="1.4" />
-            </svg>
+            <IconSave />
           </button>
         </div>
       </div>
@@ -132,28 +125,7 @@ async function onSaveServerUrl(): Promise<void> {
             aria-label="选择目录"
             @click="onPickDir"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M2 4.5h3.6l1.1 1.4H10.5V8"
-                stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linejoin="round"
-                stroke-linecap="round"
-              />
-              <path
-                d="M2 4.5v7.5h6.25"
-                stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linejoin="round"
-                stroke-linecap="round"
-              />
-              <path
-                d="M12.25 9.25v5M9.75 11.75h5"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-              />
-            </svg>
+            <IconFolderPick />
           </button>
         </div>
       </div>
@@ -200,28 +172,7 @@ async function onSaveServerUrl(): Promise<void> {
             aria-label="选择目录"
             @click="onPickPreviewDir"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M2 4.5h3.6l1.1 1.4H10.5V8"
-                stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linejoin="round"
-                stroke-linecap="round"
-              />
-              <path
-                d="M2 4.5v7.5h6.25"
-                stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linejoin="round"
-                stroke-linecap="round"
-              />
-              <path
-                d="M12.25 9.25v5M9.75 11.75h5"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-              />
-            </svg>
+            <IconFolderPick />
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 export interface PromptPoolEntry {
   /** Prompt fragment as stored in the pool file. */
   prompt: string
-  /** Weight for sampling; <= 0 means disabled. */
+  /** Relative pick share for sampling; <= 0 means disabled. */
   weight: number
 }
 
