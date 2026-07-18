@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { isProgramPoolName } from '@/random/program-pools'
+import { isProgramPoolName } from '@/prompt/program-pools'
 import {
   allocUniquePoolName,
   createEmptyPromptPool,
@@ -8,9 +8,9 @@ import {
   normalizePromptPool,
   sanitizePoolName,
   type PromptPool,
-} from '@/random/prompt-pool-types'
+} from '@/prompt/prompt-pool-types'
 
-export { normalizePromptPool } from '@/random/prompt-pool-types'
+export { normalizePromptPool } from '@/prompt/prompt-pool-types'
 
 export const usePromptPoolStore = defineStore('promptPool', () => {
   const pools = ref<PromptPool[]>([])

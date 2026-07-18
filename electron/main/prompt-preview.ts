@@ -3,7 +3,7 @@ import { basename, extname, join } from 'path'
 import {
   normalizePreviewKey,
   previewKeysFromPrompt,
-} from '../../web/src/random/prompt-preview'
+} from '../../web/src/prompt/prompt-preview'
 import { getSettings } from './settings'
 
 const IMAGE_RE = /\.(jpe?g|png|webp|gif)$/i

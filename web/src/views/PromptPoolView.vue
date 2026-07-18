@@ -2,13 +2,13 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
-import { nextPoolPrompt } from '@/random/prompt-pool-engine'
-import { isProgramPoolName } from '@/random/program-pools'
+import { nextPoolPrompt } from '@/prompt/prompt-pool-engine'
+import { isProgramPoolName } from '@/prompt/program-pools'
 import {
   isLockedPool,
   sanitizePoolName,
   type PromptPoolEntry,
-} from '@/random/prompt-pool-types'
+} from '@/prompt/prompt-pool-types'
 import { usePromptPoolStore } from '@/stores/promptPool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 

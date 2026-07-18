@@ -1,13 +1,13 @@
 import {
   normalizePromptPool,
   type PromptPool,
-} from '../../web/src/random/prompt-pool-types'
+} from '../../web/src/prompt/prompt-pool-types'
 
 /**
- * Built-in prompt pools — Vite embeds `web/src/random/prompt_pools/*.json`
+ * Built-in prompt pools — Vite embeds `web/src/prompt/prompt_pools/*.json`
  * into the main bundle at build time (Go `embed` style).
  */
-const modules = import.meta.glob('../../web/src/random/prompt_pools/*.json', {
+const modules = import.meta.glob('../../web/src/prompt/prompt_pools/*.json', {
   eager: true,
   import: 'default',
 }) as Record<string, unknown>

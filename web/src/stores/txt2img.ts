@@ -8,7 +8,7 @@ import {
 import {
   expandPromptTemplate,
   hasPromptPlaceholders,
-} from '@/random/prompt-template'
+} from '@/prompt/prompt-template'
 import { usePromptPoolStore } from '@/stores/promptPool'
 import {
   loadParamHistory,

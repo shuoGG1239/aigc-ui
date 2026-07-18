@@ -1,6 +1,6 @@
 import type { ModelFamily } from '@/models/family'
 import { resolveFamily } from '@/models/family'
-import { parseNaiToSegments, segmentsToCanon } from '@/random/prompt-canon'
+import { parseNaiToSegments, segmentsToCanon } from '@/prompt/prompt-canon'
 
 export interface FormatPromptResult {
   kind: ModelFamily
