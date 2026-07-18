@@ -1,0 +1,74 @@
+:root {
+  --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-soft: #f8fafc;
+  --bg-sidebar: #f4f7fc;
+  --bg-sidebar-item-hover: #e2e8f0;
+  --bg-sidebar-item-active: #d8dee8;
+  --border-sidebar-item-active: #cbd5e1;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text: #1e293b;
+  --text-soft: #475569;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --placeholder: #cbd5e1;
+  --primary: #2563eb;
+  --primary-soft: #eff6ff;
+  --primary-hover: #1d4ed8;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eff6ff;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #2563eb;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(37, 99, 235, 0.08);
+  --shadow-lg: 0 4px 16px rgba(15, 23, 42, 0.1);
+  --content-max: 1200px;
+  --page-gutter: clamp(8px, 1.2vw, 12px);
+  --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cfd2dc;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

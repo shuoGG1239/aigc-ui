@@ -1,0 +1,7 @@
+{
+  "name": "aigc-ui-web",
+  "private": true,
+  "scripts": {
+    "build": "cd .. && npm run build"
+  }
+}
