@@ -117,7 +117,6 @@ interface Window {
     }
     promptPools: {
       list: () => Promise<PromptPoolDto[]>
-      read: (name: string) => Promise<PromptPoolDto | null>
       write: (pool: PromptPoolDto) => Promise<PromptPoolDto>
       remove: (name: string) => Promise<boolean>
       rename: (oldName: string, newName: string) => Promise<PromptPoolDto>

@@ -8,22 +8,15 @@ import {
   writeFileSync,
 } from 'fs'
 import { join } from 'path'
+import {
+  isValidPoolName,
+  normalizePromptPool,
+  sanitizePoolName,
+  type PromptPool,
+} from '../../web/src/random/prompt-pool-types'
 import { loadBuiltinPromptPools } from './builtin-prompt-pools'
 
-export interface PromptPoolEntryFile {
-  prompt: string
-  weight: number
-}
-
-export interface PromptPoolFile {
-  name: string
-  entries: PromptPoolEntryFile[]
-  updatedAt: number
-  /** True when serving embedded data (no userData override). */
-  builtin: boolean
-}
-
-const NAME_RE = /^[a-zA-Z0-9_-]+$/
+export type PromptPoolFile = PromptPool & { builtin: boolean }
 
 const builtins = loadBuiltinPromptPools()
 
@@ -34,40 +27,18 @@ export function promptPoolsDir(): string {
   return dir
 }
 
-export function sanitizeName(raw: string, fallback = 'pool'): string {
-  const s = String(raw || '')
-    .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-zA-Z0-9_-]/g, '')
-    .replace(/^[_\-]+|[_\-]+$/g, '')
-  return s || fallback
-}
-
 function userFilePath(name: string): string {
-  const n = sanitizeName(name)
-  if (!NAME_RE.test(n)) throw new Error(`非法提示词池名: ${name}`)
+  const n = sanitizePoolName(name)
+  if (!isValidPoolName(n)) throw new Error(`非法提示词池名: ${name}`)
   return join(promptPoolsDir(), `${n}.json`)
 }
 
-function normalizePool(raw: unknown, fileName: string, builtin: boolean): PromptPoolFile {
-  const stem = fileName.replace(/\.json$/i, '')
-  const obj = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
-  const name = sanitizeName(typeof obj.name === 'string' ? obj.name : stem, stem)
-  const entries = Array.isArray(obj.entries)
-    ? obj.entries.map((e) => {
-        const row = e && typeof e === 'object' ? (e as Record<string, unknown>) : {}
-        return {
-          prompt: typeof row.prompt === 'string' ? row.prompt : '',
-          weight: Number.isFinite(Number(row.weight)) ? Number(row.weight) : 1,
-        }
-      })
-    : []
-  return {
-    name: NAME_RE.test(name) ? name : stem,
-    entries,
-    updatedAt: typeof obj.updatedAt === 'number' ? obj.updatedAt : Date.now(),
-    builtin,
-  }
+function fromUserFile(raw: unknown, fileName: string): PromptPoolFile {
+  const pool = normalizePromptPool(raw as Partial<PromptPool>, {
+    fileName,
+    builtin: false,
+  })
+  return { ...pool, builtin: false }
 }
 
 function writeJson(path: string, data: unknown): void {
@@ -79,7 +50,7 @@ function readUserPool(name: string): PromptPoolFile | null {
   if (!existsSync(path)) return null
   try {
     const raw = JSON.parse(readFileSync(path, 'utf-8'))
-    return normalizePool(raw, `${sanitizeName(name)}.json`, false)
+    return fromUserFile(raw, `${sanitizePoolName(name)}.json`)
   } catch {
     return null
   }
@@ -112,7 +83,7 @@ export function listPromptPools(): PromptPoolFile[] {
   for (const file of readdirSync(dir).filter((n) => n.toLowerCase().endsWith('.json'))) {
     try {
       const raw = JSON.parse(readFileSync(join(dir, file), 'utf-8'))
-      const pool = normalizePool(raw, file, false)
+      const pool = fromUserFile(raw, file)
       byKey.set(pool.name.toLowerCase(), pool)
     } catch {
       // skip broken files
@@ -122,37 +93,23 @@ export function listPromptPools(): PromptPoolFile[] {
   return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
 
-export function readPromptPool(name: string): PromptPoolFile | null {
-  const user = readUserPool(name)
-  if (user) return user
-  return builtinAsPool(sanitizeName(name))
-}
-
-export function writePromptPool(pool: PromptPoolFile): PromptPoolFile {
-  const name = sanitizeName(pool.name)
-  if (!NAME_RE.test(name)) throw new Error(`非法提示词池名: ${pool.name}`)
-  const next: PromptPoolFile = {
-    name,
-    entries: Array.isArray(pool.entries)
-      ? pool.entries.map((e) => ({
-          prompt: typeof e.prompt === 'string' ? e.prompt : '',
-          weight: Number.isFinite(Number(e.weight)) ? Number(e.weight) : 1,
-        }))
-      : [],
-    updatedAt: Date.now(),
-    builtin: false,
-  }
-  // Persist without the runtime-only `builtin` flag.
+export function writePromptPool(pool: PromptPoolFile | PromptPool): PromptPoolFile {
+  const name = sanitizePoolName(pool.name)
+  if (!isValidPoolName(name)) throw new Error(`非法提示词池名: ${pool.name}`)
+  const next = normalizePromptPool(
+    { ...pool, name, updatedAt: Date.now() },
+    { builtin: false },
+  )
   writeJson(userFilePath(name), {
     name: next.name,
     entries: next.entries,
     updatedAt: next.updatedAt,
   })
-  return next
+  return { ...next, builtin: false }
 }
 
 export function removePromptPool(name: string): boolean {
-  const key = sanitizeName(name)
+  const key = sanitizePoolName(name)
   const path = userFilePath(key)
   const hasUser = existsSync(path)
   const hasBuiltin = builtins.has(key.toLowerCase())
@@ -163,8 +120,6 @@ export function removePromptPool(name: string): boolean {
   }
 
   const remaining = listPromptPools().filter((p) => p.name.toLowerCase() !== key.toLowerCase())
-  // After delete: if user override of builtin, builtin remains — always ok.
-  // If pure user pool, ensure at least one pool left.
   if (!hasBuiltin && remaining.length === 0) {
     throw new Error('至少保留一个提示词池')
   }
@@ -174,11 +129,11 @@ export function removePromptPool(name: string): boolean {
 }
 
 export function renamePromptPool(oldName: string, newName: string): PromptPoolFile {
-  const from = sanitizeName(oldName)
-  const to = sanitizeName(newName)
-  if (!NAME_RE.test(to)) throw new Error(`非法提示词池名: ${newName}`)
+  const from = sanitizePoolName(oldName)
+  const to = sanitizePoolName(newName)
+  if (!isValidPoolName(to)) throw new Error(`非法提示词池名: ${newName}`)
 
-  const src = readPromptPool(from)
+  const src = readUserPool(from) ?? builtinAsPool(from)
   if (!src) throw new Error('提示词池不存在')
   if (src.builtin) throw new Error('内置提示词池不可重命名（可先复制再改）')
 

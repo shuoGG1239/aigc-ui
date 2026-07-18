@@ -17,7 +17,6 @@ import {
 import type { AppSettings, GenerateResult, Txt2ImgParams } from './types'
 import {
   listPromptPools,
-  readPromptPool,
   removePromptPool,
   renamePromptPool,
   writePromptPool,
@@ -196,7 +195,6 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('promptPools:list', () => listPromptPools())
-  ipcMain.handle('promptPools:read', (_event, name: string) => readPromptPool(name))
   ipcMain.handle('promptPools:write', (_event, pool: PromptPoolFile) => writePromptPool(pool))
   ipcMain.handle('promptPools:remove', (_event, name: string) => removePromptPool(name))
   ipcMain.handle('promptPools:rename', (_event, oldName: string, newName: string) =>

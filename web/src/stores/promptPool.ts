@@ -1,38 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
+  allocUniquePoolName,
   createEmptyPromptPool,
+  normalizePromptPool,
   sanitizePoolName,
   type PromptPool,
-  type PromptPoolEntry,
 } from '@/random/prompt-pool-types'
 
-function normalizeEntries(raw: unknown): PromptPoolEntry[] {
-  if (!Array.isArray(raw)) return []
-  return raw.map((e): PromptPoolEntry => {
-    const row = e && typeof e === 'object' ? (e as Record<string, unknown>) : {}
-    return {
-      prompt: typeof row.prompt === 'string' ? row.prompt : '',
-      weight: Number.isFinite(Number(row.weight)) ? Number(row.weight) : 1,
-    }
-  })
-}
-
-export function normalizePromptPool(
-  raw: Partial<PromptPool> & { name?: string },
-  fileName?: string,
-): PromptPool {
-  const fallback = fileName?.replace(/\.json$/i, '') || 'pool'
-  return {
-    name: sanitizePoolName(
-      typeof raw.name === 'string' && raw.name.trim() ? raw.name : fallback,
-      sanitizePoolName(fallback),
-    ),
-    entries: normalizeEntries(raw.entries),
-    updatedAt: typeof raw.updatedAt === 'number' ? raw.updatedAt : Date.now(),
-    builtin: raw.builtin === true,
-  }
-}
+export { normalizePromptPool } from '@/random/prompt-pool-types'
 
 export const usePromptPoolStore = defineStore('promptPool', () => {
   const pools = ref<PromptPool[]>([])
@@ -46,19 +22,21 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
 
   async function refresh(): Promise<void> {
     const list = (await window.api.promptPools.list()) as PromptPool[]
-    pools.value = list.map((p) => normalizePromptPool(p))
+    pools.value = list.map((p) => normalizePromptPool(p, { builtin: p.builtin === true }))
     if (!pools.value.some((p) => p.name === selectedName.value)) {
       selectedName.value = pools.value[0]?.name ?? ''
     }
   }
 
+  /** Load once; subsequent calls are no-ops. Use `refresh()` after mutations. */
   async function hydrate(): Promise<void> {
+    if (hydrated.value) return
     if (hydratePromise) return hydratePromise
     hydratePromise = (async () => {
       try {
         await refresh()
-      } finally {
         hydrated.value = true
+      } finally {
         hydratePromise = null
       }
     })()
@@ -77,40 +55,29 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
 
   async function create(name?: string): Promise<PromptPool> {
     await hydrate()
-    const existing = pools.value.map((p) => p.name)
-    let base = sanitizePoolName(name || 'pool')
-    if (existing.some((n) => n.toLowerCase() === base.toLowerCase())) {
-      let i = 2
-      while (existing.some((n) => n.toLowerCase() === `${base}_${i}`.toLowerCase())) i++
-      base = `${base}_${i}`
-    }
+    const base = allocUniquePoolName(name || 'pool', pools.value.map((p) => p.name))
     const pool = createEmptyPromptPool(base)
     const saved = (await window.api.promptPools.write(pool)) as PromptPool
     await refresh()
     selectedName.value = saved.name
-    return normalizePromptPool(saved)
+    return normalizePromptPool(saved, { builtin: false })
   }
 
   async function duplicate(name: string): Promise<PromptPool | null> {
     await hydrate()
     const src = getByName(name)
     if (!src) return null
-    const existing = pools.value.map((p) => p.name)
-    let nextName = sanitizePoolName(`${src.name}_copy`)
-    if (existing.some((n) => n.toLowerCase() === nextName.toLowerCase())) {
-      let i = 2
-      while (existing.some((n) => n.toLowerCase() === `${src.name}_copy_${i}`.toLowerCase())) i++
-      nextName = `${src.name}_copy_${i}`
-    }
+    const nextName = allocUniquePoolName(`${src.name}_copy`, pools.value.map((p) => p.name))
     const copy: PromptPool = {
-      ...JSON.parse(JSON.stringify(src)),
       name: nextName,
+      entries: src.entries.map((e) => ({ ...e })),
       updatedAt: Date.now(),
+      builtin: false,
     }
     const saved = (await window.api.promptPools.write(copy)) as PromptPool
     await refresh()
     selectedName.value = saved.name
-    return normalizePromptPool(saved)
+    return normalizePromptPool(saved, { builtin: false })
   }
 
   async function remove(name: string): Promise<void> {
@@ -127,12 +94,15 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
     await hydrate()
     const cur = getByName(name)
     if (!cur) return
-    const next = normalizePromptPool({
-      ...cur,
-      ...patch,
-      name: cur.name,
-      updatedAt: Date.now(),
-    })
+    const next = normalizePromptPool(
+      {
+        ...cur,
+        ...patch,
+        name: cur.name,
+        updatedAt: Date.now(),
+      },
+      { builtin: false },
+    )
     await window.api.promptPools.write(next)
     await refresh()
   }

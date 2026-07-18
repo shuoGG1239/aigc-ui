@@ -7,7 +7,7 @@ import {
 } from './prompt-canon'
 import { joinPrompts, prettyPrompt } from './prompt-tool'
 import { randomOne } from './pick'
-import type { PromptPool, PromptPoolEntry } from './prompt-pool-types'
+import { clampCount, type PromptPool, type PromptPoolEntry } from './prompt-pool-types'
 
 /**
  * Sample one prompt from a prompt pool (with replacement).
@@ -43,7 +43,7 @@ export function nextLiteralPrompt(
 }
 
 export function resolveSampleCount(counts: number[] | undefined): number {
-  const pool = (counts?.length ? counts : [1]).map((n) => Math.max(1, Math.floor(n) || 1))
+  const pool = (counts?.length ? counts : [1]).map((n) => clampCount(n))
   return randomOne(pool) ?? 1
 }
 
@@ -55,7 +55,7 @@ export function sampleEntries(
   const active = entries.filter((e) => e.prompt.trim() && e.weight > 0)
   if (!active.length) return ''
 
-  const n = Math.max(1, Math.floor(count || 1))
+  const n = clampCount(count)
   const picked: string[] = []
   for (let i = 0; i < n; i++) {
     const entry = pickEntryByWeight(active)

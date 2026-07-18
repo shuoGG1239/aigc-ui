@@ -986,6 +986,14 @@ body.is-resizing-split * {
 
 .pool-entry-weight {
   text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.pool-entry-weight::-webkit-outer-spin-button,
+.pool-entry-weight::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .pool-entry-empty {

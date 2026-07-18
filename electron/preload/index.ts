@@ -81,8 +81,12 @@ contextBridge.exposeInMainWorld('api', {
   },
   promptPools: {
     list: () => ipcRenderer.invoke('promptPools:list'),
-    read: (name: string) => ipcRenderer.invoke('promptPools:read', name),
-    write: (pool: unknown) => ipcRenderer.invoke('promptPools:write', pool),
+    write: (pool: {
+      name: string
+      entries: Array<{ prompt: string; weight: number }>
+      updatedAt: number
+      builtin?: boolean
+    }) => ipcRenderer.invoke('promptPools:write', pool),
     remove: (name: string) => ipcRenderer.invoke('promptPools:remove', name),
     rename: (oldName: string, newName: string) =>
       ipcRenderer.invoke('promptPools:rename', oldName, newName),
