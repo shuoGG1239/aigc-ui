@@ -2,10 +2,18 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
-import { sanitizePoolName, type PromptPoolEntry } from '@/random/prompt-pool-types'
+import { nextPoolPrompt } from '@/random/prompt-pool-engine'
+import { isProgramPoolName } from '@/random/program-pools'
+import {
+  isLockedPool,
+  sanitizePoolName,
+  type PromptPoolEntry,
+} from '@/random/prompt-pool-types'
 import { usePromptPoolStore } from '@/stores/promptPool'
+import { useTxt2ImgStore } from '@/stores/txt2img'
 
 const poolStore = usePromptPoolStore()
+const txt2img = useTxt2ImgStore()
 const toast = useToast()
 
 const draftName = ref('')
@@ -50,6 +58,8 @@ const filteredPools = computed(() => {
 })
 
 const entries = computed(() => pool.value?.entries ?? [])
+const isProgram = computed(() => (pool.value ? isProgramPoolName(pool.value.name) : false))
+const locked = computed(() => (pool.value ? isLockedPool(pool.value) : false))
 
 const filteredEntries = computed(() => {
   const q = entryQuery.value.trim().toLowerCase()
@@ -60,6 +70,11 @@ const filteredEntries = computed(() => {
 
 const poolToken = computed(() => (pool.value ? `<pool:${pool.value.name}>` : ''))
 
+function poolListMeta(item: { name: string; entries: unknown[] }): string {
+  if (isProgramPoolName(item.name)) return '—'
+  return String(item.entries.length)
+}
+
 function onSelect(name: string): void {
   poolStore.select(name)
 }
@@ -69,15 +84,29 @@ async function onCreate(): Promise<void> {
   toast.ok('已新建空白提示词池')
 }
 
-async function onDuplicate(): Promise<void> {
+function onRunSample(): void {
   if (!pool.value) return
-  await poolStore.duplicate(pool.value.name)
-  toast.ok('已复制提示词池')
+  const sampled = nextPoolPrompt(pool.value, txt2img.form.family).trim()
+  if (!sampled) {
+    toast.error('未产出内容（检查条目/权重）')
+    return
+  }
+  toast.info(sampled, 8000)
+}
+
+async function onDuplicate(): Promise<void> {
+  if (!pool.value || isProgram.value) return
+  try {
+    await poolStore.duplicate(pool.value.name)
+    toast.ok('已复制提示词池')
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  }
 }
 
 async function onRemove(): Promise<void> {
   if (!pool.value) return
-  if (pool.value.builtin) {
+  if (locked.value) {
     toast.info('内置提示词池不可删除（可先复制再改）')
     return
   }
@@ -94,7 +123,7 @@ async function onRemove(): Promise<void> {
 }
 
 async function startEditName(): Promise<void> {
-  if (!pool.value || pool.value.builtin) {
+  if (!pool.value || locked.value) {
     toast.info('内置提示词池不可重命名（可先复制再改）')
     return
   }
@@ -107,7 +136,7 @@ async function startEditName(): Promise<void> {
 async function commitName(): Promise<void> {
   if (!pool.value) return
   if (!nameEditing.value) return
-  if (pool.value.builtin) {
+  if (locked.value) {
     draftName.value = pool.value.name
     nameEditing.value = false
     return
@@ -289,9 +318,10 @@ async function onPreviewEntry(prompt: string): Promise<void> {
               >
                 <span class="pool-list-name">
                   {{ item.name }}
-                  <span v-if="item.builtin" class="pool-builtin-tag">内置</span>
+                  <span v-if="isProgramPoolName(item.name)" class="pool-builtin-tag">程序</span>
+                  <span v-else-if="item.builtin" class="pool-builtin-tag">内置</span>
                 </span>
-                <span class="pool-list-meta">{{ item.entries.length }}</span>
+                <span class="pool-list-meta">{{ poolListMeta(item) }}</span>
               </button>
               <div v-if="!filteredPools.length" class="pool-entry-empty">无匹配</div>
             </div>
@@ -311,9 +341,11 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                 :readonly="!nameEditing"
                 :size="Math.max(draftName.length, 2)"
                 :title="
-                  pool.builtin
-                    ? '内置池名称只读；可复制后改'
-                    : '唯一名称；Prompt 中写 &lt;pool:name&gt; / &lt;pool:name:0.8,0.9:2&gt;'
+                  isProgram
+                    ? '程序池名称只读'
+                    : locked
+                      ? '内置池名称只读；可复制后改'
+                      : '唯一名称；Prompt 中写 &lt;pool:name&gt; / &lt;pool:name:0.8,0.9:2&gt;'
                 "
                 spellcheck="false"
                 @blur="commitName"
@@ -321,7 +353,7 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                 @keydown.escape.prevent="cancelEditName"
               />
               <button
-                v-if="!pool.builtin && !nameEditing"
+                v-if="!locked && !nameEditing"
                 type="button"
                 class="pool-name-edit"
                 title="编辑名称"
@@ -357,7 +389,7 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                 />
               </svg>
             </button>
-            <div class="form-actions" style="padding-top: 0">
+            <div v-if="!isProgram" class="form-actions" style="padding-top: 0">
               <button
                 type="button"
                 class="btn btn-ghost btn-icon"
@@ -378,8 +410,8 @@ async function onPreviewEntry(prompt: string): Promise<void> {
               <button
                 type="button"
                 class="btn btn-ghost btn-icon"
-                :disabled="pool.builtin"
-                :title="pool.builtin ? '内置池不可删除' : '删除提示词池'"
+                :disabled="locked"
+                :title="locked ? '内置池不可删除' : '删除提示词池'"
                 aria-label="删除提示词池"
                 @click="onRemove"
               >
@@ -394,9 +426,31 @@ async function onPreviewEntry(prompt: string): Promise<void> {
                 </svg>
               </button>
             </div>
+            <button
+              type="button"
+              class="btn btn-ghost btn-icon pool-run"
+              title="抽样一次并显示结果"
+              aria-label="运行抽样"
+              @click="onRunSample"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M4.5 3.2v9.6L13 8 4.5 3.2z"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
           </div>
 
-          <div class="panel-body pool-editor-body">
+          <div v-if="isProgram" class="panel-body pool-editor-body">
+            <div class="empty-state">
+              <div class="title">程序池</div>
+              <div class="hint">内部逻辑不开放编辑；在 Prompt 中使用上方标签即可抽样。</div>
+            </div>
+          </div>
+          <div v-else class="panel-body pool-editor-body">
             <div class="pool-entry-table">
               <div class="pool-entry-head">
                 <span class="pool-entry-head-eye" aria-hidden="true"></span>

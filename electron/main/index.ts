@@ -251,7 +251,7 @@ function registerIpc(): void {
     return extractPngInfo(readFileSync(target))
   })
 
-  ipcMain.handle('image:loadPreviewFromPath', async (_event, targetPath: string, limit = 5) => {
+  ipcMain.handle('image:loadPreviewFromPath', async (_event, targetPath: string, limit = 10) => {
     const target = targetPath?.trim()
     if (!target) {
       throw new Error('路径为空')
@@ -278,7 +278,7 @@ function registerIpc(): void {
       throw new Error('请拖入 PNG 图片或文件夹')
     }
 
-    const max = Math.max(1, Math.min(Math.floor(limit) || 5, 24))
+    const max = Math.max(1, Math.min(Math.floor(limit) || 10, 24))
     const entries = readdirSync(target)
       .filter((name) => extname(name).toLowerCase() === '.png')
       .map((name) => {

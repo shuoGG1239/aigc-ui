@@ -10,8 +10,13 @@ export interface PromptPool {
   name: string
   entries: PromptPoolEntry[]
   updatedAt: number
-  /** Embedded built-in pool (no userData override). */
+  /** Embedded built-in JSON pool (no rename/delete; edit → user override). */
   builtin?: boolean
+}
+
+/** Builtin JSON — locked rename/delete in UI. */
+export function isLockedPool(pool: PromptPool): boolean {
+  return pool.builtin === true
 }
 
 export const POOL_NAME_RE = /^[a-zA-Z0-9_-]+$/

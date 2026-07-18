@@ -7,11 +7,13 @@ import {
 } from './prompt-canon'
 import { joinPrompts, prettyPrompt } from './prompt-tool'
 import { randomOne } from './pick'
+import { isProgramPoolName, sampleProgramPool } from './program-pools'
 import { clampCount, type PromptPool, type PromptPoolEntry } from './prompt-pool-types'
 
 /**
  * Sample one prompt from a prompt pool (with replacement).
  * `counts` / `strengths` come from `<pool:name:…>`.
+ * Program pools are opaque: name → string only.
  */
 export function nextPoolPrompt(
   pool: PromptPool,
@@ -20,6 +22,16 @@ export function nextPoolPrompt(
   strengths?: number[],
 ): string {
   const count = resolveSampleCount(counts)
+  if (isProgramPoolName(pool.name)) {
+    const parts: string[] = []
+    for (let i = 0; i < count; i++) {
+      const sampled = sampleProgramPool(pool.name)
+      if (!sampled) continue
+      const piece = renderPrompt(sampled, strengths)
+      if (piece) parts.push(piece)
+    }
+    return adaptRandomPrompt(prettyPrompt(parts.join(',')), family)
+  }
   const raw = prettyPrompt(joinPrompts(sampleEntries(pool.entries, count, strengths)))
   return adaptRandomPrompt(raw, family)
 }

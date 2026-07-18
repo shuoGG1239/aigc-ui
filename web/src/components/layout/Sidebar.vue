@@ -6,7 +6,7 @@ const router = useRouter()
 
 const primaryItems = [
   { path: '/', label: '文生图', icon: 'spark' as const },
-  { path: '/pools', label: '提示词池', icon: 'dice' as const },
+  { path: '/pools', label: '提示词池', icon: 'book' as const },
   { path: '/console', label: '控制台', icon: 'console' as const },
 ]
 
@@ -46,18 +46,30 @@ function go(path: string): void {
           />
         </svg>
         <svg
-          v-else-if="item.icon === 'dice'"
+          v-else-if="item.icon === 'book'"
           class="nav-icon"
           viewBox="0 0 24 24"
           fill="none"
           aria-hidden="true"
         >
-          <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.6" />
-          <circle cx="9" cy="9" r="1.2" fill="currentColor" />
-          <circle cx="15" cy="9" r="1.2" fill="currentColor" />
-          <circle cx="12" cy="12" r="1.2" fill="currentColor" />
-          <circle cx="9" cy="15" r="1.2" fill="currentColor" />
-          <circle cx="15" cy="15" r="1.2" fill="currentColor" />
+          <path
+            d="M5 4.5h12.5A1.5 1.5 0 0 1 19 6v13.5H6.5A1.5 1.5 0 0 0 5 21V4.5z"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
+          <path
+            d="M9 9h6.5M9 12.5h6.5M9 16h4"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
         </svg>
         <svg v-else class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <rect x="3.5" y="4.5" width="17" height="15" rx="2" stroke="currentColor" stroke-width="1.6" />

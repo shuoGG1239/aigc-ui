@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { isProgramPoolName } from '@/random/program-pools'
 import {
   allocUniquePoolName,
   createEmptyPromptPool,
+  isLockedPool,
   normalizePromptPool,
   sanitizePoolName,
   type PromptPool,
@@ -50,12 +52,24 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
   function getByName(name: string): PromptPool | null {
     const key = name.trim().toLowerCase()
     if (!key) return null
-    return pools.value.find((p) => p.name.trim().toLowerCase() === key) ?? null
+    const found = pools.value.find((p) => p.name.trim().toLowerCase() === key)
+    if (found) return found
+    // Resolve before hydrate / if list missed a reserved name.
+    if (isProgramPoolName(key)) {
+      return {
+        name: sanitizePoolName(name),
+        entries: [],
+        updatedAt: 0,
+        builtin: true,
+      }
+    }
+    return null
   }
 
   async function create(name?: string): Promise<PromptPool> {
     await hydrate()
     const base = allocUniquePoolName(name || 'pool', pools.value.map((p) => p.name))
+    if (isProgramPoolName(base)) throw new Error(`提示词池名已保留: ${base}`)
     const pool = createEmptyPromptPool(base)
     const saved = (await window.api.promptPools.write(pool)) as PromptPool
     await refresh()
@@ -65,8 +79,9 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
 
   async function duplicate(name: string): Promise<PromptPool | null> {
     await hydrate()
+    if (isProgramPoolName(name)) throw new Error(`提示词池名已保留: ${name}`)
     const src = getByName(name)
-    if (!src) return null
+    if (!src || isProgramPoolName(src.name)) return null
     const nextName = allocUniquePoolName(`${src.name}_copy`, pools.value.map((p) => p.name))
     const copy: PromptPool = {
       name: nextName,
@@ -82,9 +97,9 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
 
   async function remove(name: string): Promise<void> {
     await hydrate()
-    const cur = getByName(name)
+    const cur = pools.value.find((p) => p.name === name)
     if (!cur) return
-    if (cur.builtin) throw new Error('内置提示词池不可删除（可先复制再改）')
+    if (isLockedPool(cur)) throw new Error('内置提示词池不可删除（可先复制再改）')
     if (pools.value.length <= 1) return
     await window.api.promptPools.remove(name)
     await refresh()
@@ -92,7 +107,8 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
 
   async function update(name: string, patch: Partial<PromptPool>): Promise<void> {
     await hydrate()
-    const cur = getByName(name)
+    if (isProgramPoolName(name)) throw new Error(`提示词池名已保留: ${name}`)
+    const cur = pools.value.find((p) => p.name === name)
     if (!cur) return
     const next = normalizePromptPool(
       {
@@ -109,11 +125,12 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
 
   async function rename(oldName: string, newName: string): Promise<void> {
     await hydrate()
-    const cur = getByName(oldName)
+    const cur = pools.value.find((p) => p.name === oldName)
     if (!cur) return
-    if (cur.builtin) throw new Error('内置提示词池不可重命名（可先复制再改）')
+    if (isLockedPool(cur)) throw new Error('内置提示词池不可重命名（可先复制再改）')
     const next = sanitizePoolName(newName)
     if (!next || next === oldName) return
+    if (isProgramPoolName(next)) throw new Error(`提示词池名已保留: ${next}`)
     const saved = (await window.api.promptPools.rename(oldName, next)) as PromptPool
     await refresh()
     selectedName.value = saved.name

@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import AppSelect from '@/components/common/AppSelect.vue'
 import ModelSelect from '@/components/common/ModelSelect.vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
 import type { ModelFamily } from '@/models/family'
-import { nextPoolPrompt } from '@/random/prompt-pool-engine'
+import { nextLiteralPrompt, nextPoolPrompt } from '@/random/prompt-pool-engine'
+import { isProgramPoolName } from '@/random/program-pools'
+import type { PromptPool, PromptPoolEntry } from '@/random/prompt-pool-types'
 import { usePromptPoolStore } from '@/stores/promptPool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { replaceEditableValue } from '@/utils/editable-text'
+import { fuzzyMatches, fuzzyParts } from '@/utils/fuzzy'
 import { parseImageMeta } from '@/utils/image-meta'
 import { formatHms, promptSummary } from '@/utils/param-history'
 import { formatPromptByFamily } from '@/utils/prompt-format'
@@ -26,9 +29,18 @@ const toast = useToast()
 const historyOpen = ref(false)
 const historyBtnRef = ref<HTMLButtonElement | null>(null)
 const historyMenuStyle = ref<Record<string, string>>({})
+/** Type-ahead filter via hidden trap (no visible search box). */
+const historyQuery = ref('')
+const historyFilterRef = ref<HTMLInputElement | null>(null)
 const randomOpen = ref(false)
 const randomBtnRef = ref<HTMLButtonElement | null>(null)
 const randomMenuStyle = ref<Record<string, string>>({})
+const submenuPool = ref<string | null>(null)
+const submenuStyle = ref<Record<string, string>>({})
+/** Type-ahead filter via hidden trap (no visible search box). */
+const menuQuery = ref('')
+const menuFilterRef = ref<HTMLInputElement | null>(null)
+let submenuCloseTimer: number | null = null
 /** Last focused prompt field; dice inserts at saved caret. */
 const focusedPromptField = ref<'prompt' | 'negativePrompt'>('prompt')
 const promptTaRef = ref<HTMLTextAreaElement | null>(null)
@@ -197,11 +209,124 @@ function updateRandomMenuPosition(): void {
 
 async function toggleHistory(): Promise<void> {
   randomOpen.value = false
+  menuQuery.value = ''
+  closeSubmenu()
   historyOpen.value = !historyOpen.value
   if (historyOpen.value) {
+    historyQuery.value = ''
     await nextTick()
     updateHistoryMenuPosition()
+    historyFilterRef.value?.focus()
+  } else {
+    historyQuery.value = ''
   }
+}
+
+const filteredHistory = computed(() => {
+  const q = historyQuery.value
+  const list = store.paramHistory
+  if (!q.trim()) return list
+  return list.filter(
+    (e) => fuzzyMatches(e.form.prompt, q) || fuzzyMatches(e.form.negativePrompt || '', q),
+  )
+})
+
+function onHistoryFilterInput(e: Event): void {
+  historyQuery.value = (e.target as HTMLInputElement).value
+}
+
+function syncHistoryFilterInput(): void {
+  const el = historyFilterRef.value
+  if (el && el.value !== historyQuery.value) el.value = historyQuery.value
+}
+
+function onHistoryFilterBlur(): void {
+  if (!historyOpen.value) return
+  requestAnimationFrame(() => {
+    if (historyOpen.value) historyFilterRef.value?.focus()
+  })
+}
+
+function poolMenuEntries(pool: PromptPool): PromptPoolEntry[] {
+  if (isProgramPoolName(pool.name)) return []
+  return pool.entries.filter((e) => e.prompt.trim())
+}
+
+function filterPoolEntries(pool: PromptPool, entries: PromptPoolEntry[], query: string): PromptPoolEntry[] {
+  if (!query.trim()) return entries
+  const matched = entries.filter((e) => fuzzyMatches(e.prompt, query))
+  if (matched.length) return matched
+  if (fuzzyMatches(pool.name, query)) return entries
+  return []
+}
+
+function poolMatchesQuery(pool: PromptPool, query: string): boolean {
+  if (!query.trim()) return true
+  if (fuzzyMatches(pool.name, query)) return true
+  return poolMenuEntries(pool).some((e) => fuzzyMatches(e.prompt, query))
+}
+
+const filteredPools = computed(() => {
+  const q = menuQuery.value
+  const list = poolStore.pools
+  if (!q.trim()) return list
+  return list.filter((p) => poolMatchesQuery(p, q))
+})
+
+const filteredSubmenuEntries = computed(() => {
+  if (!submenuPool.value) return []
+  const pool = poolStore.getByName(submenuPool.value)
+  if (!pool) return []
+  return filterPoolEntries(pool, poolMenuEntries(pool), menuQuery.value)
+})
+
+function clearSubmenuCloseTimer(): void {
+  if (submenuCloseTimer != null) {
+    window.clearTimeout(submenuCloseTimer)
+    submenuCloseTimer = null
+  }
+}
+
+function closeSubmenu(): void {
+  clearSubmenuCloseTimer()
+  submenuPool.value = null
+}
+
+function scheduleCloseSubmenu(): void {
+  clearSubmenuCloseTimer()
+  submenuCloseTimer = window.setTimeout(() => closeSubmenu(), 140)
+}
+
+function openSubmenuFor(pool: PromptPool, anchor: HTMLElement): void {
+  const entries = filterPoolEntries(pool, poolMenuEntries(pool), menuQuery.value)
+  if (!entries.length) {
+    closeSubmenu()
+    return
+  }
+  clearSubmenuCloseTimer()
+  submenuPool.value = pool.name
+  const rect = anchor.getBoundingClientRect()
+  const width = 260
+  const maxH = 280
+  let left = rect.left - width - 4
+  if (left < 8) left = Math.min(rect.right + 4, window.innerWidth - width - 8)
+  let top = rect.top
+  if (top + Math.min(maxH, entries.length * 36 + 8) > window.innerHeight - 8) {
+    top = Math.max(8, window.innerHeight - maxH - 8)
+  }
+  submenuStyle.value = {
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${width}px`,
+  }
+}
+
+function onPoolRowEnter(pool: PromptPool, e: MouseEvent): void {
+  openSubmenuFor(pool, e.currentTarget as HTMLElement)
+}
+
+function onPoolRowLeave(): void {
+  scheduleCloseSubmenu()
 }
 
 async function toggleRandomMenu(): Promise<void> {
@@ -213,23 +338,57 @@ async function toggleRandomMenu(): Promise<void> {
   }
   randomOpen.value = !randomOpen.value
   if (randomOpen.value) {
+    menuQuery.value = ''
     await nextTick()
     updateRandomMenuPosition()
+    menuFilterRef.value?.focus()
+  } else {
+    menuQuery.value = ''
+    closeSubmenu()
   }
 }
 
-function onPickPromptPool(name: string): void {
-  const pool = poolStore.getByName(name)
-  if (!pool) return
-  const sampled = nextPoolPrompt(pool, store.form.family).trim()
-  if (!sampled) {
+function onMenuFilterInput(e: Event): void {
+  menuQuery.value = (e.target as HTMLInputElement).value
+}
+
+function syncMenuFilterInput(): void {
+  const el = menuFilterRef.value
+  if (el && el.value !== menuQuery.value) el.value = menuQuery.value
+}
+
+function onMenuFilterBlur(): void {
+  if (!randomOpen.value) return
+  requestAnimationFrame(() => {
+    if (randomOpen.value) menuFilterRef.value?.focus()
+  })
+}
+
+function finishAppendSample(sampled: string): void {
+  const text = sampled.trim()
+  if (!text) {
     toast.error('该提示词池未产出内容（检查条目/权重）')
     return
   }
-  appendToFocusedPrompt(sampled)
+  appendToFocusedPrompt(text)
   randomOpen.value = false
+  closeSubmenu()
   const target = focusedPromptField.value === 'negativePrompt' ? 'Negative' : 'Prompt'
   toast.ok(`已追加到 ${target}`)
+}
+
+function onInsertPoolToken(name: string): void {
+  finishAppendSample(`<pool:${name}>`)
+}
+
+function onSamplePromptPool(name: string): void {
+  const pool = poolStore.getByName(name)
+  if (!pool) return
+  finishAppendSample(nextPoolPrompt(pool, store.form.family))
+}
+
+function onPickPromptEntry(prompt: string): void {
+  finishAppendSample(nextLiteralPrompt(prompt, store.form.family))
 }
 
 function onRestoreHistory(fingerprint: string): void {
@@ -270,15 +429,48 @@ function onRandomDocClick(e: MouseEvent): void {
   if (randomBtnRef.value?.contains(target)) return
   const menu = document.querySelector('.random-pick-menu')
   if (menu?.contains(target)) return
+  const sub = document.querySelector('.random-pick-submenu')
+  if (sub?.contains(target)) return
   randomOpen.value = false
+  menuQuery.value = ''
+  closeSubmenu()
 }
 
 function onPopupKey(e: KeyboardEvent): void {
   if (e.key === 'Escape') {
+    if (randomOpen.value && menuQuery.value) {
+      e.preventDefault()
+      menuQuery.value = ''
+      syncMenuFilterInput()
+      return
+    }
+    if (historyOpen.value && historyQuery.value) {
+      e.preventDefault()
+      historyQuery.value = ''
+      syncHistoryFilterInput()
+      return
+    }
     historyOpen.value = false
     randomOpen.value = false
+    menuQuery.value = ''
+    historyQuery.value = ''
+    closeSubmenu()
   }
 }
+
+watch(menuQuery, () => {
+  syncMenuFilterInput()
+  if (!submenuPool.value) return
+  if (!filteredPools.value.some((p) => p.name === submenuPool.value)) {
+    closeSubmenu()
+    return
+  }
+  if (!filteredSubmenuEntries.value.length) closeSubmenu()
+})
+
+watch(historyQuery, () => {
+  syncHistoryFilterInput()
+})
 
 watch(historyOpen, (open) => {
   if (open) {
@@ -287,6 +479,7 @@ watch(historyOpen, (open) => {
     document.addEventListener('mousedown', onHistoryDocClick)
     document.addEventListener('keydown', onPopupKey)
   } else {
+    historyQuery.value = ''
     window.removeEventListener('resize', updateHistoryMenuPosition)
     window.removeEventListener('scroll', updateHistoryMenuPosition, true)
     document.removeEventListener('mousedown', onHistoryDocClick)
@@ -301,6 +494,8 @@ watch(randomOpen, (open) => {
     document.addEventListener('mousedown', onRandomDocClick)
     document.addEventListener('keydown', onPopupKey)
   } else {
+    menuQuery.value = ''
+    closeSubmenu()
     window.removeEventListener('resize', updateRandomMenuPosition)
     window.removeEventListener('scroll', updateRandomMenuPosition, true)
     document.removeEventListener('mousedown', onRandomDocClick)
@@ -309,6 +504,7 @@ watch(randomOpen, (open) => {
 })
 
 onBeforeUnmount(() => {
+  closeSubmenu()
   window.removeEventListener('resize', updateHistoryMenuPosition)
   window.removeEventListener('scroll', updateHistoryMenuPosition, true)
   window.removeEventListener('resize', updateRandomMenuPosition)
@@ -449,20 +645,39 @@ async function onPreviewDrop(e: DragEvent): Promise<void> {
   previewDragDepth = 0
   previewDragOver.value = false
 
-  const file = e.dataTransfer?.files?.[0]
-  if (!file) {
+  const files = Array.from(e.dataTransfer?.files ?? [])
+  if (!files.length) {
     toast.error('请拖入 PNG 图片或文件夹')
     return
   }
 
   try {
-    const targetPath = window.api.getPathForFile(file)
-    if (!targetPath) {
-      throw new Error('无法读取拖入路径')
+    const images: { path: string; filename: string; dataUrl: string }[] = []
+    const errors: string[] = []
+    for (const file of files) {
+      const targetPath = window.api.getPathForFile(file)
+      if (!targetPath) {
+        errors.push('无法读取拖入路径')
+        continue
+      }
+      try {
+        const loaded = await window.api.image.loadPreviewFromPath(targetPath, 10)
+        images.push(...loaded)
+      } catch (err) {
+        errors.push(err instanceof Error ? err.message : String(err))
+      }
     }
-    const images = await window.api.image.loadPreviewFromPath(targetPath, 5)
-    store.prependResults(images)
-    toast.ok(images.length === 1 ? '已加载 PNG' : `已加载 ${images.length} 张 PNG`)
+    if (!images.length) {
+      throw new Error(errors[0] || '未能加载 PNG')
+    }
+    const seen = new Set<string>()
+    const unique = images.filter((img) => {
+      if (seen.has(img.path)) return false
+      seen.add(img.path)
+      return true
+    })
+    store.prependResults(unique)
+    toast.ok(unique.length === 1 ? '已加载 PNG' : `已加载 ${unique.length} 张 PNG`)
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))
   }
@@ -543,27 +758,31 @@ function onResultListWheel(e: WheelEvent): void {
               ref="randomBtnRef"
               type="button"
               class="btn btn-ghost btn-icon"
-              title="随机提示词池（追加到当前输入框）"
-              aria-label="随机提示词池"
+              title="提示词池（追加到当前输入框）"
+              aria-label="提示词池"
               aria-haspopup="menu"
               :aria-expanded="randomOpen"
               @click="toggleRandomMenu"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <rect
-                  x="2.5"
-                  y="2.5"
-                  width="11"
-                  height="11"
-                  rx="2"
+                <path
+                  d="M3.5 3h8A1.5 1.5 0 0 1 13 4.5V13H4.5A1 1 0 0 0 3.5 14V3z"
                   stroke="currentColor"
                   stroke-width="1.4"
+                  stroke-linejoin="round"
                 />
-                <circle cx="5.5" cy="5.5" r="0.9" fill="currentColor" />
-                <circle cx="8" cy="8" r="0.9" fill="currentColor" />
-                <circle cx="10.5" cy="10.5" r="0.9" fill="currentColor" />
-                <circle cx="10.5" cy="5.5" r="0.9" fill="currentColor" />
-                <circle cx="5.5" cy="10.5" r="0.9" fill="currentColor" />
+                <path
+                  d="M3.5 3A1 1 0 0 1 4.5 2H13"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M6 6.5h4.5M6 9h4.5M6 11.5h3"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                />
               </svg>
             </button>
             <button
@@ -592,6 +811,17 @@ function onResultListWheel(e: WheelEvent): void {
         </div>
 
         <Teleport to="body">
+          <input
+            v-if="historyOpen"
+            ref="historyFilterRef"
+            class="random-pick-filter-trap"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+            aria-label="过滤参数历史"
+            @input="onHistoryFilterInput"
+            @blur="onHistoryFilterBlur"
+          />
           <div
             v-if="historyOpen"
             class="param-history-menu"
@@ -599,7 +829,7 @@ function onResultListWheel(e: WheelEvent): void {
             :style="historyMenuStyle"
           >
             <button
-              v-for="item in store.paramHistory"
+              v-for="item in filteredHistory"
               :key="item.fingerprint + item.at"
               type="button"
               class="param-history-item"
@@ -607,24 +837,126 @@ function onResultListWheel(e: WheelEvent): void {
               @click="onRestoreHistory(item.fingerprint)"
             >
               <span class="param-history-summary" :title="item.form.prompt">
-                {{ promptSummary(item.form.prompt) }}
+                <template v-for="(part, i) in fuzzyParts(promptSummary(item.form.prompt), historyQuery)" :key="i">
+                  <mark v-if="part.hit" class="random-pick-hl">{{ part.text }}</mark>
+                  <template v-else>{{ part.text }}</template>
+                </template>
               </span>
               <span class="param-history-time">{{ formatHms(item.at) }}</span>
             </button>
             <div v-if="!store.paramHistory.length" class="param-history-empty">暂无历史参数</div>
+            <div v-else-if="!filteredHistory.length" class="param-history-empty">无匹配</div>
           </div>
         </Teleport>
         <Teleport to="body">
-          <div v-if="randomOpen" class="random-pick-menu" role="menu" :style="randomMenuStyle">
-            <button
-              v-for="item in poolStore.pools"
+          <input
+            v-if="randomOpen"
+            ref="menuFilterRef"
+            class="random-pick-filter-trap"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+            aria-label="过滤提示词池"
+            @input="onMenuFilterInput"
+            @blur="onMenuFilterBlur"
+          />
+          <div
+            v-if="randomOpen"
+            class="random-pick-menu"
+            role="menu"
+            :style="randomMenuStyle"
+          >
+            <div
+              v-for="item in filteredPools"
               :key="item.name"
-              type="button"
-              class="random-pick-item"
-              role="menuitem"
-              @click="onPickPromptPool(item.name)"
+              class="random-pick-row"
+              @mouseenter="onPoolRowEnter(item, $event)"
+              @mouseleave="onPoolRowLeave"
             >
-              <span class="random-pick-name">{{ item.name }}</span>
+              <button
+                type="button"
+                class="random-pick-item"
+                role="menuitem"
+                :title="'插入 &lt;pool:' + item.name + '&gt;'"
+                :aria-haspopup="poolMenuEntries(item).length ? 'menu' : undefined"
+                :aria-expanded="submenuPool === item.name || undefined"
+                @click="onInsertPoolToken(item.name)"
+              >
+                <span class="random-pick-name">
+                  <template v-for="(part, i) in fuzzyParts(item.name, menuQuery)" :key="i">
+                    <mark v-if="part.hit" class="random-pick-hl">{{ part.text }}</mark>
+                    <template v-else>{{ part.text }}</template>
+                  </template>
+                </span>
+                <svg
+                  v-if="filterPoolEntries(item, poolMenuEntries(item), menuQuery).length"
+                  class="random-pick-chevron"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 3.5L10.5 8 6 12.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="random-pick-dice"
+                title="随机抽样一条"
+                aria-label="随机抽样一条"
+                @click.stop="onSamplePromptPool(item.name)"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect
+                    x="2.5"
+                    y="2.5"
+                    width="11"
+                    height="11"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                  />
+                  <circle cx="5.5" cy="5.5" r="0.85" fill="currentColor" />
+                  <circle cx="8" cy="8" r="0.85" fill="currentColor" />
+                  <circle cx="10.5" cy="10.5" r="0.85" fill="currentColor" />
+                  <circle cx="10.5" cy="5.5" r="0.85" fill="currentColor" />
+                  <circle cx="5.5" cy="10.5" r="0.85" fill="currentColor" />
+                </svg>
+              </button>
+            </div>
+            <div v-if="!filteredPools.length" class="random-pick-empty">无匹配</div>
+          </div>
+          <div
+            v-if="randomOpen && submenuPool && filteredSubmenuEntries.length"
+            class="random-pick-submenu"
+            role="menu"
+            :style="submenuStyle"
+            @mouseenter="clearSubmenuCloseTimer"
+            @mouseleave="onPoolRowLeave"
+          >
+            <button
+              v-for="(entry, index) in filteredSubmenuEntries"
+              :key="submenuPool + ':' + index"
+              type="button"
+              class="random-pick-item random-pick-subitem"
+              role="menuitem"
+              :class="{ 'is-off': entry.weight <= 0 }"
+              :title="entry.prompt"
+              @click="onPickPromptEntry(entry.prompt)"
+            >
+              <span class="random-pick-name">
+                <template v-for="(part, i) in fuzzyParts(entry.prompt, menuQuery)" :key="i">
+                  <mark v-if="part.hit" class="random-pick-hl">{{ part.text }}</mark>
+                  <template v-else>{{ part.text }}</template>
+                </template>
+              </span>
             </button>
           </div>
         </Teleport>

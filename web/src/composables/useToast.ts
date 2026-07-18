@@ -35,8 +35,8 @@ export function useToast() {
   return {
     toasts,
     dismiss,
-    info: (message: string) => push('info', message),
-    ok: (message: string) => push('ok', message),
-    error: (message: string) => push('error', message, 4500),
+    info: (message: string, ms = 3500) => push('info', message, ms),
+    ok: (message: string, ms = 3500) => push('ok', message, ms),
+    error: (message: string, ms = 4500) => push('error', message, ms),
   }
 }

@@ -14,6 +14,10 @@ import {
   sanitizePoolName,
   type PromptPool,
 } from '../../web/src/random/prompt-pool-types'
+import {
+  isProgramPoolName,
+  listProgramPoolNames,
+} from '../../web/src/random/program-pools'
 import { loadBuiltinPromptPools } from './builtin-prompt-pools'
 
 export type PromptPoolFile = PromptPool & { builtin: boolean }
@@ -84,10 +88,22 @@ export function listPromptPools(): PromptPoolFile[] {
     try {
       const raw = JSON.parse(readFileSync(join(dir, file), 'utf-8'))
       const pool = fromUserFile(raw, file)
+      // Reserved opaque pool names cannot be shadowed by user JSON.
+      if (isProgramPoolName(pool.name)) continue
       byKey.set(pool.name.toLowerCase(), pool)
     } catch {
       // skip broken files
     }
+  }
+
+  // Opaque program pools: list as empty stubs (internals stay in program-pools).
+  for (const name of listProgramPoolNames()) {
+    byKey.set(name.toLowerCase(), {
+      name,
+      entries: [],
+      updatedAt: 0,
+      builtin: true,
+    })
   }
 
   return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name))
@@ -96,6 +112,7 @@ export function listPromptPools(): PromptPoolFile[] {
 export function writePromptPool(pool: PromptPoolFile | PromptPool): PromptPoolFile {
   const name = sanitizePoolName(pool.name)
   if (!isValidPoolName(name)) throw new Error(`非法提示词池名: ${pool.name}`)
+  if (isProgramPoolName(name)) throw new Error(`提示词池名已保留: ${name}`)
   const next = normalizePromptPool(
     { ...pool, name, updatedAt: Date.now() },
     { builtin: false },
@@ -110,6 +127,7 @@ export function writePromptPool(pool: PromptPoolFile | PromptPool): PromptPoolFi
 
 export function removePromptPool(name: string): boolean {
   const key = sanitizePoolName(name)
+  if (isProgramPoolName(key)) throw new Error(`提示词池名已保留: ${key}`)
   const path = userFilePath(key)
   const hasUser = existsSync(path)
   const hasBuiltin = builtins.has(key.toLowerCase())
@@ -133,6 +151,10 @@ export function renamePromptPool(oldName: string, newName: string): PromptPoolFi
   const to = sanitizePoolName(newName)
   if (!isValidPoolName(to)) throw new Error(`非法提示词池名: ${newName}`)
 
+  if (isProgramPoolName(from) || isProgramPoolName(to)) {
+    throw new Error('提示词池名已保留')
+  }
+
   const src = readUserPool(from) ?? builtinAsPool(from)
   if (!src) throw new Error('提示词池不存在')
   if (src.builtin) throw new Error('内置提示词池不可重命名（可先复制再改）')
@@ -140,7 +162,7 @@ export function renamePromptPool(oldName: string, newName: string): PromptPoolFi
   if (from.toLowerCase() === to.toLowerCase()) return src
 
   const dest = userFilePath(to)
-  if (existsSync(dest) || builtins.has(to.toLowerCase())) {
+  if (existsSync(dest) || builtins.has(to.toLowerCase()) || isProgramPoolName(to)) {
     throw new Error(`提示词池已存在: ${to}`)
   }
 
