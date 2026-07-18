@@ -8,6 +8,7 @@ import type { ModelFamily } from '@/models/family'
 import { nextPoolPrompt } from '@/random/prompt-pool-engine'
 import { usePromptPoolStore } from '@/stores/promptPool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
+import { replaceEditableValue } from '@/utils/editable-text'
 import { parseImageMeta } from '@/utils/image-meta'
 import { formatHms, promptSummary } from '@/utils/param-history'
 import { formatPromptByFamily } from '@/utils/prompt-format'
@@ -121,6 +122,17 @@ function appendToFocusedPrompt(text: string): void {
   })
 }
 
+/** Write prompt/negative via native undo stack when the textarea exists. */
+function setPromptField(field: 'prompt' | 'negativePrompt', next: string): void {
+  if (store.form[field] === next) return
+  const ta = taRef(field)
+  if (ta && replaceEditableValue(ta, next)) {
+    store.form[field] = ta.value
+    return
+  }
+  store.form[field] = next
+}
+
 function onFormatField(field: 'prompt' | 'negativePrompt'): void {
   const result = formatPromptByFamily(store.form[field], {
     family: store.form.family,
@@ -131,12 +143,26 @@ function onFormatField(field: 'prompt' | 'negativePrompt'): void {
     toast.info('已是规范格式')
     return
   }
-  store.form[field] = result.prompt
+  setPromptField(field, result.prompt)
   toast.ok(result.kind === 'anima' ? '已按 Anima 规范格式化' : '已按 SDXL 规范格式化')
 }
 
 function onFormatParams(): void {
   onFormatField(focusedPromptField.value)
+}
+
+/** Apply parsed form; prompt fields keep Ctrl+Z. */
+async function applyParsedForm(next: ReturnType<typeof parseWorkflowParams>): Promise<void> {
+  const prompt = next.prompt
+  const negativePrompt = next.negativePrompt
+  store.applyForm({
+    ...next,
+    prompt: store.form.prompt,
+    negativePrompt: store.form.negativePrompt,
+  })
+  await nextTick()
+  setPromptField('prompt', prompt)
+  setPromptField('negativePrompt', negativePrompt)
 }
 
 function onFamilyChange(family: ModelFamily): void {
@@ -224,7 +250,7 @@ async function onApplyClipboard(): Promise<void> {
       preferFamily: store.form.family,
       base: store.form,
     })
-    store.applyForm(next)
+    await applyParsedForm(next)
     toast.ok('已从剪贴板应用参数')
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))
@@ -333,12 +359,11 @@ async function onApplyImageMeta(): Promise<void> {
   if (!path) return
   try {
     const info = await window.api.image.readMetadata(path)
-    store.applyForm(
-      parseWorkflowParams(JSON.stringify(info), {
-        preferFamily: store.form.family,
-        base: store.form,
-      }),
-    )
+    const next = parseWorkflowParams(JSON.stringify(info), {
+      preferFamily: store.form.family,
+      base: store.form,
+    })
+    await applyParsedForm(next)
     toast.ok('已应用图片到参数')
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))

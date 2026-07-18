@@ -35,7 +35,7 @@ export function formatPromptByFamily(
 
 /**
  * Anima: NovelAI braces / artist: → canon weights / @artist, then polish
- * (underscore → space, lowercase tags).
+ * (underscore → space, A1111 `\(` `\)` → plain parens, lowercase tags).
  */
 export function formatAnimaPrompt(raw: string): string {
   const canon = segmentsToCanon(parseNaiToSegments(raw))
@@ -73,6 +73,9 @@ export function formatSdxlPrompt(raw: string): string {
 }
 
 function formatAnimaTag(tag: string): string {
+  // Keep <pool:…> / <random:…> tokens untouched.
+  if (/^<[^<>]+>$/.test(tag.trim())) return tag.trim()
+
   const weight = tag.match(WEIGHT_RE)
   if (weight) {
     const inner = formatAnimaTagBody(weight[1])
@@ -81,14 +84,20 @@ function formatAnimaTag(tag: string): string {
   return formatAnimaTagBody(tag)
 }
 
+/** A1111 escapes literal parens as `\(` `\)`; Anima wants plain `( )`. */
+function unescapeLiteralParens(text: string): string {
+  return text.replace(/\\([()])/g, '$1')
+}
+
+function polishAnimaText(text: string): string {
+  return unescapeLiteralParens(text.replace(/_/g, ' '))
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function formatAnimaTagBody(tag: string): string {
   if (tag.startsWith('@')) {
-    const body = tag
-      .slice(1)
-      .replace(/_/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase()
+    const body = polishAnimaText(tag.slice(1)).toLowerCase()
     return body ? `@${body}` : ''
   }
 
@@ -96,7 +105,7 @@ function formatAnimaTagBody(tag: string): string {
     return tag.toLowerCase()
   }
 
-  let text = tag.replace(/_/g, ' ').replace(/\s+/g, ' ').trim()
+  let text = polishAnimaText(tag)
   if (!text) return ''
 
   if (looksLikeNaturalLanguage(text)) {
