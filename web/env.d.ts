@@ -66,11 +66,15 @@ interface ComfyLogLine {
 interface Window {
   api: {
     platform: 'aix' | 'android' | 'darwin' | 'freebsd' | 'haiku' | 'linux' | 'openbsd' | 'sunos' | 'win32' | 'cygwin' | 'netbsd'
+    getPathForFile: (file: File) => string
     settings: {
       get: () => Promise<AppSettings>
       set: (patch: Partial<AppSettings>) => Promise<AppSettings>
       pickOutputDir: () => Promise<string | null>
       openOutputDir: () => Promise<void>
+    }
+    shell: {
+      showItemInFolder: (filePath: string) => Promise<void>
     }
     comfy: {
       healthCheck: (serverUrl?: string) => Promise<HealthResult>
@@ -88,6 +92,21 @@ interface Window {
     txt2img: {
       generate: (params: Txt2ImgParams) => Promise<GenerateResult>
       cancel: () => Promise<void>
+      onFormat: (cb: (field: 'prompt' | 'negativePrompt') => void) => () => void
+      onImage: (
+        cb: (payload: {
+          image: GeneratedImage
+          seed: number
+          index: number
+          total: number
+          promptId: string
+        }) => void,
+      ) => () => void
+    }
+    image: {
+      readMetadata: (filePath: string) => Promise<Record<string, unknown>>
+      loadPreviewFromPath: (targetPath: string, limit?: number) => Promise<GeneratedImage[]>
+      onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => () => void
     }
   }
 }

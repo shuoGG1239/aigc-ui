@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import {
+  loadParamHistory,
+  pushParamHistory,
+  saveParamHistory,
+  type ParamHistoryEntry,
+} from '@/utils/param-history'
 
 export interface Txt2ImgForm {
   prompt: string
@@ -69,6 +75,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   const lastPromptId = ref('')
   const results = ref<ResultImage[]>([])
   const selectedIndex = ref(0)
+  const paramHistory = ref<ParamHistoryEntry[]>(loadParamHistory())
 
   const selectedImage = computed(() => results.value[selectedIndex.value] ?? null)
 
@@ -76,6 +83,17 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     if (index >= 0 && index < results.value.length) {
       selectedIndex.value = index
     }
+  }
+
+  function applyForm(next: Txt2ImgForm): void {
+    form.value = { ...next }
+  }
+
+  function restoreHistory(fingerprint: string): boolean {
+    const hit = paramHistory.value.find((e) => e.fingerprint === fingerprint)
+    if (!hit) return false
+    applyForm(hit.form)
+    return true
   }
 
   async function generate(): Promise<number> {
@@ -89,6 +107,16 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       errorMessage.value = 'Seed 必须为空（随机）或非负整数'
       throw new Error(errorMessage.value)
     }
+
+    const snapshot: Txt2ImgForm = { ...form.value }
+    let streamed = 0
+    const offImage = window.api.txt2img.onImage((payload) => {
+      results.value = [payload.image, ...results.value].slice(0, 24)
+      selectedIndex.value = 0
+      lastSeed.value = payload.seed
+      lastPromptId.value = payload.promptId
+      streamed += 1
+    })
 
     try {
       const result = await window.api.txt2img.generate({
@@ -112,16 +140,24 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
         outputPrefix: form.value.outputPrefix,
       })
 
-      results.value = [...result.images, ...results.value].slice(0, 24)
-      selectedIndex.value = 0
+      if (streamed === 0 && result.images.length) {
+        results.value = [...result.images, ...results.value].slice(0, 24)
+        selectedIndex.value = 0
+      }
       lastSeed.value = result.seed
       lastPromptId.value = result.promptId
       status.value = 'success'
+
+      paramHistory.value = pushParamHistory(paramHistory.value, snapshot)
+      saveParamHistory(paramHistory.value)
+
       return result.images.length
     } catch (err) {
       status.value = 'error'
       errorMessage.value = err instanceof Error ? err.message : String(err)
       throw err
+    } finally {
+      offImage()
     }
   }
 
@@ -138,6 +174,13 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     errorMessage.value = ''
   }
 
+  function setResults(images: ResultImage[]): void {
+    results.value = images.slice(0, 24)
+    selectedIndex.value = 0
+    lastSeed.value = null
+    lastPromptId.value = ''
+  }
+
   return {
     form,
     status,
@@ -147,9 +190,13 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     results,
     selectedIndex,
     selectedImage,
+    paramHistory,
     selectImage,
+    applyForm,
+    restoreHistory,
     generate,
     cancel,
     clearResults,
+    setResults,
   }
 })

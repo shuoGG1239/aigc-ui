@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { useComfyProcessStore } from '@/stores/comfyProcess'
 import { useSettingsStore } from '@/stores/settings'
@@ -10,17 +10,12 @@ const toast = useToast()
 const logEl = ref<HTMLElement | null>(null)
 const autoScroll = ref(true)
 const saving = ref(false)
-
-const draft = reactive({
-  serverUrl: settings.serverUrl,
-  launchCommand: settings.launchCommand,
-})
+const launchCommandDraft = ref(settings.launchCommand)
 
 watch(
-  () => [settings.serverUrl, settings.launchCommand] as const,
-  ([serverUrl, launchCommand]) => {
-    draft.serverUrl = serverUrl
-    draft.launchCommand = launchCommand
+  () => settings.launchCommand,
+  (launchCommand) => {
+    launchCommandDraft.value = launchCommand
   },
 )
 
@@ -38,28 +33,19 @@ watch(
   },
 )
 
-async function persistDraft(force = false): Promise<void> {
-  const serverUrl = draft.serverUrl.trim().replace(/\/$/, '')
-  const launchCommand = draft.launchCommand.trim()
-  if (!serverUrl) {
-    throw new Error('请填写服务地址')
-  }
+async function persistLaunchCommand(force = false): Promise<void> {
+  const launchCommand = launchCommandDraft.value.trim()
   if (!launchCommand) {
     throw new Error('请填写启动命令')
   }
-  if (
-    !force &&
-    serverUrl === settings.serverUrl &&
-    launchCommand === settings.launchCommand
-  ) {
+  if (!force && launchCommand === settings.launchCommand) {
     return
   }
-  await settings.save({ serverUrl, launchCommand })
+  await settings.save({ launchCommand })
 }
 
 onMounted(async () => {
-  draft.serverUrl = settings.serverUrl
-  draft.launchCommand = settings.launchCommand
+  launchCommandDraft.value = settings.launchCommand
   await processStore.init()
   await scrollToBottom()
 })
@@ -71,7 +57,7 @@ onUnmounted(() => {
 async function onSave(): Promise<void> {
   saving.value = true
   try {
-    await persistDraft(true)
+    await persistLaunchCommand(true)
     toast.ok('已保存')
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))
@@ -82,7 +68,7 @@ async function onSave(): Promise<void> {
 
 async function onStart(): Promise<void> {
   try {
-    await persistDraft()
+    await persistLaunchCommand()
     await processStore.start()
     toast.ok('ComfyUI 已启动')
   } catch (err) {
@@ -155,7 +141,7 @@ function formatTime(ts: number): string {
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
-                d="M3.5 4.5h9M6 4.5V3.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1M5.5 4.5l.5 8h4l.5-8"
+                d="M2.5 4.5h11M5.25 4.5V3.4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1v1.1M4.25 4.5l.55 8.25h6.4l.55-8.25"
                 stroke="currentColor"
                 stroke-width="1.4"
                 stroke-linecap="round"
@@ -167,40 +153,11 @@ function formatTime(ts: number): string {
       </div>
       <div class="panel-body console-body">
         <div class="console-meta console-config">
-          <div class="field">
-            <label class="field-label">服务地址</label>
-            <div class="path-row">
-              <input
-                v-model="draft.serverUrl"
-                class="input"
-                type="text"
-                placeholder="http://127.0.0.1:8188"
-              />
-              <button
-                type="button"
-                class="btn btn-ghost btn-icon"
-                title="保存"
-                aria-label="保存服务地址"
-                :disabled="saving"
-                @click="onSave"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path
-                    d="M3.5 3.5h7.2L12.5 5.3V12.5h-9V3.5z"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linejoin="round"
-                  />
-                  <path d="M5.5 3.5v3h4v-3M5.5 12.5v-4h5v4" stroke="currentColor" stroke-width="1.4" />
-                </svg>
-              </button>
-            </div>
-          </div>
           <div class="field" style="margin-bottom: 0">
             <label class="field-label">启动命令</label>
             <div class="path-row">
               <input
-                v-model="draft.launchCommand"
+                v-model="launchCommandDraft"
                 class="input console-cmd-input"
                 type="text"
                 spellcheck="false"

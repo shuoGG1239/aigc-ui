@@ -1,7 +1,8 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron'
-import { join, extname } from 'path'
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, shell } from 'electron'
+import { basename, dirname, extname, join } from 'path'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
 import { ComfyUIClient } from './comfyui'
+import { extractPngInfo } from './png-info'
 import { getSettings, setSettings, defaultOutputDir } from './settings'
 import { buildAnimaWorkflow } from './workflow'
 import {
@@ -57,29 +58,87 @@ function createWindow(): void {
     }
   })
 
-  // 右键「检查」：打开开发者工具并定位到该元素（类似 Chrome）
-  mainWindow.webContents.on('context-menu', (_event, params) => {
+  // 右键菜单：编辑项 / 格式化 Prompt / 复制元数据 / 检查
+  mainWindow.webContents.on('context-menu', async (_event, params) => {
     const win = mainWindow
     if (!win) return
 
-    const template: Electron.MenuItemConstructorOptions[] = [
-      {
-        label: '检查',
-        click: () => {
-          // 打开 DevTools 并选中坐标处元素
-          win.webContents.inspectElement(params.x, params.y)
-        },
-      },
-    ]
+    let promptField: 'prompt' | 'negativePrompt' | null = null
+    let imagePath: string | null = null
+    try {
+      const hit = (await win.webContents.executeJavaScript(
+        `(() => {
+          const at = document.elementFromPoint(${params.x}, ${params.y});
+          const img = at && typeof at.closest === 'function'
+            ? at.closest('img[data-image-path]')
+            : null;
+          const imagePath = img && typeof img.getAttribute === 'function'
+            ? img.getAttribute('data-image-path')
+            : null;
+          const el = document.activeElement;
+          let promptField = null;
+          if (el && typeof el.getAttribute === 'function') {
+            const attr = el.getAttribute('data-prompt-field');
+            if (attr === 'prompt' || attr === 'negativePrompt') promptField = attr;
+          }
+          return { imagePath, promptField };
+        })()`,
+      )) as { imagePath?: string | null; promptField?: string | null }
+      if (hit?.promptField === 'prompt' || hit?.promptField === 'negativePrompt') {
+        promptField = hit.promptField
+      }
+      if (typeof hit?.imagePath === 'string' && hit.imagePath.trim()) {
+        imagePath = hit.imagePath
+      }
+    } catch {
+      // ignore
+    }
+
+    const template: Electron.MenuItemConstructorOptions[] = []
 
     if (params.isEditable || (params.selectionText && params.selectionText.length > 0)) {
-      template.unshift(
+      template.push(
         { role: 'cut', label: '剪切' },
         { role: 'copy', label: '复制' },
         { role: 'paste', label: '粘贴' },
-        { type: 'separator' },
       )
     }
+
+    if (promptField) {
+      template.push({
+        label: '格式化',
+        click: () => {
+          win.webContents.send('txt2img:format', promptField)
+        },
+      })
+    }
+
+    if (imagePath) {
+      const pathForCopy = imagePath
+      template.push({
+        label: '复制元数据',
+        click: () => {
+          try {
+            const buf = readFileSync(pathForCopy)
+            const info = extractPngInfo(buf)
+            clipboard.writeText(JSON.stringify(info))
+            win.webContents.send('image:metadata-copied', { ok: true })
+          } catch (err) {
+            win.webContents.send('image:metadata-copied', {
+              ok: false,
+              message: err instanceof Error ? err.message : String(err),
+            })
+          }
+        },
+      })
+    }
+
+    template.push({
+      label: '检查',
+      click: () => {
+        win.webContents.inspectElement(params.x, params.y)
+      },
+    })
 
     Menu.buildFromTemplate(template).popup({ window: win })
   })
@@ -128,6 +187,81 @@ function registerIpc(): void {
     }
   })
 
+  ipcMain.handle('image:readMetadata', async (_event, filePath: string) => {
+    const target = filePath?.trim()
+    if (!target) {
+      throw new Error('路径为空')
+    }
+    if (!existsSync(target)) {
+      throw new Error('文件不存在')
+    }
+    return extractPngInfo(readFileSync(target))
+  })
+
+  ipcMain.handle('image:loadPreviewFromPath', async (_event, targetPath: string, limit = 5) => {
+    const target = targetPath?.trim()
+    if (!target) {
+      throw new Error('路径为空')
+    }
+    if (!existsSync(target)) {
+      throw new Error('路径不存在')
+    }
+
+    const st = statSync(target)
+    const toImage = (path: string, filename: string) => ({
+      path,
+      filename: filename || basename(path),
+      dataUrl: `data:image/png;base64,${readFileSync(path).toString('base64')}`,
+    })
+
+    if (st.isFile()) {
+      if (extname(target).toLowerCase() !== '.png') {
+        throw new Error('仅支持 PNG 图片或包含 PNG 的文件夹')
+      }
+      return [toImage(target, basename(target))]
+    }
+
+    if (!st.isDirectory()) {
+      throw new Error('请拖入 PNG 图片或文件夹')
+    }
+
+    const max = Math.max(1, Math.min(Math.floor(limit) || 5, 24))
+    const entries = readdirSync(target)
+      .filter((name) => extname(name).toLowerCase() === '.png')
+      .map((name) => {
+        const path = join(target, name)
+        const fileSt = statSync(path)
+        return { path, filename: name, mtime: fileSt.mtimeMs, isFile: fileSt.isFile() }
+      })
+      .filter((e) => e.isFile)
+      .sort((a, b) => b.mtime - a.mtime)
+      .slice(0, max)
+
+    if (!entries.length) {
+      throw new Error('文件夹内没有 PNG 图片')
+    }
+
+    return entries.map(({ path, filename }) => toImage(path, filename))
+  })
+
+  ipcMain.handle('shell:showItemInFolder', async (_event, filePath: string) => {
+    const target = filePath?.trim()
+    if (!target) {
+      throw new Error('路径为空')
+    }
+    if (existsSync(target)) {
+      shell.showItemInFolder(target)
+      return
+    }
+    const dir = dirname(target)
+    if (existsSync(dir)) {
+      const err = await shell.openPath(dir)
+      if (err) throw new Error(err)
+      return
+    }
+    throw new Error('文件或目录不存在')
+  })
+
   ipcMain.handle('comfy:healthCheck', async (_event, serverUrl?: string) => {
     const url = (serverUrl?.trim() || getSettings().serverUrl).replace(/\/$/, '')
     const client = new ComfyUIClient(url)
@@ -152,7 +286,7 @@ function registerIpc(): void {
     activeClient?.cancel()
   })
 
-  ipcMain.handle('txt2img:generate', async (_event, params: Txt2ImgParams): Promise<GenerateResult> => {
+  ipcMain.handle('txt2img:generate', async (event, params: Txt2ImgParams): Promise<GenerateResult> => {
     const settings = getSettings()
     const client = new ComfyUIClient(settings.serverUrl)
     activeClient = client
@@ -201,12 +335,20 @@ function registerIpc(): void {
 
         const mime =
           suffix.toLowerCase() === '.jpg' || suffix.toLowerCase() === '.jpeg' ? 'image/jpeg' : 'image/png'
-        images.push({
+        const image = {
           path,
           filename,
           dataUrl: `data:${mime};base64,${data.toString('base64')}`,
-        })
+        }
+        images.push(image)
         seeds.push(seed)
+        event.sender.send('txt2img:image', {
+          image,
+          seed,
+          index: i,
+          total: count,
+          promptId,
+        })
       }
 
       return { promptId: lastPromptId, seed: seeds[0], seeds, images }

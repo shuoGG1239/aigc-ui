@@ -1,12 +1,16 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 
 contextBridge.exposeInMainWorld('api', {
   platform: process.platform as NodeJS.Platform,
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
     set: (patch: Record<string, unknown>) => ipcRenderer.invoke('settings:set', patch),
     pickOutputDir: () => ipcRenderer.invoke('settings:pickOutputDir'),
     openOutputDir: () => ipcRenderer.invoke('settings:openOutputDir'),
+  },
+  shell: {
+    showItemInFolder: (filePath: string) => ipcRenderer.invoke('shell:showItemInFolder', filePath),
   },
   comfy: {
     healthCheck: (serverUrl?: string) => ipcRenderer.invoke('comfy:healthCheck', serverUrl),
@@ -36,5 +40,42 @@ contextBridge.exposeInMainWorld('api', {
   txt2img: {
     generate: (params: unknown) => ipcRenderer.invoke('txt2img:generate', params),
     cancel: () => ipcRenderer.invoke('txt2img:cancel'),
+    onFormat: (cb: (field: 'prompt' | 'negativePrompt') => void) => {
+      const handler = (_e: IpcRendererEvent, field: 'prompt' | 'negativePrompt') => cb(field)
+      ipcRenderer.on('txt2img:format', handler)
+      return () => ipcRenderer.removeListener('txt2img:format', handler)
+    },
+    onImage: (
+      cb: (payload: {
+        image: unknown
+        seed: number
+        index: number
+        total: number
+        promptId: string
+      }) => void,
+    ) => {
+      const handler = (
+        _e: IpcRendererEvent,
+        payload: {
+          image: unknown
+          seed: number
+          index: number
+          total: number
+          promptId: string
+        },
+      ) => cb(payload)
+      ipcRenderer.on('txt2img:image', handler)
+      return () => ipcRenderer.removeListener('txt2img:image', handler)
+    },
+  },
+  image: {
+    readMetadata: (filePath: string) => ipcRenderer.invoke('image:readMetadata', filePath),
+    loadPreviewFromPath: (targetPath: string, limit?: number) =>
+      ipcRenderer.invoke('image:loadPreviewFromPath', targetPath, limit),
+    onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => {
+      const handler = (_e: IpcRendererEvent, result: { ok: boolean; message?: string }) => cb(result)
+      ipcRenderer.on('image:metadata-copied', handler)
+      return () => ipcRenderer.removeListener('image:metadata-copied', handler)
+    },
   },
 })
