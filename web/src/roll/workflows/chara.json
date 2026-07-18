@@ -1,0 +1,162 @@
+{
+  "name": "chara",
+  "entries": [
+    {
+      "tag": "aris_(blue_archive)",
+      "weight": 30
+    },
+    {
+      "tag": "aris_(maid)_(blue_archive)",
+      "weight": 800
+    },
+    {
+      "tag": "arona_(blue_archive)",
+      "weight": 800
+    },
+    {
+      "tag": "clara_(honkai:_star_rail), white_hair, red_eyes, bare_shoulders",
+      "weight": 50
+    },
+    {
+      "tag": "elaina_(majo_no_tabitabi)",
+      "weight": 10
+    },
+    {
+      "tag": "fu_xuan_(honkai:_star_rail)",
+      "weight": 10
+    },
+    {
+      "tag": "ganyu_(genshin_impact)",
+      "weight": 200
+    },
+    {
+      "tag": "hifumi_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "tag": "hina_(blue_archive), bare_shoulders",
+      "weight": 100
+    },
+    {
+      "tag": "izumi_sagiri",
+      "weight": 50
+    },
+    {
+      "tag": "kamisato_ayaka, blue eyes, ponytail, blue hair",
+      "weight": 100
+    },
+    {
+      "tag": "kasugano_sora, grey_eyes, grey_hair",
+      "weight": 10
+    },
+    {
+      "tag": "keqing_(genshin_impact)",
+      "weight": 200
+    },
+    {
+      "tag": "kisaki_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "tag": "klee_(genshin_impact)",
+      "weight": 50
+    },
+    {
+      "tag": "koharu_(blue_archive)",
+      "weight": 30
+    },
+    {
+      "tag": "koharu_swimsuit_(blue_archive)",
+      "weight": 60
+    },
+    {
+      "tag": "kokona_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "tag": "le_malin_(azur_lane), blue_eyes, cross-shaped_pupils, rabbit_ears",
+      "weight": 100
+    },
+    {
+      "tag": "lumine_(genshin_impact)",
+      "weight": 50
+    },
+    {
+      "tag": "mari_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "tag": "mari_(track)_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "tag": "midori_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "tag": "mika_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "tag": "miyako_swimsuit_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "tag": "miyu_(blue_archive)",
+      "weight": 50
+    },
+    {
+      "tag": "morino_rinze",
+      "weight": 10
+    },
+    {
+      "tag": "mutsuki_(blue_archive)",
+      "weight": 100
+    },
+    {
+      "tag": "nahida_(genshin_impact), cross-shaped pupils, bra",
+      "weight": 5500
+    },
+    {
+      "tag": "nilou_(genshin_impact), aqua_eyes",
+      "weight": 100
+    },
+    {
+      "tag": "noelle_(kfc)_(genshin_impact)",
+      "weight": 400
+    },
+    {
+      "tag": "plana_(blue_archive)",
+      "weight": 5000
+    },
+    {
+      "tag": "sakurai_momoka, green_eyes, blonde_hair",
+      "weight": 50
+    },
+    {
+      "tag": "sangonomiya_kokomi, pink hair, multicolored hair, blue horns",
+      "weight": 20
+    },
+    {
+      "tag": "shun_small_(blue_archive), green_eyes, cross-shaped pupils",
+      "weight": 5000
+    },
+    {
+      "tag": "suzuran_(spring_praise)_(arknights)",
+      "weight": 50
+    },
+    {
+      "tag": "suzuran_arknights",
+      "weight": 5
+    },
+    {
+      "tag": "tachibana_arisu, brown_eyes",
+      "weight": 100
+    },
+    {
+      "tag": "unicorn_azur_lane",
+      "weight": 100
+    }
+  ],
+  "updatedAt": 0
+}

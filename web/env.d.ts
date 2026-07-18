@@ -12,9 +12,14 @@ interface AppSettings {
   launchCommand: string
 }
 
+type ModelFamily = 'anima' | 'sdxl'
+
 interface Txt2ImgParams {
+  family: ModelFamily
   prompt: string
+  prompts?: string[]
   negativePrompt: string
+  negativePrompts?: string[]
   width: number
   height: number
   batchSize: number
@@ -30,6 +35,7 @@ interface Txt2ImgParams {
   vaeModel: string
   unetWeightDtype: string
   auraflowShift: number
+  checkpoint: string
   outputPrefix: string
 }
 
@@ -78,6 +84,7 @@ interface Window {
     }
     comfy: {
       healthCheck: (serverUrl?: string) => Promise<HealthResult>
+      listModels: (folder: string) => Promise<string[]>
     }
     comfyProcess: {
       getStatus: () => Promise<ComfyProcessStatus>
@@ -108,5 +115,22 @@ interface Window {
       loadPreviewFromPath: (targetPath: string, limit?: number) => Promise<GeneratedImage[]>
       onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => () => void
     }
+    rollWorkflows: {
+      list: () => Promise<RollWorkflowDto[]>
+      read: (name: string) => Promise<RollWorkflowDto | null>
+      write: (wf: RollWorkflowDto) => Promise<RollWorkflowDto>
+      remove: (name: string) => Promise<boolean>
+      rename: (oldName: string, newName: string) => Promise<RollWorkflowDto>
+      importList: (list: unknown[]) => Promise<RollWorkflowDto[]>
+    }
   }
+}
+
+interface RollWorkflowDto {
+  name: string
+  entries: Array<{
+    tag: string
+    weight: number
+  }>
+  updatedAt: number
 }

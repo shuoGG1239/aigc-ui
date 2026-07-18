@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('api', {
   },
   comfy: {
     healthCheck: (serverUrl?: string) => ipcRenderer.invoke('comfy:healthCheck', serverUrl),
+    listModels: (folder: string) => ipcRenderer.invoke('comfy:listModels', folder),
   },
   comfyProcess: {
     getStatus: () => ipcRenderer.invoke('comfyProcess:getStatus'),
@@ -77,5 +78,14 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.on('image:metadata-copied', handler)
       return () => ipcRenderer.removeListener('image:metadata-copied', handler)
     },
+  },
+  rollWorkflows: {
+    list: () => ipcRenderer.invoke('rollWorkflows:list'),
+    read: (name: string) => ipcRenderer.invoke('rollWorkflows:read', name),
+    write: (wf: unknown) => ipcRenderer.invoke('rollWorkflows:write', wf),
+    remove: (name: string) => ipcRenderer.invoke('rollWorkflows:remove', name),
+    rename: (oldName: string, newName: string) =>
+      ipcRenderer.invoke('rollWorkflows:rename', oldName, newName),
+    importList: (list: unknown[]) => ipcRenderer.invoke('rollWorkflows:importList', list),
   },
 })

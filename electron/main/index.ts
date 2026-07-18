@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { ComfyUIClient } from './comfyui'
 import { extractPngInfo } from './png-info'
 import { getSettings, setSettings, defaultOutputDir } from './settings'
-import { buildAnimaWorkflow } from './workflow'
+import { buildWorkflow } from './workflow'
 import {
   clearLogs,
   getLogs,
@@ -15,6 +15,15 @@ import {
   stopComfySync,
 } from './comfy-process'
 import type { AppSettings, GenerateResult, Txt2ImgParams } from './types'
+import {
+  importWorkflows,
+  listWorkflows,
+  readWorkflow,
+  removeWorkflow,
+  renameWorkflow,
+  writeWorkflow,
+  type RollWorkflowFile,
+} from './roll-workflows'
 
 let mainWindow: BrowserWindow | null = null
 let activeClient: ComfyUIClient | null = null
@@ -187,6 +196,15 @@ function registerIpc(): void {
     }
   })
 
+  ipcMain.handle('rollWorkflows:list', () => listWorkflows())
+  ipcMain.handle('rollWorkflows:read', (_event, name: string) => readWorkflow(name))
+  ipcMain.handle('rollWorkflows:write', (_event, wf: RollWorkflowFile) => writeWorkflow(wf))
+  ipcMain.handle('rollWorkflows:remove', (_event, name: string) => removeWorkflow(name))
+  ipcMain.handle('rollWorkflows:rename', (_event, oldName: string, newName: string) =>
+    renameWorkflow(oldName, newName),
+  )
+  ipcMain.handle('rollWorkflows:importList', (_event, list: unknown[]) => importWorkflows(list))
+
   ipcMain.handle('image:readMetadata', async (_event, filePath: string) => {
     const target = filePath?.trim()
     if (!target) {
@@ -268,6 +286,12 @@ function registerIpc(): void {
     return client.healthCheck()
   })
 
+  ipcMain.handle('comfy:listModels', async (_event, folder: string) => {
+    const url = getSettings().serverUrl.replace(/\/$/, '')
+    const client = new ComfyUIClient(url)
+    return client.listModels(folder)
+  })
+
   ipcMain.handle('comfyProcess:getStatus', () => getStatus())
   ipcMain.handle('comfyProcess:getLogs', () => getLogs())
   ipcMain.handle('comfyProcess:clearLogs', () => {
@@ -305,7 +329,8 @@ function registerIpc(): void {
       }
 
       const ts = Math.floor(Date.now() / 1000)
-      const prefix = params.outputPrefix || 'anima'
+      const prefix =
+        params.outputPrefix || (params.family === 'sdxl' ? 'sdxl' : 'anima')
       const images: GenerateResult['images'] = []
       const seeds: number[] = []
       let lastPromptId = ''
@@ -316,7 +341,18 @@ function registerIpc(): void {
             ? params.seed + i
             : Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
 
-        const { workflow, seed } = buildAnimaWorkflow(params, seedForRun)
+        const promptForRun =
+          Array.isArray(params.prompts) && params.prompts[i] !== undefined
+            ? params.prompts[i]
+            : params.prompt
+        const negativeForRun =
+          Array.isArray(params.negativePrompts) && params.negativePrompts[i] !== undefined
+            ? params.negativePrompts[i]
+            : params.negativePrompt
+        const { workflow, seed } = buildWorkflow(
+          { ...params, prompt: promptForRun, negativePrompt: negativeForRun },
+          seedForRun,
+        )
         const promptId = await client.queuePrompt(workflow)
         lastPromptId = promptId
         const historyEntry = await client.waitForCompletion(promptId)

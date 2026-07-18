@@ -1,6 +1,7 @@
-/** Prompt formatters keyed by UNET model name heuristics. */
+import type { ModelFamily } from '@/models/family'
+import { resolveFamily } from '@/models/family'
 
-export type PromptFormatKind = 'anima' | 'none'
+export type PromptFormatKind = ModelFamily | 'none'
 
 export interface FormatPromptResult {
   kind: PromptFormatKind
@@ -12,28 +13,35 @@ const SCORE_RE = /^score_\d+$/i
 const YEAR_RE = /^year[_\s]?\d{4}$/i
 const WEIGHT_RE = /^\((.+):([\d.]+)\)$/
 
-export function detectPromptFormat(unetModel: string): PromptFormatKind {
-  const name = unetModel.trim().toLowerCase()
-  if (name.includes('anima')) return 'anima'
-  return 'none'
+export function detectPromptFormat(opts: {
+  family?: string | null
+  unetModel?: string | null
+  checkpoint?: string | null
+}): PromptFormatKind {
+  return resolveFamily(opts)
 }
 
+/** @deprecated Prefer formatPromptByFamily */
 export function formatPromptByUnet(prompt: string, unetModel: string): FormatPromptResult {
-  const kind = detectPromptFormat(unetModel)
-  if (kind === 'none') {
-    return { kind, prompt, changed: false }
-  }
-  const next = formatAnimaPrompt(prompt)
-  return { kind, prompt: next, changed: next !== prompt }
+  return formatPromptByFamily(prompt, { unetModel })
 }
 
-/**
- * Anima (circlestone-labs) prompting rules — syntax only, order preserved:
- * - lowercase tags; spaces instead of underscores (except score_*)
- * - space after each comma (Qwen tokenization)
- * - artist tags keep leading @
- * @see https://huggingface.co/circlestone-labs/Anima
- */
+export function formatPromptByFamily(
+  prompt: string,
+  opts: { family?: string | null; unetModel?: string | null; checkpoint?: string | null },
+): FormatPromptResult {
+  const kind = detectPromptFormat(opts)
+  if (kind === 'anima') {
+    const next = formatAnimaPrompt(prompt)
+    return { kind, prompt: next, changed: next !== prompt }
+  }
+  if (kind === 'sdxl') {
+    const next = formatSdxlPrompt(prompt)
+    return { kind, prompt: next, changed: next !== prompt }
+  }
+  return { kind: 'none', prompt, changed: false }
+}
+
 export function formatAnimaPrompt(raw: string): string {
   return raw
     .replace(/[\r\n]+/g, ', ')
@@ -41,6 +49,16 @@ export function formatAnimaPrompt(raw: string): string {
     .map((p) => p.trim())
     .filter(Boolean)
     .map((tag) => formatAnimaTag(tag))
+    .filter(Boolean)
+    .join(', ')
+}
+
+/** Light SDXL normalize: comma spacing, drop empty segments. */
+export function formatSdxlPrompt(raw: string): string {
+  return raw
+    .replace(/[\r\n]+/g, ', ')
+    .split(',')
+    .map((p) => p.trim())
     .filter(Boolean)
     .join(', ')
 }
@@ -90,7 +108,6 @@ function normalizeYearTag(tag: string): string {
 }
 
 function looksLikeNaturalLanguage(text: string): boolean {
-  // Sentence-like chunks keep capitalization (character/series names in NL).
   if (/[.!?]\s|[.!?]$/.test(text)) return true
   return text.split(/\s+/).length >= 12
 }

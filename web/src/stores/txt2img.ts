@@ -1,6 +1,16 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
+  getFamilyDefaults,
+  isModelFamily,
+  type ModelFamily,
+} from '@/models/family'
+import {
+  expandPromptTemplate,
+  hasPromptPlaceholders,
+} from '@/roll/prompt-template'
+import { useRollWorkflowStore } from '@/stores/rollWorkflow'
+import {
   loadParamHistory,
   pushParamHistory,
   saveParamHistory,
@@ -8,6 +18,7 @@ import {
 } from '@/utils/param-history'
 
 export interface Txt2ImgForm {
+  family: ModelFamily
   prompt: string
   negativePrompt: string
   width: number
@@ -25,6 +36,7 @@ export interface Txt2ImgForm {
   vaeModel: string
   unetWeightDtype: string
   auraflowShift: number
+  checkpoint: string
   outputPrefix: string
 }
 
@@ -40,22 +52,20 @@ const DEFAULT_PROMPT =
   '1girl,tachibana_arisu,@as109,@ciloranko,nude,bra, panties under pantyhose, bed sheet, on bed,sleep,' +
   'year 2025,masterpiece, best quality,score_9'
 
-const DEFAULT_NEGATIVE =
-  'worst quality, low quality, score_1, score_2, score_3, ' +
-  'artist name, blurry, jpeg artifacts, chromatic aberration'
-
 export function createDefaultForm(): Txt2ImgForm {
+  const anima = getFamilyDefaults('anima')
   return {
+    family: 'anima',
     prompt: DEFAULT_PROMPT,
-    negativePrompt: DEFAULT_NEGATIVE,
-    width: 896,
-    height: 1152,
+    negativePrompt: anima.negativePrompt,
+    width: anima.width,
+    height: anima.height,
     batchSize: 1,
-    steps: 30,
-    cfg: 4.5,
-    sampler: 'er_sde',
-    scheduler: 'simple',
-    denoise: 1.0,
+    steps: anima.steps,
+    cfg: anima.cfg,
+    sampler: anima.sampler,
+    scheduler: anima.scheduler,
+    denoise: anima.denoise,
     seed: '',
     unetModel: 'anima-base-v1.0.safetensors',
     clipModel: 'qwen_3_06b_base.safetensors',
@@ -63,7 +73,20 @@ export function createDefaultForm(): Txt2ImgForm {
     vaeModel: 'qwen_image_vae.safetensors',
     unetWeightDtype: 'default',
     auraflowShift: 3.0,
-    outputPrefix: 'anima',
+    checkpoint: '',
+    outputPrefix: anima.outputPrefix,
+  }
+}
+
+export function normalizeForm(partial: Partial<Txt2ImgForm> | null | undefined): Txt2ImgForm {
+  const base = createDefaultForm()
+  if (!partial || typeof partial !== 'object') return base
+  const family = isModelFamily(partial.family) ? partial.family : base.family
+  return {
+    ...base,
+    ...partial,
+    family,
+    checkpoint: typeof partial.checkpoint === 'string' ? partial.checkpoint : base.checkpoint,
   }
 }
 
@@ -86,7 +109,27 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   }
 
   function applyForm(next: Txt2ImgForm): void {
-    form.value = { ...next }
+    form.value = normalizeForm(next)
+  }
+
+  function setFamily(family: ModelFamily): void {
+    if (form.value.family === family) return
+    const defaults = getFamilyDefaults(family)
+    const prompt = form.value.prompt
+    form.value = {
+      ...form.value,
+      family,
+      width: defaults.width,
+      height: defaults.height,
+      steps: defaults.steps,
+      cfg: defaults.cfg,
+      sampler: defaults.sampler,
+      scheduler: defaults.scheduler,
+      denoise: defaults.denoise,
+      outputPrefix: defaults.outputPrefix,
+      negativePrompt: defaults.negativePrompt,
+      prompt,
+    }
   }
 
   function restoreHistory(fingerprint: string): boolean {
@@ -94,6 +137,58 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     if (!hit) return false
     applyForm(hit.form)
     return true
+  }
+
+  function expandField(template: string): string {
+    if (!hasPromptPlaceholders(template)) return template
+    const rollStore = useRollWorkflowStore()
+    const { prompt, missing } = expandPromptTemplate(template, form.value.family, (name) =>
+      rollStore.getByName(name),
+    )
+    if (missing.length) {
+      throw new Error(`未找到随机工作流：${missing.join(', ')}`)
+    }
+    return prompt
+  }
+
+  function resolveRollPrompts(batchSize: number): {
+    prompt: string
+    prompts?: string[]
+    negativePrompt: string
+    negativePrompts?: string[]
+  } {
+    const posTpl = form.value.prompt
+    const negTpl = form.value.negativePrompt
+    const needPos = hasPromptPlaceholders(posTpl)
+    const needNeg = hasPromptPlaceholders(negTpl)
+
+    if (!needPos && !needNeg) {
+      return { prompt: posTpl, negativePrompt: negTpl }
+    }
+
+    const expandPair = () => ({
+      prompt: expandField(posTpl),
+      negativePrompt: expandField(negTpl),
+    })
+
+    const first = expandPair()
+    if (batchSize <= 1) {
+      return first
+    }
+
+    const prompts: string[] = [first.prompt]
+    const negativePrompts: string[] = [first.negativePrompt]
+    for (let i = 1; i < batchSize; i++) {
+      const next = expandPair()
+      prompts.push(next.prompt)
+      negativePrompts.push(next.negativePrompt)
+    }
+    return {
+      prompt: prompts[0],
+      prompts: needPos ? prompts : undefined,
+      negativePrompt: negativePrompts[0],
+      negativePrompts: needNeg ? negativePrompts : undefined,
+    }
   }
 
   async function generate(): Promise<number> {
@@ -108,6 +203,31 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       throw new Error(errorMessage.value)
     }
 
+    if (form.value.family === 'sdxl' && !form.value.checkpoint.trim()) {
+      status.value = 'error'
+      errorMessage.value = 'SDXL 模式需要填写 Checkpoint'
+      throw new Error(errorMessage.value)
+    }
+
+    const batchSize = Math.max(1, Math.min(Math.floor(Number(form.value.batchSize) || 1), 64))
+    let prompt = form.value.prompt
+    let prompts: string[] | undefined
+    let negativePrompt = form.value.negativePrompt
+    let negativePrompts: string[] | undefined
+
+    try {
+      await useRollWorkflowStore().hydrate()
+      const resolved = resolveRollPrompts(batchSize)
+      prompt = resolved.prompt
+      prompts = resolved.prompts
+      negativePrompt = resolved.negativePrompt
+      negativePrompts = resolved.negativePrompts
+    } catch (err) {
+      status.value = 'error'
+      errorMessage.value = err instanceof Error ? err.message : String(err)
+      throw err
+    }
+
     const snapshot: Txt2ImgForm = { ...form.value }
     let streamed = 0
     const offImage = window.api.txt2img.onImage((payload) => {
@@ -120,11 +240,14 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
 
     try {
       const result = await window.api.txt2img.generate({
-        prompt: form.value.prompt,
-        negativePrompt: form.value.negativePrompt,
+        family: form.value.family,
+        prompt,
+        prompts,
+        negativePrompt,
+        negativePrompts,
         width: Number(form.value.width),
         height: Number(form.value.height),
-        batchSize: Number(form.value.batchSize),
+        batchSize,
         steps: Number(form.value.steps),
         cfg: Number(form.value.cfg),
         sampler: form.value.sampler,
@@ -137,6 +260,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
         vaeModel: form.value.vaeModel,
         unetWeightDtype: form.value.unetWeightDtype,
         auraflowShift: Number(form.value.auraflowShift),
+        checkpoint: form.value.checkpoint,
         outputPrefix: form.value.outputPrefix,
       })
 
@@ -181,7 +305,6 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     lastPromptId.value = ''
   }
 
-  /** 将新图插到列表最前（最新），保留已有预览 */
   function prependResults(images: ResultImage[]): void {
     if (!images.length) return
     const seen = new Set(images.map((img) => img.path))
@@ -202,6 +325,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     paramHistory,
     selectImage,
     applyForm,
+    setFamily,
     restoreHistory,
     generate,
     cancel,

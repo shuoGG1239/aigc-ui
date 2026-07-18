@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import AppSelect from '@/components/common/AppSelect.vue'
+import ModelSelect from '@/components/common/ModelSelect.vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
+import type { ModelFamily } from '@/models/family'
+import { nextWorkflowPrompt } from '@/roll/workflow-engine'
+import { useRollWorkflowStore } from '@/stores/rollWorkflow'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { formatHms, promptSummary } from '@/utils/param-history'
-import { formatPromptByUnet } from '@/utils/prompt-format'
+import { formatPromptByFamily } from '@/utils/prompt-format'
 import { parseWorkflowParams } from '@/utils/workflow-params'
 import {
   CLIP_TYPE_OPTIONS,
@@ -15,20 +19,100 @@ import {
 } from '@/utils/select-options'
 
 const store = useTxt2ImgStore()
+const rollStore = useRollWorkflowStore()
 const toast = useToast()
-const advancedOpen = ref(false)
 const historyOpen = ref(false)
 const historyBtnRef = ref<HTMLButtonElement | null>(null)
 const historyMenuStyle = ref<Record<string, string>>({})
+const rollOpen = ref(false)
+const rollBtnRef = ref<HTMLButtonElement | null>(null)
+const rollMenuStyle = ref<Record<string, string>>({})
+/** Last focused prompt field; dice inserts at saved caret. */
+const focusedPromptField = ref<'prompt' | 'negativePrompt'>('prompt')
+const promptTaRef = ref<HTMLTextAreaElement | null>(null)
+const negTaRef = ref<HTMLTextAreaElement | null>(null)
+/** null = insert at end of field. */
+const promptCaret = ref<{ start: number; end: number } | null>(null)
 const infoOpen = ref(false)
 const infoText = ref('')
 const previewDragOver = ref(false)
 let previewDragDepth = 0
 
+function taRef(field: 'prompt' | 'negativePrompt'): HTMLTextAreaElement | null {
+  return field === 'prompt' ? promptTaRef.value : negTaRef.value
+}
+
+function savePromptCaret(field: 'prompt' | 'negativePrompt', el?: HTMLTextAreaElement | null): void {
+  focusedPromptField.value = field
+  const ta = el ?? taRef(field)
+  if (!ta) return
+  promptCaret.value = {
+    start: ta.selectionStart ?? 0,
+    end: ta.selectionEnd ?? 0,
+  }
+}
+
+function onPromptFocus(field: 'prompt' | 'negativePrompt', e: FocusEvent): void {
+  savePromptCaret(field, e.target as HTMLTextAreaElement)
+}
+
+function onPromptSelect(field: 'prompt' | 'negativePrompt', e: Event): void {
+  savePromptCaret(field, e.target as HTMLTextAreaElement)
+}
+
+function onPromptBlur(field: 'prompt' | 'negativePrompt', e: FocusEvent): void {
+  savePromptCaret(field, e.target as HTMLTextAreaElement)
+}
+
+function appendToFocusedPrompt(text: string): void {
+  const field = focusedPromptField.value
+  const piece = text.trim()
+  if (!piece) return
+
+  const ta = taRef(field)
+  const cur = ta?.value ?? store.form[field]
+  let start = promptCaret.value?.start ?? cur.length
+  let end = promptCaret.value?.end ?? cur.length
+  start = Math.max(0, Math.min(start, cur.length))
+  end = Math.max(start, Math.min(end, cur.length))
+
+  const left = cur.slice(0, start)
+  const needComma = left.trim().length > 0 && !/,\s*$/.test(left)
+  const insert = (needComma ? ', ' : '') + piece
+
+  if (ta) {
+    ta.focus()
+    ta.setSelectionRange(start, end)
+    // insertText joins the native undo stack (plain value assign does not).
+    const ok = document.execCommand('insertText', false, insert)
+    if (ok) {
+      store.form[field] = ta.value
+      const newPos = ta.selectionStart ?? start + insert.length
+      promptCaret.value = { start: newPos, end: newPos }
+      return
+    }
+  }
+
+  const right = cur.slice(end)
+  store.form[field] = left + insert + right
+  const newPos = left.length + insert.length
+  promptCaret.value = { start: newPos, end: newPos }
+  void nextTick(() => {
+    const el = taRef(field)
+    if (!el) return
+    el.focus()
+    el.setSelectionRange(newPos, newPos)
+  })
+}
+
 function onFormatField(field: 'prompt' | 'negativePrompt'): void {
-  const result = formatPromptByUnet(store.form[field], store.form.unetModel)
+  const result = formatPromptByFamily(store.form[field], {
+    family: store.form.family,
+    unetModel: store.form.unetModel,
+    checkpoint: store.form.checkpoint,
+  })
   if (result.kind === 'none') {
-    toast.info('当前 UNET 暂无专属格式化规则')
+    toast.info('当前模式暂无专属格式化规则')
     return
   }
   if (!result.changed) {
@@ -36,7 +120,11 @@ function onFormatField(field: 'prompt' | 'negativePrompt'): void {
     return
   }
   store.form[field] = result.prompt
-  toast.ok(result.kind === 'anima' ? '已按 Anima 规范格式化' : '已格式化')
+  toast.ok(result.kind === 'anima' ? '已按 Anima 规范格式化' : '已按 SDXL 规范格式化')
+}
+
+function onFamilyChange(family: ModelFamily): void {
+  store.setFamily(family)
 }
 
 function updateHistoryMenuPosition(): void {
@@ -52,12 +140,54 @@ function updateHistoryMenuPosition(): void {
   }
 }
 
+function updateRollMenuPosition(): void {
+  const el = rollBtnRef.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const width = 240
+  const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8)
+  rollMenuStyle.value = {
+    left: `${left}px`,
+    top: `${rect.bottom + 4}px`,
+    width: `${width}px`,
+  }
+}
+
 async function toggleHistory(): Promise<void> {
+  rollOpen.value = false
   historyOpen.value = !historyOpen.value
   if (historyOpen.value) {
     await nextTick()
     updateHistoryMenuPosition()
   }
+}
+
+async function toggleRollMenu(): Promise<void> {
+  historyOpen.value = false
+  await rollStore.hydrate()
+  if (!rollStore.workflows.length) {
+    toast.info('请先在「随机」页创建工作流')
+    return
+  }
+  rollOpen.value = !rollOpen.value
+  if (rollOpen.value) {
+    await nextTick()
+    updateRollMenuPosition()
+  }
+}
+
+function onPickRollWorkflow(name: string): void {
+  const wf = rollStore.getByName(name)
+  if (!wf) return
+  const rolled = nextWorkflowPrompt(wf, store.form.family).trim()
+  if (!rolled) {
+    toast.error('该工作流未产出内容（检查条目/权重）')
+    return
+  }
+  appendToFocusedPrompt(rolled)
+  rollOpen.value = false
+  const target = focusedPromptField.value === 'negativePrompt' ? 'Negative' : 'Prompt'
+  toast.ok(`已追加到 ${target}`)
 }
 
 function onRestoreHistory(fingerprint: string): void {
@@ -90,8 +220,19 @@ function onHistoryDocClick(e: MouseEvent): void {
   historyOpen.value = false
 }
 
-function onHistoryKey(e: KeyboardEvent): void {
-  if (e.key === 'Escape') historyOpen.value = false
+function onRollDocClick(e: MouseEvent): void {
+  const target = e.target as Node
+  if (rollBtnRef.value?.contains(target)) return
+  const menu = document.querySelector('.roll-pick-menu')
+  if (menu?.contains(target)) return
+  rollOpen.value = false
+}
+
+function onPopupKey(e: KeyboardEvent): void {
+  if (e.key === 'Escape') {
+    historyOpen.value = false
+    rollOpen.value = false
+  }
 }
 
 watch(historyOpen, (open) => {
@@ -99,25 +240,43 @@ watch(historyOpen, (open) => {
     window.addEventListener('resize', updateHistoryMenuPosition)
     window.addEventListener('scroll', updateHistoryMenuPosition, true)
     document.addEventListener('mousedown', onHistoryDocClick)
-    document.addEventListener('keydown', onHistoryKey)
+    document.addEventListener('keydown', onPopupKey)
   } else {
     window.removeEventListener('resize', updateHistoryMenuPosition)
     window.removeEventListener('scroll', updateHistoryMenuPosition, true)
     document.removeEventListener('mousedown', onHistoryDocClick)
-    document.removeEventListener('keydown', onHistoryKey)
+    if (!rollOpen.value) document.removeEventListener('keydown', onPopupKey)
+  }
+})
+
+watch(rollOpen, (open) => {
+  if (open) {
+    window.addEventListener('resize', updateRollMenuPosition)
+    window.addEventListener('scroll', updateRollMenuPosition, true)
+    document.addEventListener('mousedown', onRollDocClick)
+    document.addEventListener('keydown', onPopupKey)
+  } else {
+    window.removeEventListener('resize', updateRollMenuPosition)
+    window.removeEventListener('scroll', updateRollMenuPosition, true)
+    document.removeEventListener('mousedown', onRollDocClick)
+    if (!historyOpen.value) document.removeEventListener('keydown', onPopupKey)
   }
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateHistoryMenuPosition)
   window.removeEventListener('scroll', updateHistoryMenuPosition, true)
+  window.removeEventListener('resize', updateRollMenuPosition)
+  window.removeEventListener('scroll', updateRollMenuPosition, true)
   document.removeEventListener('mousedown', onHistoryDocClick)
-  document.removeEventListener('keydown', onHistoryKey)
+  document.removeEventListener('mousedown', onRollDocClick)
+  document.removeEventListener('keydown', onPopupKey)
 })
 
 let offFormat: (() => void) | undefined
 onMounted(() => {
   offFormat = window.api.txt2img.onFormat((field) => onFormatField(field))
+  void rollStore.hydrate()
 })
 onUnmounted(() => {
   offFormat?.()
@@ -294,28 +453,37 @@ function onResultListWheel(e: WheelEvent): void {
               aria-label="从剪贴板应用参数"
               @click="onApplyClipboard"
             >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M14.5 8H10.5C10.224 8 10 8.224 10 8.5C10 9.603 9.103 10.5 8 10.5C6.897 10.5 6 9.603 6 8.5C6 8.224 5.776 8 5.5 8H1.5C1.224 8 1 8.224 1 8.5V12.5C1 13.878 2.121 15 3.5 15H12.5C13.879 15 15 13.878 15 12.5V8.5C15 8.224 14.776 8 14.5 8ZM14 12.5C14 13.327 13.327 14 12.5 14H3.5C2.673 14 2 13.327 2 12.5V9H5.042C5.28 10.417 6.517 11.5 8 11.5C9.483 11.5 10.72 10.417 10.958 9H14V12.5ZM5.646 1.146C5.451 1.341 5.451 1.658 5.646 1.853L7.646 3.853C7.841 4.048 8.158 4.048 8.353 3.853L10.353 1.853C10.548 1.658 10.548 1.341 10.353 1.146C10.255 1.048 10.127 1 9.999 1C9.871 1 9.743 1.049 9.645 1.146L8.499 2.292V1.499C8.499 1.223 8.275 0.999 7.999 0.999C7.723 0.999 7.499 1.223 7.499 1.499V2.292L6.353 1.146C6.158 0.951 5.841 0.951 5.646 1.146ZM8.5 5.5C8.5 5.776 8.276 6 8 6C7.724 6 7.5 5.776 7.5 5.5C7.5 5.224 7.724 5 8 5C8.276 5 8.5 5.224 8.5 5.5ZM8.5 7.5C8.5 7.776 8.276 8 8 8C7.724 8 7.5 7.776 7.5 7.5C7.5 7.224 7.724 7 8 7C8.276 7 8.5 7.224 8.5 7.5Z"
+                />
+              </svg>
+            </button>
+            <button
+              ref="rollBtnRef"
+              type="button"
+              class="btn btn-ghost btn-icon"
+              title="随机工作流（追加到当前输入框）"
+              aria-label="随机工作流"
+              aria-haspopup="menu"
+              :aria-expanded="rollOpen"
+              @click="toggleRollMenu"
+            >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <rect
-                  x="3"
-                  y="3.25"
-                  width="10"
-                  height="10.5"
-                  rx="1.5"
+                  x="2.5"
+                  y="2.5"
+                  width="11"
+                  height="11"
+                  rx="2"
                   stroke="currentColor"
-                  stroke-width="1.5"
+                  stroke-width="1.4"
                 />
-                <path
-                  d="M5.5 3.25V2.75a1.75 1.75 0 0 1 1.75-1.75h1.5A1.75 1.75 0 0 1 10.5 2.75v.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M5.5 8h5M5.5 10.75h5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
+                <circle cx="5.5" cy="5.5" r="0.9" fill="currentColor" />
+                <circle cx="8" cy="8" r="0.9" fill="currentColor" />
+                <circle cx="10.5" cy="10.5" r="0.9" fill="currentColor" />
+                <circle cx="10.5" cy="5.5" r="0.9" fill="currentColor" />
+                <circle cx="5.5" cy="10.5" r="0.9" fill="currentColor" />
               </svg>
             </button>
             <button
@@ -366,23 +534,51 @@ function onResultListWheel(e: WheelEvent): void {
             <div v-if="!store.paramHistory.length" class="param-history-empty">暂无历史参数</div>
           </div>
         </Teleport>
+        <Teleport to="body">
+          <div v-if="rollOpen" class="roll-pick-menu" role="menu" :style="rollMenuStyle">
+            <button
+              v-for="item in rollStore.workflows"
+              :key="item.name"
+              type="button"
+              class="roll-pick-item"
+              role="menuitem"
+              @click="onPickRollWorkflow(item.name)"
+            >
+              <span class="roll-pick-name">{{ item.name }}</span>
+            </button>
+          </div>
+        </Teleport>
         <div class="panel-body">
           <div class="field">
             <label class="field-label">Prompt</label>
             <textarea
+              ref="promptTaRef"
               v-model="store.form.prompt"
               class="textarea"
               rows="5"
               data-prompt-field="prompt"
+              placeholder="可用 <random:chara> / <random:artist:0.8,0.9:3> / <random:my_tag:0.8,0.9>"
+              @focus="onPromptFocus('prompt', $event)"
+              @blur="onPromptBlur('prompt', $event)"
+              @select="onPromptSelect('prompt', $event)"
+              @keyup="onPromptSelect('prompt', $event)"
+              @click="onPromptSelect('prompt', $event)"
             />
           </div>
           <div class="field">
             <label class="field-label">Negative Prompt</label>
             <textarea
+              ref="negTaRef"
               v-model="store.form.negativePrompt"
               class="textarea textarea--sm"
               rows="2"
               data-prompt-field="negativePrompt"
+              placeholder="同样可用 <random:chara:1,2,3> 或字面 <random:tag:0.9>"
+              @focus="onPromptFocus('negativePrompt', $event)"
+              @blur="onPromptBlur('negativePrompt', $event)"
+              @select="onPromptSelect('negativePrompt', $event)"
+              @keyup="onPromptSelect('negativePrompt', $event)"
+              @click="onPromptSelect('negativePrompt', $event)"
             />
           </div>
 
@@ -459,30 +655,42 @@ function onResultListWheel(e: WheelEvent): void {
             </div>
           </div>
 
-          <div class="advanced-block">
-            <button
-              type="button"
-              class="advanced-toggle"
-              :class="{ open: advancedOpen }"
-              @click="advancedOpen = !advancedOpen"
-            >
-              <span class="chevron">▾</span>
-              高级 · 模型预设
-            </button>
+          <div class="model-block">
+            <div class="model-block-header">
+              <div class="field-label">模型</div>
+              <div class="family-switch" role="group" aria-label="模型模式">
+                <button
+                  type="button"
+                  class="family-switch-btn"
+                  :class="{ active: store.form.family === 'anima' }"
+                  @click="onFamilyChange('anima')"
+                >
+                  Anima
+                </button>
+                <button
+                  type="button"
+                  class="family-switch-btn"
+                  :class="{ active: store.form.family === 'sdxl' }"
+                  @click="onFamilyChange('sdxl')"
+                >
+                  SDXL
+                </button>
+              </div>
+            </div>
 
-            <div v-if="advancedOpen">
+            <template v-if="store.form.family === 'anima'">
               <div class="field-row field-row--3">
                 <div class="field">
                   <label class="field-label">UNET</label>
-                  <input v-model="store.form.unetModel" class="input" type="text" />
+                  <ModelSelect v-model="store.form.unetModel" folder="unet" placeholder="选择 UNET" />
                 </div>
                 <div class="field">
                   <label class="field-label">CLIP</label>
-                  <input v-model="store.form.clipModel" class="input" type="text" />
+                  <ModelSelect v-model="store.form.clipModel" folder="clip" placeholder="选择 CLIP" />
                 </div>
                 <div class="field">
                   <label class="field-label">VAE</label>
-                  <input v-model="store.form.vaeModel" class="input" type="text" />
+                  <ModelSelect v-model="store.form.vaeModel" folder="vae" placeholder="选择 VAE" />
                 </div>
               </div>
               <div class="field-row">
@@ -498,14 +706,35 @@ function onResultListWheel(e: WheelEvent): void {
               <div class="field-row">
                 <div class="field">
                   <label class="field-label">AuraFlow Shift</label>
-                  <input v-model.number="store.form.auraflowShift" class="input" type="number" step="0.1" />
+                  <input
+                    v-model.number="store.form.auraflowShift"
+                    class="input"
+                    type="number"
+                    step="0.1"
+                  />
                 </div>
                 <div class="field">
                   <label class="field-label">Output Prefix</label>
                   <input v-model="store.form.outputPrefix" class="input" type="text" />
                 </div>
               </div>
-            </div>
+            </template>
+            <template v-else>
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">Checkpoint</label>
+                  <ModelSelect
+                    v-model="store.form.checkpoint"
+                    folder="checkpoint"
+                    placeholder="选择 Checkpoint"
+                  />
+                </div>
+                <div class="field">
+                  <label class="field-label">Output Prefix</label>
+                  <input v-model="store.form.outputPrefix" class="input" type="text" />
+                </div>
+              </div>
+            </template>
           </div>
 
         </div>

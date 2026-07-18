@@ -25,6 +25,17 @@ export function loadParamHistory(): ParamHistoryEntry[] {
           !!(e as ParamHistoryEntry).form
         )
       })
+      .map((e) => {
+        const form = e.form as Txt2ImgForm & { checkpoint?: string }
+        return {
+          ...e,
+          form: {
+            ...form,
+            family: form.family === 'sdxl' ? 'sdxl' : 'anima',
+            checkpoint: typeof form.checkpoint === 'string' ? form.checkpoint : '',
+          },
+        }
+      })
       .slice(0, MAX_ENTRIES)
   } catch {
     return []

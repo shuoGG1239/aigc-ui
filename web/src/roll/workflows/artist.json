@@ -1,0 +1,566 @@
+{
+  "name": "artist",
+  "entries": [
+    {
+      "tag": "@akakura",
+      "weight": 3000
+    },
+    {
+      "tag": "@akamoku",
+      "weight": 100
+    },
+    {
+      "tag": "@alphonse_(white_datura)",
+      "weight": 1000
+    },
+    {
+      "tag": "@ama_mitsuki",
+      "weight": 500
+    },
+    {
+      "tag": "@amagasa_yun",
+      "weight": 1000
+    },
+    {
+      "tag": "@amazuyu_tatsuki",
+      "weight": 2000
+    },
+    {
+      "tag": "@anmi",
+      "weight": 1000
+    },
+    {
+      "tag": "@as109",
+      "weight": 50
+    },
+    {
+      "tag": "@ask_(askzy)",
+      "weight": 3000
+    },
+    {
+      "tag": "@azuuru",
+      "weight": 100
+    },
+    {
+      "tag": "@bbolalus",
+      "weight": 2000
+    },
+    {
+      "tag": "@bison_cangshu",
+      "weight": 2000
+    },
+    {
+      "tag": "@bukurote",
+      "weight": 1000
+    },
+    {
+      "tag": "@chen_bin",
+      "weight": 2000
+    },
+    {
+      "tag": "@cierra_(ra-bit)",
+      "weight": 1000
+    },
+    {
+      "tag": "@ciloranko",
+      "weight": 5000
+    },
+    {
+      "tag": "@cogecha",
+      "weight": 2000
+    },
+    {
+      "tag": "@cyenmi3",
+      "weight": 2000
+    },
+    {
+      "tag": "@dampi",
+      "weight": 2000
+    },
+    {
+      "tag": "@danimaru",
+      "weight": 3000
+    },
+    {
+      "tag": "@daram_(shappydude)",
+      "weight": 200
+    },
+    {
+      "tag": "@deadnooodles",
+      "weight": 2000
+    },
+    {
+      "tag": "@dishwasher1910",
+      "weight": 2000
+    },
+    {
+      "tag": "@dsmile",
+      "weight": 3000
+    },
+    {
+      "tag": "@eluthel",
+      "weight": 100
+    },
+    {
+      "tag": "@fujiyama",
+      "weight": 1000
+    },
+    {
+      "tag": "@fukahire_(ruinon)",
+      "weight": 100
+    },
+    {
+      "tag": "@fusuma_(ramunezake)",
+      "weight": 100
+    },
+    {
+      "tag": "@fuzichoco",
+      "weight": 3000
+    },
+    {
+      "tag": "@gaou_(umaiyo_puyoman)",
+      "weight": 100
+    },
+    {
+      "tag": "@gin00",
+      "weight": 500
+    },
+    {
+      "tag": "@gomzi",
+      "weight": 2000
+    },
+    {
+      "tag": "@gou_lianlian_dogface",
+      "weight": 2000
+    },
+    {
+      "tag": "@hagi_(ame_hagi)",
+      "weight": 5000
+    },
+    {
+      "tag": "@haimura_kiyotaka",
+      "weight": 500
+    },
+    {
+      "tag": "@hanekoto",
+      "weight": 100
+    },
+    {
+      "tag": "@heripiro",
+      "weight": 500
+    },
+    {
+      "tag": "@himitsu_(hi_mi_tsu_2)",
+      "weight": 5000
+    },
+    {
+      "tag": "@hiten_(hitenkei)",
+      "weight": 100
+    },
+    {
+      "tag": "@hoji_(hooooooooji1029)",
+      "weight": 1000
+    },
+    {
+      "tag": "@hokori_sakuni",
+      "weight": 2000
+    },
+    {
+      "tag": "@houkisei",
+      "weight": 2000
+    },
+    {
+      "tag": "@ibara_riato",
+      "weight": 2000
+    },
+    {
+      "tag": "@icomochi",
+      "weight": 2000
+    },
+    {
+      "tag": "@ideolo",
+      "weight": 4000
+    },
+    {
+      "tag": "@ikeuchi_tanuma",
+      "weight": 1000
+    },
+    {
+      "tag": "@infukun",
+      "weight": 100
+    },
+    {
+      "tag": "@iwashi_(iwashi008)",
+      "weight": 100
+    },
+    {
+      "tag": "@jako_(jakoo21)",
+      "weight": 500
+    },
+    {
+      "tag": "@jyt",
+      "weight": 5000
+    },
+    {
+      "tag": "@kaede_(yumesaki_kaede)",
+      "weight": 1000
+    },
+    {
+      "tag": "@kamizaki_hibana",
+      "weight": 100
+    },
+    {
+      "tag": "@kani_biimu",
+      "weight": 1000
+    },
+    {
+      "tag": "@kantoku",
+      "weight": 1000
+    },
+    {
+      "tag": "@kanzaki_hiro",
+      "weight": 500
+    },
+    {
+      "tag": "@karory",
+      "weight": 200
+    },
+    {
+      "tag": "@kawacy",
+      "weight": 1000
+    },
+    {
+      "tag": "@kazutake_hazano",
+      "weight": 4000
+    },
+    {
+      "tag": "@ke-ta",
+      "weight": 5000
+    },
+    {
+      "tag": "@kedama_milk",
+      "weight": 20000
+    },
+    {
+      "tag": "@liduke",
+      "weight": 2000
+    },
+    {
+      "tag": "@makihitsuji",
+      "weight": 2000
+    },
+    {
+      "tag": "@mankai_kaika",
+      "weight": 200
+    },
+    {
+      "tag": "@mika_pikazo",
+      "weight": 3000
+    },
+    {
+      "tag": "@mikaze_oto",
+      "weight": 500
+    },
+    {
+      "tag": "@mikisai",
+      "weight": 2000
+    },
+    {
+      "tag": "@mikozin",
+      "weight": 700
+    },
+    {
+      "tag": "@mimelond",
+      "weight": 100
+    },
+    {
+      "tag": "@minaba_hideo",
+      "weight": 3000
+    },
+    {
+      "tag": "@misaki_kurehito",
+      "weight": 50
+    },
+    {
+      "tag": "@mitsumi_misato",
+      "weight": 2000
+    },
+    {
+      "tag": "@miv4t",
+      "weight": 500
+    },
+    {
+      "tag": "@miwabe_sakura",
+      "weight": 200
+    },
+    {
+      "tag": "@miwano_rag",
+      "weight": 2000
+    },
+    {
+      "tag": "@miyoshino",
+      "weight": 100
+    },
+    {
+      "tag": "@miyuki_(miyuki0529)",
+      "weight": 4000
+    },
+    {
+      "tag": "@modare",
+      "weight": 2000
+    },
+    {
+      "tag": "@monochrome",
+      "weight": 100
+    },
+    {
+      "tag": "@morikura_en",
+      "weight": 1000
+    },
+    {
+      "tag": "@muninshiki",
+      "weight": 500
+    },
+    {
+      "tag": "@muryotaro",
+      "weight": 3000
+    },
+    {
+      "tag": "@nanananana",
+      "weight": 1000
+    },
+    {
+      "tag": "@nanashi_(nlo)",
+      "weight": 1000
+    },
+    {
+      "tag": "@nardack",
+      "weight": 2000
+    },
+    {
+      "tag": "@nekojira",
+      "weight": 3000
+    },
+    {
+      "tag": "@nima_(niru54)",
+      "weight": 2500
+    },
+    {
+      "tag": "@ningen_mame",
+      "weight": 100
+    },
+    {
+      "tag": "@noco_(adamas)",
+      "weight": 100
+    },
+    {
+      "tag": "@norizc",
+      "weight": 2000
+    },
+    {
+      "tag": "@noyu_(noyu23386566)",
+      "weight": 3000
+    },
+    {
+      "tag": "@onineko",
+      "weight": 500
+    },
+    {
+      "tag": "@paryi",
+      "weight": 50
+    },
+    {
+      "tag": "@paseri",
+      "weight": 1000
+    },
+    {
+      "tag": "@pkpkpppk",
+      "weight": 100
+    },
+    {
+      "tag": "@ponnyu12",
+      "weight": 100
+    },
+    {
+      "tag": "@pottsness",
+      "weight": 500
+    },
+    {
+      "tag": "@qianqianjie",
+      "weight": 1000
+    },
+    {
+      "tag": "@qinghejunzi",
+      "weight": 100
+    },
+    {
+      "tag": "@qtonagi",
+      "weight": 2000
+    },
+    {
+      "tag": "@quan_(kurisu_tina)",
+      "weight": 500
+    },
+    {
+      "tag": "@qys3",
+      "weight": 1000
+    },
+    {
+      "tag": "@rei_(sanbonzakura)",
+      "weight": 500
+    },
+    {
+      "tag": "@Rella",
+      "weight": 2000
+    },
+    {
+      "tag": "@reoen",
+      "weight": 2500
+    },
+    {
+      "tag": "@rhasta",
+      "weight": 3000
+    },
+    {
+      "tag": "@rika_(mikunopantsu)",
+      "weight": 100
+    },
+    {
+      "tag": "@rin31153336",
+      "weight": 4000
+    },
+    {
+      "tag": "@rosumerii",
+      "weight": 2000
+    },
+    {
+      "tag": "@rouka_(akatyann)",
+      "weight": 2500
+    },
+    {
+      "tag": "@rurudo",
+      "weight": 2000
+    },
+    {
+      "tag": "@saru",
+      "weight": 2000
+    },
+    {
+      "tag": "@sencha_(senta_10)",
+      "weight": 100
+    },
+    {
+      "tag": "@senji_(tegone_spike)",
+      "weight": 2000
+    },
+    {
+      "tag": "@shacho_(ko_no_ha)",
+      "weight": 1000
+    },
+    {
+      "tag": "@shirabi",
+      "weight": 500
+    },
+    {
+      "tag": "@shiroshi_(denpa_eshidan)",
+      "weight": 1500
+    },
+    {
+      "tag": "@sho_(sho_lwlw)",
+      "weight": 500
+    },
+    {
+      "tag": "@sincos",
+      "weight": 1000
+    },
+    {
+      "tag": "@sofra",
+      "weight": 1000
+    },
+    {
+      "tag": "@sogawa",
+      "weight": 3000
+    },
+    {
+      "tag": "@starshadowmagician",
+      "weight": 100
+    },
+    {
+      "tag": "@suimya",
+      "weight": 3000
+    },
+    {
+      "tag": "@suzumori_uina",
+      "weight": 100
+    },
+    {
+      "tag": "@takenoko_no_you",
+      "weight": 2000
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye",
+      "weight": 5000
+    },
+    {
+      "tag": "@toosaka_asagi",
+      "weight": 2000
+    },
+    {
+      "tag": "@tsubasa_tsubasa",
+      "weight": 500
+    },
+    {
+      "tag": "@u_u_zan",
+      "weight": 1000
+    },
+    {
+      "tag": "@wanke",
+      "weight": 3000
+    },
+    {
+      "tag": "@weri",
+      "weight": 2000
+    },
+    {
+      "tag": "@wlop",
+      "weight": 2000
+    },
+    {
+      "tag": "@xilmo",
+      "weight": 500
+    },
+    {
+      "tag": "@xiujia_yihuizi",
+      "weight": 2000
+    },
+    {
+      "tag": "@yamasan",
+      "weight": 2000
+    },
+    {
+      "tag": "@yoneyama_mai",
+      "weight": 2000
+    },
+    {
+      "tag": "@yoru_nai",
+      "weight": 2000
+    },
+    {
+      "tag": "@you_shimizu",
+      "weight": 1000
+    },
+    {
+      "tag": "@yunsang",
+      "weight": 2000
+    },
+    {
+      "tag": "@yuya_(night_lily)",
+      "weight": 2000
+    },
+    {
+      "tag": "@zuizi",
+      "weight": 3000
+    }
+  ],
+  "updatedAt": 1784369238183
+}

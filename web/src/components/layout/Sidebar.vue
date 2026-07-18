@@ -6,6 +6,7 @@ const router = useRouter()
 
 const primaryItems = [
   { path: '/', label: '文生图', icon: 'spark' as const },
+  { path: '/roll', label: '随机', icon: 'dice' as const },
   { path: '/console', label: '控制台', icon: 'console' as const },
 ]
 
@@ -43,6 +44,20 @@ function go(path: string): void {
             d="M18 15.5l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1z"
             fill="currentColor"
           />
+        </svg>
+        <svg
+          v-else-if="item.icon === 'dice'"
+          class="nav-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.6" />
+          <circle cx="9" cy="9" r="1.2" fill="currentColor" />
+          <circle cx="15" cy="9" r="1.2" fill="currentColor" />
+          <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+          <circle cx="9" cy="15" r="1.2" fill="currentColor" />
+          <circle cx="15" cy="15" r="1.2" fill="currentColor" />
         </svg>
         <svg v-else class="nav-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <rect x="3.5" y="4.5" width="17" height="15" rx="2" stroke="currentColor" stroke-width="1.6" />

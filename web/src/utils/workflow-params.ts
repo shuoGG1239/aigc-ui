@@ -1,4 +1,5 @@
-import { createDefaultForm, type Txt2ImgForm } from '@/stores/txt2img'
+import { getFamilyDefaults, resolveFamily } from '@/models/family'
+import { createDefaultForm, normalizeForm, type Txt2ImgForm } from '@/stores/txt2img'
 
 interface ComfyNode {
   class_type?: string
@@ -22,10 +23,36 @@ export function parseWorkflowParams(text: string): Txt2ImgForm {
   const form = createDefaultForm()
   const nodes = Object.entries(graph)
 
+  const hasAuraFlow = nodes.some(([, n]) => n.class_type === 'ModelSamplingAuraFlow')
+  const hasCheckpointLoader = nodes.some(([, n]) => n.class_type === 'CheckpointLoaderSimple')
   const unet = findFirst(nodes, 'UNETLoader')
+  const ckpt = findFirst(nodes, 'CheckpointLoaderSimple')
+
+  form.family = resolveFamily({
+    hasAuraFlow,
+    hasCheckpointLoader,
+    unetModel: unet ? str(unet.inputs?.unet_name, '') : '',
+    checkpoint: ckpt ? str(ckpt.inputs?.ckpt_name, '') : '',
+  })
+
+  const defaults = getFamilyDefaults(form.family)
+  form.width = defaults.width
+  form.height = defaults.height
+  form.steps = defaults.steps
+  form.cfg = defaults.cfg
+  form.sampler = defaults.sampler
+  form.scheduler = defaults.scheduler
+  form.denoise = defaults.denoise
+  form.outputPrefix = defaults.outputPrefix
+  form.negativePrompt = defaults.negativePrompt
+
   if (unet) {
     form.unetModel = str(unet.inputs?.unet_name, form.unetModel)
     form.unetWeightDtype = str(unet.inputs?.weight_dtype, form.unetWeightDtype)
+  }
+
+  if (ckpt) {
+    form.checkpoint = str(ckpt.inputs?.ckpt_name, form.checkpoint)
   }
 
   const clip = findFirst(nodes, 'CLIPLoader')
@@ -92,7 +119,7 @@ export function parseWorkflowParams(text: string): Txt2ImgForm {
     form.outputPrefix = str(save.inputs?.filename_prefix, form.outputPrefix)
   }
 
-  return form
+  return normalizeForm(form)
 }
 
 function extractGraph(data: unknown): Record<string, ComfyNode> | null {

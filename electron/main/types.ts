@@ -10,9 +10,16 @@ export interface ComfyProcessStatus {
   pid: number | null
 }
 
+export type ModelFamily = 'anima' | 'sdxl'
+
 export interface Txt2ImgParams {
+  family: ModelFamily
   prompt: string
+  /** Per-image prompts (batch iterator). Falls back to `prompt` when missing. */
+  prompts?: string[]
   negativePrompt: string
+  /** Per-image negatives (batch iterator). Falls back to `negativePrompt` when missing. */
+  negativePrompts?: string[]
   width: number
   height: number
   batchSize: number
@@ -28,6 +35,7 @@ export interface Txt2ImgParams {
   vaeModel: string
   unetWeightDtype: string
   auraflowShift: number
+  checkpoint: string
   outputPrefix: string
 }
 

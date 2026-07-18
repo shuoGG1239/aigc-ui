@@ -1,0 +1,262 @@
+{
+  "name": "artist_good2",
+  "entries": [
+    {
+      "tag": "(@ciloranko:0.95), (@kazutake_hazano:0.95), (@kedama_milk:0.95), (@hagi_(ame_hagi):0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "(@ciloranko:0.95), @hagi_(ame_hagi), (@ke-ta:0.95), (@gou_lianlian_dogface:0.95), @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "tag": "(@ciloranko:0.95), @hagi_(ame_hagi), @amazuyu_tatsuki",
+      "weight": 1
+    },
+    {
+      "tag": "(@ciloranko:0.95), @jyt, @bbolalus, (@ke-ta:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "(@ciloranko:0.95), @wlop, @ningen_mame, (@yunsang:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "(@ciloranko:1.05), (@ke-ta:1.05), (@himitsu_(hi_mi_tsu_2):1.05), @hagi_(ame_hagi), @ke-ta, @tianliang_duohe_fangdongye",
+      "weight": 1
+    },
+    {
+      "tag": "(@deadnooodles:0.95), (@ke-ta:0.95), @tianliang_duohe_fangdongye, (@himitsu_(hi_mi_tsu_2):0.95), @jyt, @hagi_(ame_hagi)",
+      "weight": 1
+    },
+    {
+      "tag": "(@deadnooodles:0.95), @jyt, (@miwabe_sakura:0.95), (@ke-ta:0.95), @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "tag": "(@hagi_(ame_hagi):0.95), @ciloranko, @wlop, @ask_(askzy)",
+      "weight": 1
+    },
+    {
+      "tag": "(@hagi_(ame_hagi):1.05), (@jyt:1.05), @deadnooodles, @himitsu_(hi_mi_tsu_2), @ciloranko, (@ke-ta:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@hagi_(ame_hagi):1.05), (@ke-ta:1.05), @ciloranko, (@ke-ta:1.05), @tianliang_duohe_fangdongye, (@himitsu_(hi_mi_tsu_2):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@hagi_(ame_hagi):1.05), (@rin31153336:1.05), @ke-ta",
+      "weight": 1
+    },
+    {
+      "tag": "(@hagi_(ame_hagi):1.05), @ciloranko, (@himitsu_(hi_mi_tsu_2):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@hagi_(ame_hagi):1.05), @ke-ta, (@himitsu_(hi_mi_tsu_2):1.05), @jyt, (@ciloranko:1.05), @Rella",
+      "weight": 1
+    },
+    {
+      "tag": "(@himitsu_(hi_mi_tsu_2):1.05), (@ciloranko:1.05), @himitsu_(hi_mi_tsu_2), (@ke-ta:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@himitsu_(hi_mi_tsu_2):1.05), (@ke-ta:1.05), @ciloranko, @jyt, @jyt",
+      "weight": 1
+    },
+    {
+      "tag": "(@himitsu_(hi_mi_tsu_2):1.05), @jyt, @hagi_(ame_hagi), (@ciloranko:1.05), (@ke-ta:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@jyt:0.95), @ciloranko, @hagi_(ame_hagi), (@tianliang_duohe_fangdongye:0.95), @hokori_sakuni, @ke-ta",
+      "weight": 1
+    },
+    {
+      "tag": "(@jyt:0.95), @ke-ta, @miwano_rag, (@ciloranko:0.95), (@tianliang_duohe_fangdongye:0.95), (@hagi_(ame_hagi):0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "(@jyt:1.05), @himitsu_(hi_mi_tsu_2), @hagi_(ame_hagi), @ciloranko, (@ke-ta:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@ke-ta:0.95), (@himitsu_(hi_mi_tsu_2):0.95), @jyt, @hagi_(ame_hagi), @tianliang_duohe_fangdongye, (@ciloranko:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "(@ke-ta:0.95), (@tianliang_duohe_fangdongye:0.95), @hagi_(ame_hagi), @kanzaki_hiro, (@jyt:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "(@ke-ta:1.05), @himitsu_(hi_mi_tsu_2), @hagi_(ame_hagi), @tianliang_duohe_fangdongye, @ciloranko, @rurudo, (@wlop:0.95), @ciloranko",
+      "weight": 1
+    },
+    {
+      "tag": "(@tianliang_duohe_fangdongye:0.95), (@ke-ta:0.95), @himitsu_(hi_mi_tsu_2), @hagi_(ame_hagi), @ciloranko, (@ask_(askzy):0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "(@tianliang_duohe_fangdongye:0.95), @himitsu_(hi_mi_tsu_2), @ke-ta, @ciloranko",
+      "weight": 1
+    },
+    {
+      "tag": "(@tianliang_duohe_fangdongye:1.05), (@hagi_(ame_hagi):1.05), @deadnooodles, @ke-ta, @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "tag": "(@tianliang_duohe_fangdongye:1.05), (@ke-ta:1.05), @jyt, (@hagi_(ame_hagi):1.05), @sofra",
+      "weight": 1
+    },
+    {
+      "tag": "(@tianliang_duohe_fangdongye:1.05), @himitsu_(hi_mi_tsu_2), (@hagi_(ame_hagi):1.05), @jyt, @deadnooodles, @ideolo",
+      "weight": 1
+    },
+    {
+      "tag": "(@wlop:0.95), @rin31153336, (@jyt:0.95), (@hagi_(ame_hagi):0.95), (@reoen:0.95), @ke-ta",
+      "weight": 1
+    },
+    {
+      "tag": "(@wlop:1.05), @ask_(askzy), (@ke-ta:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@wlop:1.05), @himitsu_(hi_mi_tsu_2), (@ask_(askzy):1.05), (@hagi_(ame_hagi):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@yamasan:1.05), @ke-ta, @ciloranko, @hagi_(ame_hagi), (@himitsu_(hi_mi_tsu_2):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "(@yunsang:1.05), @hagi_(ame_hagi), (@ciloranko:1.05), @ask_(askzy)",
+      "weight": 1
+    },
+    {
+      "tag": "@ciloranko, (@hagi_(ame_hagi):0.95), (@jyt:0.95), @tianliang_duohe_fangdongye, (@deadnooodles:0.95), @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "tag": "@ciloranko, (@jyt:1.05), (@deadnooodles:1.05), @wanke, (@ke-ta:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@ciloranko, (@jyt:1.05), @ke-ta, @tianliang_duohe_fangdongye, (@himitsu_(hi_mi_tsu_2):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@ciloranko, (@ke-ta:0.95), (@hagi_(ame_hagi):0.95), @himitsu_(hi_mi_tsu_2), (@deadnooodles:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "@ciloranko, @jyt, (@hagi_(ame_hagi):0.95), @himitsu_(hi_mi_tsu_2), (@ke-ta:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "@dampi, @ke-ta, @tianliang_duohe_fangdongye, (@jyt:0.95), (@deadnooodles:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "@hagi_(ame_hagi), (@qianqianjie:1.05), @deadnooodles, @jyt, (@ke-ta:1.05), (@himitsu_(hi_mi_tsu_2):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@hagi_(ame_hagi), @ciloranko, (@tianliang_duohe_fangdongye:1.05), (@hagi_(ame_hagi):1.05), (@himitsu_(hi_mi_tsu_2):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@himitsu_(hi_mi_tsu_2), @chen_bin, (@hagi_(ame_hagi):0.95), (@jyt:0.95), @ke-ta, @tianliang_duohe_fangdongye",
+      "weight": 1
+    },
+    {
+      "tag": "@himitsu_(hi_mi_tsu_2), @jyt, (@deadnooodles:1.05), @hagi_(ame_hagi), (@fuzichoco:1.05), @ke-ta",
+      "weight": 1
+    },
+    {
+      "tag": "@ideolo, @ciloranko, (@himitsu_(hi_mi_tsu_2):0.95), (@tianliang_duohe_fangdongye:0.95), @hagi_(ame_hagi)",
+      "weight": 1
+    },
+    {
+      "tag": "@jyt, (@tianliang_duohe_fangdongye:1.05), @ke-ta, (@hagi_(ame_hagi):1.05), @himitsu_(hi_mi_tsu_2), @takenoko_no_you",
+      "weight": 1
+    },
+    {
+      "tag": "@jyt, @ke-ta, (@ciloranko:1.05), (@tianliang_duohe_fangdongye:1.05), (@himitsu_(hi_mi_tsu_2):1.05), (@hagi_(ame_hagi):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@jyt, @ke-ta, @ciloranko, (@hagi_(ame_hagi):0.95), (@tianliang_duohe_fangdongye:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "@ke-ta, (@jyt:0.95), @ciloranko, @hagi_(ame_hagi), (@himitsu_(hi_mi_tsu_2):0.95), @tianliang_duohe_fangdongye",
+      "weight": 1
+    },
+    {
+      "tag": "@ke-ta, (@tianliang_duohe_fangdongye:0.95), @himitsu_(hi_mi_tsu_2), @jyt, (@hagi_(ame_hagi):0.95), @ciloranko",
+      "weight": 1
+    },
+    {
+      "tag": "@ke-ta, @hagi_(ame_hagi), @himitsu_(hi_mi_tsu_2), (@rei_(sanbonzakura):0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "@ke-ta, @nardack, (@himitsu_(hi_mi_tsu_2):1.05), @ciloranko, (@hagi_(ame_hagi):1.05), (@jyt:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@kedama_milk, (@himitsu_(hi_mi_tsu_2):1.05), (@ciloranko:1.05), (@reoen:1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@miyuki_(miyuki0529), (@ke-ta:0.95), @jyt, (@tianliang_duohe_fangdongye:0.95), @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "tag": "@ningen_mame, @ciloranko, (@sho_(sho_lwlw):0.95), tianliang duohe fangdongye, @wlop, (@gin00:0.9)",
+      "weight": 1
+    },
+    {
+      "tag": "@rurudo, (@jyt:1.05), (@hagi_(ame_hagi):1.05), @ciloranko, @himitsu_(hi_mi_tsu_2), @deadnooodles",
+      "weight": 1
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye, (@ciloranko:0.95), (@jyt:0.95), (@ke-ta:0.95), @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye, (@ciloranko:1.05), @himitsu_(hi_mi_tsu_2), (@ke-ta:1.05), (@hagi_(ame_hagi):1.05), @reoen",
+      "weight": 1
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye, (@jyt:0.95), @ciloranko, (@hagi_(ame_hagi):0.95), @ke-ta, @himitsu_(hi_mi_tsu_2)",
+      "weight": 1
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye, (@rhasta:1.05), (@kedama_milk:1.05), (@ciloranko:1.05), (@sho_(sho_lwlw):1.05)",
+      "weight": 1
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye, @ciloranko, (@hagi_(ame_hagi):0.95), @ke-ta, (@jyt:0.95), (@sogawa:0.95)",
+      "weight": 1
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye, @hagi_(ame_hagi), @ciloranko, (@ke-ta:0.95), @himitsu_(hi_mi_tsu_2), @jyt",
+      "weight": 1
+    },
+    {
+      "tag": "@tianliang_duohe_fangdongye, @himitsu_(hi_mi_tsu_2), @hagi_(ame_hagi), (@jyt:0.95), @ke-ta",
+      "weight": 1
+    },
+    {
+      "tag": "@u_u_zan, @hagi_(ame_hagi), @himitsu_(hi_mi_tsu_2), @wlop",
+      "weight": 1
+    },
+    {
+      "tag": "@wlop, @ciloranko, @kedama_milk, @hagi_(ame_hagi)",
+      "weight": 1
+    }
+  ],
+  "updatedAt": 0
+}

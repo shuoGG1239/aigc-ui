@@ -9,16 +9,21 @@ const props = withDefaults(
     placeholder?: string
     variant?: 'default' | 'compact'
     disabled?: boolean
+    loading?: boolean
+    emptyText?: string
   }>(),
   {
     placeholder: '请选择',
     variant: 'default',
     disabled: false,
+    loading: false,
+    emptyText: '暂无选项',
   },
 )
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  open: []
 }>()
 
 const open = ref(false)
@@ -27,7 +32,9 @@ const menuStyle = ref<Record<string, string>>({})
 
 const label = computed(() => {
   const hit = props.options.find((o) => o.value === props.modelValue)
-  return hit?.label ?? props.placeholder
+  if (hit) return hit.label
+  if (props.modelValue) return props.modelValue
+  return props.placeholder
 })
 
 function updateMenuPosition(): void {
@@ -52,6 +59,7 @@ async function toggle(): Promise<void> {
   if (props.disabled) return
   open.value = !open.value
   if (open.value) {
+    emit('open')
     await nextTick()
     updateMenuPosition()
   }
@@ -108,21 +116,25 @@ onBeforeUnmount(() => {
       :disabled="disabled"
       @click="toggle"
     >
-      <span class="app-select-value">{{ label }}</span>
+      <span class="app-select-value" :class="{ 'is-placeholder': !modelValue }">{{ label }}</span>
       <span class="app-select-chevron">▾</span>
     </button>
     <Teleport to="body">
       <div v-if="open" class="app-select-menu" :style="menuStyle">
-        <button
-          v-for="opt in options"
-          :key="opt.value"
-          type="button"
-          class="app-select-option"
-          :class="{ active: opt.value === modelValue }"
-          @click="select(opt.value)"
-        >
-          {{ opt.label }}
-        </button>
+        <div v-if="loading" class="app-select-status">加载中…</div>
+        <template v-else-if="options.length">
+          <button
+            v-for="opt in options"
+            :key="opt.value"
+            type="button"
+            class="app-select-option"
+            :class="{ active: opt.value === modelValue }"
+            @click="select(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        </template>
+        <div v-else class="app-select-status">{{ emptyText }}</div>
       </div>
     </Teleport>
   </div>

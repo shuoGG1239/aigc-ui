@@ -65,6 +65,38 @@ export class ComfyUIClient {
     }
   }
 
+  /** List model filenames under a ComfyUI model folder (e.g. checkpoints, unet, clip, vae). */
+  async listModels(folder: string): Promise<string[]> {
+    const name = folder.trim()
+    if (!name) throw new Error('模型目录为空')
+
+    const paths = [`/models/${encodeURIComponent(name)}`, `/api/models/${encodeURIComponent(name)}`]
+    let lastError: unknown
+    for (const path of paths) {
+      try {
+        const data = await this.request('GET', path, undefined, 10_000)
+        if (!Array.isArray(data)) {
+          throw new Error(`无效的模型列表响应: ${path}`)
+        }
+        return data
+          .map((item) => {
+            if (typeof item === 'string') return item
+            if (item && typeof item === 'object' && 'name' in item) {
+              return String((item as { name: unknown }).name)
+            }
+            return ''
+          })
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+      } catch (err) {
+        lastError = err
+      }
+    }
+    const message = lastError instanceof Error ? lastError.message : String(lastError)
+    throw new Error(`获取 ${name} 模型列表失败: ${message}`)
+  }
+
   async queuePrompt(workflow: Record<string, unknown>): Promise<string> {
     const clientId = randomUUID()
     const result = (await this.request('POST', '/prompt', {
