@@ -6,7 +6,7 @@ ComfyUI Anima txt2img 桌面客户端（Electron + Vue 3）。
 
 1. 已安装 [Node.js](https://nodejs.org/) 18+
 2. 本机已启动 ComfyUI，默认地址：`http://127.0.0.1:8188`
-3. ComfyUI 中已放置 Anima 相关模型（与 `txt2img.py` 一致）：
+3. ComfyUI 中已放置 Anima 相关模型：
    - UNET: `anima-base-v1.0.safetensors`
    - CLIP: `qwen_3_06b_base.safetensors`
    - VAE: `qwen_image_vae.safetensors`
@@ -36,5 +36,4 @@ npm run build
 
 ## 参考
 
-- [`txt2img.py`](txt2img.py)：命令行脚本，客户端工作流与其对齐
 - [`docs/comfyui-openapi.yaml`](docs/comfyui-openapi.yaml)：ComfyUI 本地 API OpenAPI 定义（来自 [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI/blob/master/openapi.yaml)）

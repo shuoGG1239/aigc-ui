@@ -1,9 +1,6 @@
 /** Danbooru tags: 2025-09-01 snapshot (Anima-base cutoff ≈ Sep 2025), pt≥20 + aliases. */
 import danbooruCsv from './data/danbooru.csv?raw'
-/**
- * zh_CN map (`en,zh`): byzod Tags-zh-full-pack first, Physton fills gaps.
- * Rebuild: `node scripts/merge-zh-csv.mjs` (needs CSVs in %TEMP%).
- */
+/** zh_CN map (`en,zh`): byzod Tags-zh-full-pack first, Physton fills gaps. */
 import danbooruZhCsv from './data/danbooru.zh_CN.csv?raw'
 import { parseCsvAsync, yieldToMain } from './csv'
 
