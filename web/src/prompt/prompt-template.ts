@@ -3,6 +3,7 @@ import { nextLiteralPrompt, nextPoolPrompt } from './prompt-pool-engine'
 import {
   parseCountsInput,
   parseStrengthsPool,
+  splitNumericList,
   type PromptPool,
 } from '@shared/prompt-pool-types'
 
@@ -17,10 +18,10 @@ export interface PlaceholderBody {
   counts: number[]
 }
 
-/** Pure integers → count pool; otherwise strength pool (e.g. 0.8,0.9 or 1.0). */
+/** Pure integers → count pool; otherwise strength pool (e.g. 0.8|0.9 or 1.0). */
 function isIntegerCountsPool(raw: string): boolean {
-  const parts = raw.split(/[,，\s~～\-]+/).filter(Boolean)
-  return parts.length > 0 && parts.every((p) => /^\d+$/.test(p.trim()))
+  const parts = splitNumericList(raw)
+  return parts.length > 0 && parts.every((p) => /^\d+$/.test(p))
 }
 
 /** Parse inner body after `pool:` / `random:`. */
@@ -58,8 +59,8 @@ export function parsePlaceholderBody(raw: string): PlaceholderBody {
 function formatPoolPlaceholder(name: string, counts?: number[], strengths?: number[]): string {
   const n = name.trim()
   const countPart =
-    counts?.length && !(counts.length === 1 && counts[0] === 1) ? counts.join(',') : ''
-  const strengthPart = strengths?.length ? strengths.join(',') : ''
+    counts?.length && !(counts.length === 1 && counts[0] === 1) ? counts.join('|') : ''
+  const strengthPart = strengths?.length ? strengths.join('|') : ''
   if (strengthPart && countPart) return `<pool:${n}:${strengthPart}:${countPart}>`
   if (strengthPart) return `<pool:${n}:${strengthPart}>`
   if (countPart) return `<pool:${n}:${countPart}>`

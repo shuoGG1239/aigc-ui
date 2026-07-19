@@ -125,7 +125,7 @@ export async function generateTxt2Img(
       const img = remoteImages[0]
       const data = await client.downloadImage(img.filename, img.subfolder, img.type)
       const suffix = extname(img.filename) || '.png'
-      const filename = count === 1 ? `${prefix}_${ts}${suffix}` : `${prefix}_${ts}_${i}${suffix}`
+      const filename = `${ts}_${i}_${prefix}${suffix}`
       const path = join(outputDir, filename)
       writeFileSync(path, data)
 

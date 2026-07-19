@@ -352,11 +352,11 @@ function onNumberWheel(
                     <span>从提示词池抽样</span>
                   </div>
                   <div class="field-help-block">
-                    <code>&lt;pool:名称:0.8,0.9&gt;</code>
-                    <span>附带强度池</span>
+                    <code>&lt;pool:名称:0.8|0.9&gt;</code>
+                    <span>强度池（| 或 , 均可）</span>
                   </div>
                   <div class="field-help-block">
-                    <code>&lt;pool:名称:0.8,0.9:2,3&gt;</code>
+                    <code>&lt;pool:名称:0.8|0.9:2|3&gt;</code>
                     <span>强度池 + 数量池</span>
                   </div>
                   <div class="field-help-block">
@@ -369,7 +369,11 @@ function onNumberWheel(
                     <span>字面量，不查池</span>
                   </div>
                   <div class="field-help-block">
-                    <code>&lt;random:文本:0.8,0.9&gt;</code>
+                    <code>&lt;random:a|b&gt;</code>
+                    <span>等概率多选一</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;random:文本:0.8|0.9&gt;</code>
                     <span>字面量 + 强度</span>
                   </div>
                   <div class="field-help-sep"></div>
@@ -395,7 +399,7 @@ function onNumberWheel(
               :family="store.form.family"
               fill
               field-attr="prompt"
-              placeholder="可用 <pool:chara> / <pool:artist:0.8,0.9:3> / <random:my_tag:0.8,0.9>"
+              placeholder="可用 <pool:chara> / <pool:artist:0.8|0.9:3> / <random:a|b:0.8|0.9>"
               @focus="onPromptFocus('prompt', $event)"
               @blur="onPromptBlur('prompt', $event)"
               @caret="onPromptSelect('prompt')"
@@ -411,7 +415,7 @@ function onNumberWheel(
               :family="store.form.family"
               fill
               field-attr="negativePrompt"
-              placeholder="同样可用 <pool:chara:1,2,3> 或 <random:tag:0.9>"
+              placeholder="同样可用 <pool:chara:1|2|3> 或 <random:tag:0.9>"
               @focus="onPromptFocus('negativePrompt', $event)"
               @blur="onPromptBlur('negativePrompt', $event)"
               @caret="onPromptSelect('negativePrompt')"

@@ -11,7 +11,12 @@ import {
   sampleProgramPool,
   type ProgramPoolContext,
 } from '@shared/program-pools'
-import { clampCount, type PromptPool, type PromptPoolEntry } from '@shared/prompt-pool-types'
+import {
+  clampCount,
+  splitPipeList,
+  type PromptPool,
+  type PromptPoolEntry,
+} from '@shared/prompt-pool-types'
 import { joinPrompts, prettyPrompt } from '@shared/prompt-tool'
 
 /**
@@ -46,18 +51,22 @@ export function nextPoolPrompt(
   return adaptRandomPrompt(raw, family)
 }
 
-/** Literal prompt for `<random:xxx:…>`. */
+/**
+ * Literal / choice prompt for `<random:xxx:…>`.
+ * `prompt` may be `a|b|c` — each sample picks one branch equally.
+ */
 export function nextLiteralPrompt(
   prompt: string,
   family: ModelFamily,
   counts: number[] = [1],
   strengths?: number[],
 ): string {
-  const t = prompt.trim()
-  if (!t) return ''
+  const choices = splitPipeList(prompt)
+  if (!choices.length) return ''
   const count = resolveSampleCount(counts)
   const picked: string[] = []
   for (let i = 0; i < count; i++) {
+    const t = randomOne(choices) ?? choices[0]
     const piece = renderPrompt(t, strengths)
     if (piece) picked.push(piece)
   }
