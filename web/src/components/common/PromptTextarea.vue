@@ -64,6 +64,8 @@ const panelStyle = ref<Record<string, string>>({})
 let debounceTimer: number | null = null
 let blurTimer: number | null = null
 let dbReady = false
+/** Only open suggestions after real typing (not format / apply / paste insertText). */
+let allowSuggestFromTyping = false
 
 const hasItems = computed(() => open.value && items.value.length > 0)
 
@@ -72,6 +74,14 @@ function hide(): void {
   items.value = []
   active.value = 0
   token.value = null
+}
+
+function suppressSuggest(): void {
+  if (debounceTimer != null) {
+    window.clearTimeout(debounceTimer)
+    debounceTimer = null
+  }
+  hide()
 }
 
 function positionPanel(): void {
@@ -237,6 +247,11 @@ function moveActive(delta: number): void {
 }
 
 function onKeydown(e: KeyboardEvent): void {
+  if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (e.key === 'Backspace' || e.key === 'Delete' || e.key.length === 1) {
+      allowSuggestFromTyping = true
+    }
+  }
   if (!hasItems.value) return
   if (e.key === 'ArrowDown') {
     e.preventDefault()
@@ -279,14 +294,34 @@ function onBlur(e: FocusEvent): void {
   emit('blur', e)
 }
 
-function onInput(): void {
+function onInput(e: Event): void {
+  const ie = e as InputEvent
+  const inputType = ie.inputType
+  if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop') {
+    allowSuggestFromTyping = false
+    suppressSuggest()
+    emit('caret')
+    return
+  }
+  // Format / apply use insertText without a prior typing key — do not suggest.
+  const ime =
+    ie.isComposing ||
+    inputType === 'insertCompositionText' ||
+    inputType === 'insertFromComposition'
+  if (!allowSuggestFromTyping && !ime) {
+    suppressSuggest()
+    emit('caret')
+    return
+  }
+  if (!ime) allowSuggestFromTyping = false
   scheduleRefresh()
   emit('caret')
 }
 
 /** Click / select to copy — close suggestions; do not open a new list. */
 function onPointerCaret(): void {
-  hide()
+  allowSuggestFromTyping = false
+  suppressSuggest()
   emit('caret')
 }
 
