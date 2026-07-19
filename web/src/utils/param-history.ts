@@ -8,7 +8,7 @@ export interface ParamHistoryEntry {
 }
 
 const STORAGE_KEY = 'aigc-ui:txt2img-param-history'
-const MAX_ENTRIES = 30
+const MAX_ENTRIES = 100
 
 function normalizeFamily(value: unknown): ModelFamily {
   return isModelFamily(value) ? value : 'anima'
@@ -56,7 +56,7 @@ export function formFingerprint(form: Txt2ImgForm): string {
   return JSON.stringify(form)
 }
 
-/** Insert or refresh entry (dedupe by fingerprint), newest first, max 30. */
+/** Insert or refresh entry (dedupe by fingerprint), newest first, max 100. */
 export function pushParamHistory(
   entries: ParamHistoryEntry[],
   form: Txt2ImgForm,

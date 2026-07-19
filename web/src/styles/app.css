@@ -1003,11 +1003,12 @@ body.is-resizing-split * {
 }
 
 .pool-list-item:hover {
-  background: var(--bg-sidebar-item-hover);
+  /* Panel list: use panel ladder, not sidebar tokens (dark: #222 vs #242 ≈ invisible). */
+  background: var(--bg-soft);
 }
 
 .pool-list-item.active {
-  background: var(--bg-sidebar-item-active);
+  background: var(--bg-elevated);
 }
 
 .pool-list-name {

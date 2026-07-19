@@ -39,7 +39,12 @@ onUnmounted(() => {
       <Sidebar />
       <main class="main">
         <div class="page-view">
-          <RouterView />
+          <RouterView v-slot="{ Component }">
+            <!-- Keep txt2img mounted so preview dataUrls are not re-decoded on every visit. -->
+            <KeepAlive :include="['Txt2ImgView']">
+              <component :is="Component" />
+            </KeepAlive>
+          </RouterView>
         </div>
       </main>
     </div>

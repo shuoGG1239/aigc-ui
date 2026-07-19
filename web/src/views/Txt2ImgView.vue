@@ -30,6 +30,8 @@ import {
   WEIGHT_DTYPE_OPTIONS,
 } from '@/utils/select-options'
 
+defineOptions({ name: 'Txt2ImgView' })
+
 const store = useTxt2ImgStore()
 const poolStore = usePromptPoolStore()
 const toast = useToast()

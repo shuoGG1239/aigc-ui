@@ -183,6 +183,19 @@ function onResultListWheel(e: WheelEvent): void {
   if (!el || el.scrollWidth <= el.clientWidth) return
   el.scrollLeft += e.deltaY || e.deltaX
 }
+
+/** Wheel on main preview → previous / next image. */
+function onPreviewMainWheel(e: WheelEvent): void {
+  if (store.results.length <= 1) return
+  const t = e.target as HTMLElement | null
+  // Keep wheel for scrollable image-info panel.
+  if (t?.closest('.preview-info-panel')) return
+  const delta = e.deltaY || e.deltaX
+  if (!delta) return
+  e.preventDefault()
+  const next = store.selectedIndex + (delta > 0 ? 1 : -1)
+  store.selectImage(next)
+}
 </script>
 
 <template>
@@ -226,7 +239,7 @@ function onResultListWheel(e: WheelEvent): void {
     </div>
     <div class="panel-body">
       <div class="preview-area">
-        <div class="preview-main">
+        <div class="preview-main" @wheel="onPreviewMainWheel">
           <img
             v-if="store.selectedImage"
             :src="store.selectedImage.dataUrl"
