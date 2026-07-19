@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { IconTrash } from '@/components/icons'
+import PromptPoolListPanel from '@/components/prompt-pool/PromptPoolListPanel.vue'
+import PromptPoolPreviewModal from '@/components/prompt-pool/PromptPoolPreviewModal.vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
 import { nextPoolPrompt } from '@/prompt/prompt-pool-engine'
-import { isProgramPoolName } from '@/prompt/program-pools'
+import { isProgramPoolName } from '@shared/program-pools'
 import {
   isLockedPool,
   sanitizePoolName,
   type PromptPoolEntry,
-} from '@/prompt/prompt-pool-types'
-import { usePromptPoolStore } from '@/stores/promptPool'
+} from '@shared/prompt-pool-types'
+import { usePromptPoolStore } from '@/stores/prompt-pool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 
 const poolStore = usePromptPoolStore()
@@ -20,26 +22,15 @@ const toast = useToast()
 const draftName = ref('')
 const nameEditing = ref(false)
 const nameInputRef = ref<HTMLInputElement | null>(null)
-const listQuery = ref('')
 const entryQuery = ref('')
 const entryListRef = ref<HTMLElement | null>(null)
-const previewOpen = ref(false)
+const previewModalRef = ref<InstanceType<typeof PromptPoolPreviewModal> | null>(null)
 const previewLoading = ref(false)
-const preview = ref<{ prompt: string; images: PromptPreviewImage[] } | null>(null)
 
 const pool = computed(() => poolStore.selected)
 
-function onPreviewKeydown(e: KeyboardEvent): void {
-  if (e.key === 'Escape' && previewOpen.value) closePreview()
-}
-
 onMounted(() => {
   void poolStore.hydrate()
-  window.addEventListener('keydown', onPreviewKeydown)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', onPreviewKeydown)
 })
 
 watch(
@@ -51,12 +42,6 @@ watch(
   },
   { immediate: true },
 )
-
-const filteredPools = computed(() => {
-  const q = listQuery.value.trim().toLowerCase()
-  if (!q) return poolStore.pools
-  return poolStore.pools.filter((p) => p.name.toLowerCase().includes(q))
-})
 
 const entries = computed(() => pool.value?.entries ?? [])
 const isProgram = computed(() => (pool.value ? isProgramPoolName(pool.value.name) : false))
@@ -70,11 +55,6 @@ const filteredEntries = computed(() => {
 })
 
 const poolToken = computed(() => (pool.value ? `<pool:${pool.value.name}>` : ''))
-
-function poolListMeta(item: { name: string; entries: unknown[] }): string {
-  if (isProgramPoolName(item.name)) return '—'
-  return String(item.entries.length)
-}
 
 function onSelect(name: string): void {
   poolStore.select(name)
@@ -243,35 +223,8 @@ async function copyToken(): Promise<void> {
   }
 }
 
-function closePreview(): void {
-  previewOpen.value = false
-  preview.value = null
-}
-
-async function onPreviewEntry(prompt: string): Promise<void> {
-  const text = prompt.trim()
-  if (!text) {
-    toast.info('空 prompt')
-    return
-  }
-  if (previewLoading.value) return
-  previewLoading.value = true
-  try {
-    const result = await window.api.promptPreview.resolve(text)
-    if (!result.ok) {
-      toast.info(result.reason === 'no_dir' ? '请先在设置中配置预览图目录' : '未找到预览图')
-      return
-    }
-    preview.value = {
-      prompt: text,
-      images: result.images,
-    }
-    previewOpen.value = true
-  } catch (err) {
-    toast.error(err instanceof Error ? err.message : String(err))
-  } finally {
-    previewLoading.value = false
-  }
+function onPreviewEntry(prompt: string): void {
+  void previewModalRef.value?.open(prompt)
 }
 </script>
 
@@ -279,55 +232,12 @@ async function onPreviewEntry(prompt: string): Promise<void> {
   <div class="page-shell">
     <SplitPane storage-key="aigc-ui:pool-split" :default-width="240" :min-width="180" :max-width="360">
       <template #left>
-        <section class="list-panel">
-          <div class="panel-header pool-list-header">
-            <div class="panel-title">提示词池</div>
-            <label class="pool-search pool-list-header-search">
-              <svg class="pool-search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="7" cy="7" r="4.25" stroke="currentColor" stroke-width="1.5" />
-                <path d="M10.2 10.2L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-              <input
-                v-model="listQuery"
-                class="input pool-search-input"
-                type="search"
-                placeholder="搜索…"
-                spellcheck="false"
-              />
-            </label>
-            <button
-              type="button"
-              class="btn btn-ghost btn-icon pool-list-create"
-              title="新建"
-              aria-label="新建"
-              @click="onCreate"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-            </button>
-          </div>
-          <div class="panel-body pool-list-body">
-            <div class="pool-list-scroll">
-              <button
-                v-for="item in filteredPools"
-                :key="item.name"
-                type="button"
-                class="pool-list-item"
-                :class="{ active: item.name === poolStore.selectedName }"
-                @click="onSelect(item.name)"
-              >
-                <span class="pool-list-name">
-                  {{ item.name }}
-                  <span v-if="isProgramPoolName(item.name)" class="pool-builtin-tag">程序</span>
-                  <span v-else-if="item.builtin" class="pool-builtin-tag">内置</span>
-                </span>
-                <span class="pool-list-meta">{{ poolListMeta(item) }}</span>
-              </button>
-              <div v-if="!filteredPools.length" class="pool-entry-empty">无匹配</div>
-            </div>
-          </div>
-        </section>
+        <PromptPoolListPanel
+          :pools="poolStore.pools"
+          :selected-name="poolStore.selectedName"
+          @select="onSelect"
+          @create="onCreate"
+        />
       </template>
 
       <template #right>
@@ -546,45 +456,9 @@ async function onPreviewEntry(prompt: string): Promise<void> {
       </template>
     </SplitPane>
 
-    <Teleport to="body">
-      <div
-        v-if="previewOpen && preview"
-        class="pool-preview-overlay"
-        role="dialog"
-        aria-modal="true"
-        aria-label="提示词预览图"
-        @click.self="closePreview"
-      >
-        <div class="pool-preview-card">
-          <div class="pool-preview-header">
-            <code class="pool-preview-name" :title="preview.prompt">{{ preview.prompt }}</code>
-            <span class="pool-preview-count">{{ preview.images.length }} 张</span>
-            <button
-              type="button"
-              class="btn btn-ghost btn-icon"
-              title="关闭"
-              aria-label="关闭"
-              @click="closePreview"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-            </button>
-          </div>
-          <div class="pool-preview-grid" :class="{ 'is-single': preview.images.length === 1 }">
-            <figure v-for="img in preview.images" :key="img.path" class="pool-preview-item">
-              <img
-                class="pool-preview-img"
-                :src="img.dataUrl"
-                :alt="img.filename"
-                draggable="false"
-                @dragstart.prevent
-              />
-              <figcaption class="pool-preview-file" :title="img.filename">{{ img.filename }}</figcaption>
-            </figure>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <PromptPoolPreviewModal
+      ref="previewModalRef"
+      @loading-change="previewLoading = $event"
+    />
   </div>
 </template>

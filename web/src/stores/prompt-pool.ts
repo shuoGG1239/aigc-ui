@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { isProgramPoolName } from '@/prompt/program-pools'
+import { isProgramPoolName } from '@shared/program-pools'
 import {
   allocUniquePoolName,
   createEmptyPromptPool,
@@ -8,9 +8,7 @@ import {
   normalizePromptPool,
   sanitizePoolName,
   type PromptPool,
-} from '@/prompt/prompt-pool-types'
-
-export { normalizePromptPool } from '@/prompt/prompt-pool-types'
+} from '@shared/prompt-pool-types'
 
 export const usePromptPoolStore = defineStore('promptPool', () => {
   const pools = ref<PromptPool[]>([])
@@ -23,7 +21,7 @@ export const usePromptPoolStore = defineStore('promptPool', () => {
   )
 
   async function refresh(): Promise<void> {
-    const list = (await window.api.promptPools.list()) as PromptPool[]
+    const list = await window.api.promptPools.list()
     pools.value = list.map((p) => normalizePromptPool(p, { builtin: p.builtin === true }))
     if (!pools.value.some((p) => p.name === selectedName.value)) {
       selectedName.value = pools.value[0]?.name ?? ''

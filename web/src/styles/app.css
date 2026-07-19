@@ -644,7 +644,7 @@ body.is-resizing-split * {
 }
 
 /* Captures type-ahead / IME; not shown as a search field. */
-.random-pick-filter-trap {
+.menu-filter-trap {
   position: fixed;
   left: 0;
   top: 0;
@@ -658,8 +658,8 @@ body.is-resizing-split * {
   pointer-events: none;
 }
 
-.random-pick-menu,
-.random-pick-submenu {
+.prompt-pool-pick-menu,
+.prompt-pool-pick-submenu {
   position: fixed;
   z-index: 1000;
   max-height: 280px;
@@ -671,22 +671,22 @@ body.is-resizing-split * {
   padding: 4px;
 }
 
-.random-pick-submenu {
+.prompt-pool-pick-submenu {
   z-index: 1001;
 }
 
-.random-pick-row {
+.prompt-pool-pick-row {
   display: flex;
   align-items: stretch;
   gap: 0;
   border-radius: var(--radius-sm);
 }
 
-.random-pick-row:hover {
+.prompt-pool-pick-row:hover {
   background: var(--bg-sidebar-item-hover);
 }
 
-.random-pick-item {
+.prompt-pool-pick-item {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -702,7 +702,7 @@ body.is-resizing-split * {
   font-weight: 500;
 }
 
-.random-pick-row .random-pick-item {
+.prompt-pool-pick-row .prompt-pool-pick-item {
   flex: 1;
   min-width: 0;
   width: auto;
@@ -710,15 +710,15 @@ body.is-resizing-split * {
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
-.random-pick-item.is-off {
+.prompt-pool-pick-item.is-off {
   color: var(--text-soft);
 }
 
-.random-pick-submenu .random-pick-item:hover {
+.prompt-pool-pick-submenu .prompt-pool-pick-item:hover {
   background: var(--bg-sidebar-item-hover);
 }
 
-.random-pick-name {
+.prompt-pool-pick-name {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -726,12 +726,12 @@ body.is-resizing-split * {
   white-space: nowrap;
 }
 
-.random-pick-chevron {
+.prompt-pool-pick-chevron {
   flex-shrink: 0;
   color: var(--text-soft);
 }
 
-.random-pick-dice {
+.prompt-pool-pick-dice {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -746,21 +746,21 @@ body.is-resizing-split * {
   cursor: pointer;
 }
 
-.random-pick-dice:hover {
+.prompt-pool-pick-dice:hover {
   color: var(--primary);
 }
 
-.random-pick-dice:active {
+.prompt-pool-pick-dice:active {
   transform: scale(0.96);
 }
 
-.random-pick-subitem {
+.prompt-pool-pick-subitem {
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 400;
 }
 
-.random-pick-hl {
+.menu-hl {
   padding: 0;
   margin: 0;
   border-radius: 2px;
@@ -769,7 +769,7 @@ body.is-resizing-split * {
   font: inherit;
 }
 
-.random-pick-empty {
+.prompt-pool-pick-empty {
   padding: 12px;
   text-align: center;
   font-size: 0.8125rem;

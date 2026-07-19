@@ -2,7 +2,7 @@ import {
   extractLoraTags,
   loraFileStem,
   type LoraTag,
-} from '../../../web/src/prompt/lora-tag'
+} from '@shared/lora-tag'
 import type { ResolvedLora } from '../types'
 
 export type { ResolvedLora, LoraTag }

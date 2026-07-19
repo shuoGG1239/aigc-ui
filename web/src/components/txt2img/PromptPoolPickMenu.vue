@@ -2,9 +2,9 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { nextLiteralPrompt, nextPoolPrompt } from '@/prompt/prompt-pool-engine'
-import { isProgramPoolName } from '@/prompt/program-pools'
-import type { PromptPool, PromptPoolEntry } from '@/prompt/prompt-pool-types'
-import { usePromptPoolStore } from '@/stores/promptPool'
+import { isProgramPoolName } from '@shared/program-pools'
+import type { PromptPool, PromptPoolEntry } from '@shared/prompt-pool-types'
+import { usePromptPoolStore } from '@/stores/prompt-pool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { fuzzyMatches, fuzzyParts } from '@/utils/fuzzy'
 
@@ -193,9 +193,9 @@ async function toggle(): Promise<void> {
 function onDocClick(e: MouseEvent): void {
   const target = e.target as Node
   if (btnRef.value?.contains(target)) return
-  const menu = document.querySelector('.random-pick-menu')
+  const menu = document.querySelector('.prompt-pool-pick-menu')
   if (menu?.contains(target)) return
-  const sub = document.querySelector('.random-pick-submenu')
+  const sub = document.querySelector('.prompt-pool-pick-submenu')
   if (sub?.contains(target)) return
   close()
 }
@@ -276,7 +276,7 @@ defineExpose({
     <input
       v-if="open"
       ref="filterRef"
-      class="random-pick-filter-trap"
+      class="menu-filter-trap"
       type="text"
       tabindex="-1"
       autocomplete="off"
@@ -284,32 +284,32 @@ defineExpose({
       @input="onFilterInput"
       @blur="onFilterBlur"
     />
-    <div v-if="open" class="random-pick-menu" role="menu" :style="menuStyle">
+    <div v-if="open" class="prompt-pool-pick-menu" role="menu" :style="menuStyle">
       <div
         v-for="item in filteredPools"
         :key="item.name"
-        class="random-pick-row"
+        class="prompt-pool-pick-row"
         @mouseenter="onPoolRowEnter(item, $event)"
         @mouseleave="onPoolRowLeave"
       >
         <button
           type="button"
-          class="random-pick-item"
+          class="prompt-pool-pick-item"
           role="menuitem"
           :title="'插入 &lt;pool:' + item.name + '&gt;'"
           :aria-haspopup="poolMenuEntries(item).length ? 'menu' : undefined"
           :aria-expanded="submenuPool === item.name || undefined"
           @click="onInsertPoolToken(item.name)"
         >
-          <span class="random-pick-name">
+          <span class="prompt-pool-pick-name">
             <template v-for="(part, i) in fuzzyParts(item.name, query)" :key="i">
-              <mark v-if="part.hit" class="random-pick-hl">{{ part.text }}</mark>
+              <mark v-if="part.hit" class="menu-hl">{{ part.text }}</mark>
               <template v-else>{{ part.text }}</template>
             </template>
           </span>
           <svg
             v-if="filterPoolEntries(item, poolMenuEntries(item), query).length"
-            class="random-pick-chevron"
+            class="prompt-pool-pick-chevron"
             width="12"
             height="12"
             viewBox="0 0 16 16"
@@ -327,7 +327,7 @@ defineExpose({
         </button>
         <button
           type="button"
-          class="random-pick-dice"
+          class="prompt-pool-pick-dice"
           title="随机抽样一条"
           aria-label="随机抽样一条"
           @click.stop="onSamplePromptPool(item.name)"
@@ -350,11 +350,11 @@ defineExpose({
           </svg>
         </button>
       </div>
-      <div v-if="!filteredPools.length" class="random-pick-empty">无匹配</div>
+      <div v-if="!filteredPools.length" class="prompt-pool-pick-empty">无匹配</div>
     </div>
     <div
       v-if="open && submenuPool && filteredSubmenuEntries.length"
-      class="random-pick-submenu"
+      class="prompt-pool-pick-submenu"
       role="menu"
       :style="submenuStyle"
       @mouseenter="clearSubmenuCloseTimer"
@@ -364,15 +364,15 @@ defineExpose({
         v-for="(entry, index) in filteredSubmenuEntries"
         :key="submenuPool + ':' + index"
         type="button"
-        class="random-pick-item random-pick-subitem"
+        class="prompt-pool-pick-item prompt-pool-pick-subitem"
         role="menuitem"
         :class="{ 'is-off': entry.weight <= 0 }"
         :title="entry.prompt"
         @click="onPickPromptEntry(entry.prompt)"
       >
-        <span class="random-pick-name">
+        <span class="prompt-pool-pick-name">
           <template v-for="(part, i) in fuzzyParts(entry.prompt, query)" :key="i">
-            <mark v-if="part.hit" class="random-pick-hl">{{ part.text }}</mark>
+            <mark v-if="part.hit" class="menu-hl">{{ part.text }}</mark>
             <template v-else>{{ part.text }}</template>
           </template>
         </span>

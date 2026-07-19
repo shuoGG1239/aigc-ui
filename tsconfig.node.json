@@ -8,10 +8,15 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["shared/*"]
+    }
   },
   "include": [
     "electron.vite.config.ts",
-    "electron/**/*.ts"
+    "electron/**/*.ts",
+    "shared/**/*.ts"
   ]
 }

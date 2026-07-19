@@ -8,7 +8,7 @@ import ParamHistoryMenu from '@/components/txt2img/ParamHistoryMenu.vue'
 import PromptPoolPickMenu from '@/components/txt2img/PromptPoolPickMenu.vue'
 import Txt2ImgPreviewPanel from '@/components/txt2img/Txt2ImgPreviewPanel.vue'
 import { useToast } from '@/composables/useToast'
-import type { ModelFamily } from '@/models/family'
+import type { ModelFamily } from '@shared/family'
 import {
   BATCH_SIZE_MAX,
   BATCH_SIZE_MIN,
@@ -17,11 +17,11 @@ import {
   LATENT_SIZE_MAX,
   LATENT_SIZE_MIN,
   LATENT_SIZE_STEP,
-} from '@/models/limits'
-import { usePromptPoolStore } from '@/stores/promptPool'
+} from '@shared/limits'
+import { usePromptPoolStore } from '@/stores/prompt-pool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { replaceEditableValue } from '@/utils/editable-text'
-import { formatPromptByFamily } from '@/utils/prompt-format'
+import { formatPromptByFamily } from '@/prompt/prompt-format'
 import { parseWorkflowParams } from '@/utils/workflow-params'
 import {
   CLIP_TYPE_OPTIONS,
@@ -42,14 +42,14 @@ const negFieldRef = ref<InstanceType<typeof PromptTextarea> | null>(null)
 /** null = insert at end of field. */
 const promptCaret = ref<{ start: number; end: number } | null>(null)
 
-function taRef(field: 'prompt' | 'negativePrompt'): HTMLTextAreaElement | null {
+function promptTextareaEl(field: 'prompt' | 'negativePrompt'): HTMLTextAreaElement | null {
   const comp = field === 'prompt' ? promptFieldRef.value : negFieldRef.value
   return comp?.getTextarea() ?? null
 }
 
 function savePromptCaret(field: 'prompt' | 'negativePrompt', el?: HTMLTextAreaElement | null): void {
   focusedPromptField.value = field
-  const ta = el ?? taRef(field)
+  const ta = el ?? promptTextareaEl(field)
   if (!ta) return
   promptCaret.value = {
     start: ta.selectionStart ?? 0,
@@ -74,7 +74,7 @@ function appendToFocusedPrompt(text: string): void {
   const piece = text.trim()
   if (!piece) return
 
-  const ta = taRef(field)
+  const ta = promptTextareaEl(field)
   const cur = ta?.value ?? store.form[field]
   let start = promptCaret.value?.start ?? cur.length
   let end = promptCaret.value?.end ?? cur.length
@@ -103,7 +103,7 @@ function appendToFocusedPrompt(text: string): void {
   const newPos = left.length + insert.length
   promptCaret.value = { start: newPos, end: newPos }
   void nextTick(() => {
-    const el = taRef(field)
+    const el = promptTextareaEl(field)
     if (!el) return
     el.focus()
     el.setSelectionRange(newPos, newPos)
@@ -113,7 +113,7 @@ function appendToFocusedPrompt(text: string): void {
 /** Write prompt/negative via native undo stack when the textarea exists. */
 function setPromptField(field: 'prompt' | 'negativePrompt', next: string): void {
   if (store.form[field] === next) return
-  const ta = taRef(field)
+  const ta = promptTextareaEl(field)
   if (ta && replaceEditableValue(ta, next)) {
     store.form[field] = ta.value
     return

@@ -1,4 +1,4 @@
-import type { ModelFamily } from '@/models/family'
+import type { ModelFamily } from '@shared/family'
 import { COMFY_SCHEDULERS } from '@/utils/select-options'
 import type { ImageMeta, ImageMetaSource } from './types'
 

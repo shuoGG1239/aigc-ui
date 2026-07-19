@@ -1,4 +1,4 @@
-import { loraFileStem } from '@/prompt/lora-tag'
+import { loraFileStem } from '@shared/lora-tag'
 
 let cache: string[] | null = null
 let loadPromise: Promise<string[]> | null = null

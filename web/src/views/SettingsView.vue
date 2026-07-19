@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { IconFolderPick, IconSave } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
-import { DEFAULT_SERVER_URL } from '@/models/app-defaults'
+import { DEFAULT_SERVER_URL } from '@shared/app-defaults'
 import { useSettingsStore } from '@/stores/settings'
 
 const settings = useSettingsStore()

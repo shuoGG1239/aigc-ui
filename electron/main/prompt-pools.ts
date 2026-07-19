@@ -14,11 +14,11 @@ import {
   normalizePromptPool,
   sanitizePoolName,
   type PromptPool,
-} from '../../web/src/prompt/prompt-pool-types'
+} from '@shared/prompt-pool-types'
 import {
   isProgramPoolName,
   listProgramPoolNames,
-} from '../../web/src/prompt/program-pools'
+} from '@shared/program-pools'
 import { loadBuiltinPromptPools } from './builtin-prompt-pools'
 
 export type PromptPoolFile = PromptPool & { builtin: boolean }

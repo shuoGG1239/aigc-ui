@@ -1,18 +1,18 @@
-import type { ModelFamily } from '@/models/family'
+import type { ModelFamily } from '@shared/family'
 import { adaptRandomPrompt } from './adapters'
 import {
   applyStrengthPool,
   parseCanonSegments,
   segmentsToCanon,
 } from './prompt-canon'
-import { joinPrompts, prettyPrompt } from './prompt-tool'
-import { randomOne } from './pick'
+import { randomOne } from '@shared/pick'
 import {
   isProgramPoolName,
   sampleProgramPool,
   type ProgramPoolContext,
-} from './program-pools'
-import { clampCount, type PromptPool, type PromptPoolEntry } from './prompt-pool-types'
+} from '@shared/program-pools'
+import { clampCount, type PromptPool, type PromptPoolEntry } from '@shared/prompt-pool-types'
+import { joinPrompts, prettyPrompt } from '@shared/prompt-tool'
 
 /**
  * Sample one prompt from a prompt pool (with replacement).

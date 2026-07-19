@@ -1,5 +1,5 @@
-import { isModelFamily, type ModelFamily } from '@/models/family'
-import type { Txt2ImgForm } from '@/stores/txt2img'
+import { isModelFamily, type ModelFamily } from '@shared/family'
+import type { Txt2ImgForm } from '@shared/txt2img-form'
 
 export interface ParamHistoryEntry {
   fingerprint: string

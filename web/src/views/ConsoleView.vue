@@ -2,7 +2,7 @@
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { IconSave, IconShredder } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
-import { useComfyProcessStore } from '@/stores/comfyProcess'
+import { useComfyProcessStore } from '@/stores/comfy-process'
 import { useSettingsStore } from '@/stores/settings'
 
 const processStore = useComfyProcessStore()

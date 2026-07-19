@@ -1,22 +1,15 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { basename, extname, join } from 'path'
+import type { PromptPreviewImage, PromptPreviewResolveResult } from '@shared/ipc-types'
 import {
   normalizePreviewKey,
   previewKeysFromPrompt,
-} from '../../web/src/prompt/prompt-preview'
+} from '@shared/prompt-preview'
 import { getSettings } from './settings'
 
+export type { PromptPreviewImage, PromptPreviewResolveResult }
+
 const IMAGE_RE = /\.(jpe?g|png|webp|gif)$/i
-
-export interface PromptPreviewImage {
-  path: string
-  dataUrl: string
-  filename: string
-}
-
-export type PromptPreviewResolveResult =
-  | { ok: true; images: PromptPreviewImage[] }
-  | { ok: false; reason: 'no_dir' | 'not_found' }
 
 let indexCache: { dir: string; mtimeMs: number; map: Map<string, string[]> } | null = null
 

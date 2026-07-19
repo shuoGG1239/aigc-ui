@@ -1,4 +1,4 @@
-import { formatLoraTag } from '@/prompt/lora-tag'
+import { formatLoraTag } from '@shared/lora-tag'
 
 export type CompleteMode = 'tag' | 'lora'
 

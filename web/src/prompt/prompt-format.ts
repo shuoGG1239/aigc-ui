@@ -1,5 +1,4 @@
-import type { ModelFamily } from '@/models/family'
-import { resolveFamily } from '@/models/family'
+import { resolveFamily, type ModelFamily } from '@shared/family'
 import { parseNaiToSegments, segmentsToCanon } from '@/prompt/prompt-canon'
 
 export interface FormatPromptResult {

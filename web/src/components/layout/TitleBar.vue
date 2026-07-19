@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { APP_DISPLAY_NAME } from '@/models/app-defaults'
+import { APP_DISPLAY_NAME } from '@shared/app-defaults'
 
 const platform = window.api?.platform ?? 'win32'
 </script>

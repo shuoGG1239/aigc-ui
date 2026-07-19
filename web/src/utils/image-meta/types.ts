@@ -1,4 +1,4 @@
-import type { ModelFamily } from '@/models/family'
+import type { ModelFamily } from '@shared/family'
 
 export type ImageMetaSource = 'comfyui' | 'a1111' | 'novelai' | 'unknown'
 

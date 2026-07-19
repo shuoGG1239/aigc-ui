@@ -2,9 +2,16 @@ import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
 
+const sharedAlias = {
+  '@shared': resolve(__dirname, 'shared'),
+}
+
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: sharedAlias,
+    },
     build: {
       rollupOptions: {
         input: {
@@ -15,6 +22,9 @@ export default defineConfig({
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: sharedAlias,
+    },
     build: {
       rollupOptions: {
         input: {
@@ -26,7 +36,7 @@ export default defineConfig({
   renderer: {
     root: resolve(__dirname, 'web'),
     server: {
-      // renderer root 在 web/，字体依赖在上级 node_modules，需显式放行
+      // renderer root 在 web/，字体依赖与 shared/ 在上级，需显式放行
       fs: {
         allow: [resolve(__dirname)],
       },
@@ -41,9 +51,9 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': resolve(__dirname, 'web/src'),
+        ...sharedAlias,
       },
     },
     plugins: [vue()],
   },
 })
-

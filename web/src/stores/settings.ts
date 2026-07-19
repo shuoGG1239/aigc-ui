@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { DEFAULT_SERVER_URL } from '@/models/app-defaults'
+import { DEFAULT_SERVER_URL } from '@shared/app-defaults'
 
 export type ConnStatus = 'unknown' | 'checking' | 'ok' | 'bad'
 

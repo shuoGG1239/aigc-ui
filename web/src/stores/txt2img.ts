@@ -1,18 +1,21 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
-  getAnimaModelDefaults,
   getFamilyDefaults,
-  isModelFamily,
   type ModelFamily,
-} from '@/models/family'
-import { clampBatchSize, clampClipSkip } from '@/models/limits'
-import { presetNegativePrompt } from '@/prompt/model-prompt-presets'
+} from '@shared/family'
+import { clampBatchSize } from '@shared/limits'
+import { presetNegativePrompt } from '@shared/model-prompt-presets'
+import {
+  createDefaultForm,
+  normalizeForm,
+  type Txt2ImgForm,
+} from '@shared/txt2img-form'
 import {
   expandPromptTemplate,
   hasPromptPlaceholders,
 } from '@/prompt/prompt-template'
-import { usePromptPoolStore } from '@/stores/promptPool'
+import { usePromptPoolStore } from '@/stores/prompt-pool'
 import {
   loadParamHistory,
   pushParamHistory,
@@ -20,30 +23,8 @@ import {
   type ParamHistoryEntry,
 } from '@/utils/param-history'
 
-export interface Txt2ImgForm {
-  family: ModelFamily
-  prompt: string
-  negativePrompt: string
-  width: number
-  height: number
-  batchSize: number
-  steps: number
-  cfg: number
-  sampler: string
-  scheduler: string
-  denoise: number
-  /** A1111 Clip skip → ComfyUI CLIPSetLastLayer(-N). */
-  clipSkip: number
-  seed: string
-  unetModel: string
-  clipModel: string
-  clipType: string
-  vaeModel: string
-  unetWeightDtype: string
-  auraflowShift: number
-  checkpoint: string
-  outputPrefix: string
-}
+export type { Txt2ImgForm }
+export { createDefaultForm, normalizeForm }
 
 export interface ResultImage {
   path: string
@@ -55,52 +36,6 @@ export type GenStatus = 'idle' | 'running' | 'success' | 'error'
 
 /** Max images kept in the preview queue (newest first). */
 const MAX_RESULTS = 50
-
-const DEFAULT_PROMPT =
-  '1girl,tachibana_arisu,@as109,@ciloranko,nude,bra, panties under pantyhose, bed sheet, on bed,sleep,' +
-  'year 2025,masterpiece, best quality,score_9'
-
-export function createDefaultForm(): Txt2ImgForm {
-  const anima = getFamilyDefaults('anima')
-  const models = getAnimaModelDefaults()
-  return {
-    family: 'anima',
-    prompt: DEFAULT_PROMPT,
-    negativePrompt: anima.negativePrompt,
-    width: anima.width,
-    height: anima.height,
-    batchSize: 1,
-    steps: anima.steps,
-    cfg: anima.cfg,
-    sampler: anima.sampler,
-    scheduler: anima.scheduler,
-    denoise: anima.denoise,
-    clipSkip: anima.clipSkip,
-    seed: '',
-    unetModel: models.unetModel,
-    clipModel: models.clipModel,
-    clipType: models.clipType,
-    vaeModel: models.vaeModel,
-    unetWeightDtype: models.unetWeightDtype,
-    auraflowShift: models.auraflowShift,
-    checkpoint: '',
-    outputPrefix: anima.outputPrefix,
-  }
-}
-
-export function normalizeForm(partial: Partial<Txt2ImgForm> | null | undefined): Txt2ImgForm {
-  const base = createDefaultForm()
-  if (!partial || typeof partial !== 'object') return base
-  const family = isModelFamily(partial.family) ? partial.family : base.family
-  const familyDefaults = getFamilyDefaults(family)
-  return {
-    ...base,
-    ...partial,
-    family,
-    checkpoint: typeof partial.checkpoint === 'string' ? partial.checkpoint : base.checkpoint,
-    clipSkip: clampClipSkip(partial.clipSkip, familyDefaults.clipSkip),
-  }
-}
 
 export const useTxt2ImgStore = defineStore('txt2img', () => {
   const form = ref<Txt2ImgForm>(createDefaultForm())

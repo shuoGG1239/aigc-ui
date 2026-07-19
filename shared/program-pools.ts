@@ -3,7 +3,7 @@
  * Listed in the pool UI as black boxes (no internals).
  * Some pools (`quality`, `neg`) adapt output to the active model family.
  */
-import type { ModelFamily } from '../models/family'
+import type { ModelFamily } from './family'
 import {
   presetNegativePrompt,
   presetQualityPrompt,

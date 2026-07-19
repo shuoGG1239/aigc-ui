@@ -1,5 +1,5 @@
-import { getFamilyDefaults, type ModelFamily } from '@/models/family'
-import { createDefaultForm, normalizeForm, type Txt2ImgForm } from '@/stores/txt2img'
+import { getFamilyDefaults, type ModelFamily } from '@shared/family'
+import { createDefaultForm, normalizeForm, type Txt2ImgForm } from '@shared/txt2img-form'
 import type { ImageMeta } from './types'
 
 export interface ImageMetaToFormOptions {

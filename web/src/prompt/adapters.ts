@@ -1,12 +1,12 @@
-import type { ModelFamily } from '@/models/family'
-import { formatAnimaPrompt, formatSdxlPrompt } from '@/utils/prompt-format'
+import type { ModelFamily } from '@shared/family'
+import { formatAnimaPrompt, formatSdxlPrompt } from '@/prompt/prompt-format'
 import {
   canonArtistText,
   parseCanonSegments,
   segmentsToCanon,
   type PromptSegment,
 } from './prompt-canon'
-import { prettyPrompt } from './prompt-tool'
+import { prettyPrompt } from '@shared/prompt-tool'
 
 /** Convert canon prompts for the active family (`@artist` → bare on SDXL). */
 export function adaptRandomPrompt(raw: string, family: ModelFamily): string {

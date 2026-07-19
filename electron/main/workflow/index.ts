@@ -1,4 +1,4 @@
-import { resolveFamily, type ModelFamily } from '../../../web/src/models/family'
+import { resolveFamily, type ModelFamily } from '@shared/family'
 import type { Txt2ImgParams } from '../types'
 import { buildAnimaWorkflow } from './anima'
 import { buildSdxlWorkflow } from './sdxl'

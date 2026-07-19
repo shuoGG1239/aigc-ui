@@ -1,7 +1,7 @@
 import {
   normalizePromptPool,
   type PromptPool,
-} from '../../web/src/prompt/prompt-pool-types'
+} from '@shared/prompt-pool-types'
 
 /**
  * Built-in prompt pools — Vite embeds `web/src/prompt/prompt-pools/*.json`

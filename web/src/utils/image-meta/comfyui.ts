@@ -1,6 +1,6 @@
-import { getFamilyDefaults, resolveFamily } from '@/models/family'
-import { formatLoraTag } from '@/prompt/lora-tag'
-import { createDefaultForm, normalizeForm, type Txt2ImgForm } from '@/stores/txt2img'
+import { getFamilyDefaults, resolveFamily } from '@shared/family'
+import { formatLoraTag } from '@shared/lora-tag'
+import { createDefaultForm, normalizeForm, type Txt2ImgForm } from '@shared/txt2img-form'
 import { asRecord, emptyMeta, num, str } from './helpers'
 import type { ImageMeta } from './types'
 

@@ -153,7 +153,7 @@ defineExpose({
     <input
       v-if="open"
       ref="filterRef"
-      class="random-pick-filter-trap"
+      class="menu-filter-trap"
       type="text"
       tabindex="-1"
       autocomplete="off"
@@ -172,7 +172,7 @@ defineExpose({
       >
         <span class="param-history-summary" :title="item.form.prompt">
           <template v-for="(part, i) in fuzzyParts(promptSummary(item.form.prompt), query)" :key="i">
-            <mark v-if="part.hit" class="random-pick-hl">{{ part.text }}</mark>
+            <mark v-if="part.hit" class="menu-hl">{{ part.text }}</mark>
             <template v-else>{{ part.text }}</template>
           </template>
         </span>

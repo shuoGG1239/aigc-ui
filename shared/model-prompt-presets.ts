@@ -1,4 +1,4 @@
-import type { ModelFamily } from '../models/family'
+import type { ModelFamily } from './family'
 
 /** Shared quality / negative presets for family defaults and `<pool:quality|neg>`. */
 export interface PromptPresetContext {

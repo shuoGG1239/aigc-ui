@@ -1,8 +1,8 @@
-import { getFamilyDefaults, type ModelFamily } from '@/models/family'
+import { getFamilyDefaults, type ModelFamily } from '@shared/family'
 import { imageMetaToForm, parseImageMeta } from '@/utils/image-meta'
 import { parseComfyUiToForm } from '@/utils/image-meta/comfyui'
 import { asRecord, normalizeSchedulerName } from '@/utils/image-meta/helpers'
-import type { Txt2ImgForm } from '@/stores/txt2img'
+import type { Txt2ImgForm } from '@shared/txt2img-form'
 
 export interface ParseWorkflowParamsOptions {
   /** For A1111 / NovelAI: keep current UI family. ComfyUI graph still wins. */

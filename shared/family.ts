@@ -1,4 +1,4 @@
-import { presetNegativePrompt } from '../prompt/model-prompt-presets'
+import { presetNegativePrompt } from './model-prompt-presets'
 
 export type ModelFamily = 'anima' | 'sdxl'
 

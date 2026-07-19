@@ -1,7 +1,10 @@
-import type { ModelFamily } from '@/models/family'
+import type { ModelFamily } from '@shared/family'
 import { nextLiteralPrompt, nextPoolPrompt } from './prompt-pool-engine'
-import { parseCountsInput, parseStrengthsPool } from './prompt-pool-types'
-import type { PromptPool } from './prompt-pool-types'
+import {
+  parseCountsInput,
+  parseStrengthsPool,
+  type PromptPool,
+} from '@shared/prompt-pool-types'
 
 /** Either `<pool:…>` or `<random:…>`. */
 export const PROMPT_PLACEHOLDER_RE = /<(?:pool|random):\s*([^<>]+?)\s*>/gi
