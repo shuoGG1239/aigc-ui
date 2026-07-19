@@ -321,6 +321,17 @@ function onNumberWheel(
               </svg>
             </button>
           </div>
+          <div
+            v-if="store.status === 'running'"
+            class="gen-progress-track"
+            role="progressbar"
+            :aria-valuenow="store.progressPercent"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :aria-label="store.progressLabel || '生成进度'"
+          >
+            <div class="gen-progress-fill" :style="{ width: `${store.progressPercent}%` }" />
+          </div>
         </div>
 
         <div class="panel-body">

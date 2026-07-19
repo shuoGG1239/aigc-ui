@@ -78,6 +78,20 @@ export interface GenerateResult {
   images: GeneratedImage[]
 }
 
+/** Live generate progress from ComfyUI WebSocket (`/ws`). */
+export interface GenerateProgress {
+  /** 0-based index within the current batch. */
+  index: number
+  total: number
+  promptId: string
+  /** Sampler / node step (from `progress`); 0 when unknown. */
+  value: number
+  max: number
+  /** Current Comfy node id, or null when idle / finished. */
+  node: string | null
+  phase: 'queued' | 'running' | 'done'
+}
+
 export interface HealthResult {
   ok: boolean
   message: string

@@ -290,6 +290,7 @@ body.is-resizing-split * {
 }
 
 .panel-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -409,6 +410,23 @@ body.is-resizing-split * {
 
 .btn-icon--running {
   animation: btn-running-pulse 1.4s ease-in-out infinite;
+}
+
+.panel-header .gen-progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--border);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gen-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.15s ease-out;
 }
 
 @keyframes btn-running-pulse {

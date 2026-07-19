@@ -6,6 +6,7 @@ import {
 } from '@shared/family'
 import { clampBatchSize } from '@shared/limits'
 import { presetNegativePrompt } from '@shared/model-prompt-presets'
+import type { GenerateProgress } from '@shared/ipc-types'
 import {
   createDefaultForm,
   normalizeForm,
@@ -46,8 +47,31 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   const results = ref<ResultImage[]>([])
   const selectedIndex = ref(0)
   const paramHistory = ref<ParamHistoryEntry[]>(loadParamHistory())
+  const progress = ref<GenerateProgress | null>(null)
 
   const selectedImage = computed(() => results.value[selectedIndex.value] ?? null)
+
+  const progressLabel = computed(() => {
+    const p = progress.value
+    if (!p || status.value !== 'running') return ''
+    const batch =
+      p.total > 1 ? `${p.index + 1}/${p.total}` : ''
+    if (p.phase === 'queued') {
+      return batch ? `排队 ${batch}` : '排队中'
+    }
+    if (p.max > 0) {
+      const steps = `${p.value}/${p.max}`
+      return batch ? `${steps} · ${batch}` : steps
+    }
+    return batch ? `生成中 ${batch}` : '生成中'
+  })
+
+  const progressPercent = computed(() => {
+    const p = progress.value
+    if (!p || status.value !== 'running' || p.total <= 0) return 0
+    const stepFrac = p.max > 0 ? Math.min(1, Math.max(0, p.value / p.max)) : 0
+    return Math.round(((p.index + stepFrac) / p.total) * 100)
+  })
 
   function selectImage(index: number): void {
     if (index >= 0 && index < results.value.length) {
@@ -157,18 +181,29 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   async function generate(): Promise<number> {
     status.value = 'running'
     errorMessage.value = ''
+    progress.value = {
+      index: 0,
+      total: clampBatchSize(form.value.batchSize),
+      promptId: '',
+      value: 0,
+      max: 0,
+      node: null,
+      phase: 'queued',
+    }
 
     const seedRaw = form.value.seed.trim()
     const seed = seedRaw === '' ? null : Number(seedRaw)
     if (seedRaw !== '' && (!Number.isFinite(seed) || seed! < 0)) {
       status.value = 'error'
       errorMessage.value = 'Seed 必须为空（随机）或非负整数'
+      progress.value = null
       throw new Error(errorMessage.value)
     }
 
     if (form.value.family === 'sdxl' && !form.value.checkpoint.trim()) {
       status.value = 'error'
       errorMessage.value = 'SDXL 模式需要填写 Checkpoint'
+      progress.value = null
       throw new Error(errorMessage.value)
     }
 
@@ -188,6 +223,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     } catch (err) {
       status.value = 'error'
       errorMessage.value = err instanceof Error ? err.message : String(err)
+      progress.value = null
       throw err
     }
 
@@ -199,6 +235,9 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       lastSeed.value = payload.seed
       lastPromptId.value = payload.promptId
       streamed += 1
+    })
+    const offProgress = window.api.txt2img.onProgress((payload) => {
+      progress.value = payload
     })
 
     try {
@@ -246,6 +285,8 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       throw err
     } finally {
       offImage()
+      offProgress()
+      progress.value = null
     }
   }
 
@@ -260,6 +301,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     lastPromptId.value = ''
     status.value = 'idle'
     errorMessage.value = ''
+    progress.value = null
   }
 
   function setResults(images: ResultImage[]): void {
@@ -287,6 +329,9 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     selectedIndex,
     selectedImage,
     paramHistory,
+    progress,
+    progressLabel,
+    progressPercent,
     selectImage,
     applyForm,
     setFamily,

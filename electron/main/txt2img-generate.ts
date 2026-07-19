@@ -6,10 +6,14 @@ import { defaultOutputDir, getSettings } from './settings'
 import { buildWorkflow } from './workflow'
 import { extractLoraTags, resolveLoras } from './workflow/lora'
 import { clampBatchSize } from '@shared/limits'
-import type { GenerateResult, ResolvedLora, Txt2ImgParams } from './types'
+import type { GenerateProgress, GenerateResult, ResolvedLora, Txt2ImgParams } from './types'
 
 export type ActiveClientHolder = {
   client: ComfyUIClient | null
+}
+
+function sendProgress(event: IpcMainInvokeEvent, payload: GenerateProgress): void {
+  event.sender.send('txt2img:progress', payload)
 }
 
 export async function generateTxt2Img(
@@ -40,8 +44,24 @@ export async function generateTxt2Img(
     const seeds: number[] = []
     let lastPromptId = ''
     let availableLoras: string[] | null = null
+    let batchIndex = 0
+
+    await client.openProgress((evt) => {
+      const phase: GenerateProgress['phase'] =
+        evt.kind === 'executing' && evt.node === null ? 'done' : 'running'
+      sendProgress(event, {
+        index: batchIndex,
+        total: count,
+        promptId: evt.promptId,
+        value: evt.value,
+        max: evt.max,
+        node: evt.node,
+        phase,
+      })
+    })
 
     for (let i = 0; i < count; i++) {
+      batchIndex = i
       const seedForRun =
         params.seed !== null && params.seed !== undefined
           ? params.seed + i
@@ -72,8 +92,29 @@ export async function generateTxt2Img(
         },
         seedForRun,
       )
+
+      sendProgress(event, {
+        index: i,
+        total: count,
+        promptId: '',
+        value: 0,
+        max: 0,
+        node: null,
+        phase: 'queued',
+      })
+
       const promptId = await client.queuePrompt(workflow)
       lastPromptId = promptId
+      sendProgress(event, {
+        index: i,
+        total: count,
+        promptId,
+        value: 0,
+        max: 0,
+        node: null,
+        phase: 'running',
+      })
+
       const historyEntry = await client.waitForCompletion(promptId)
       const remoteImages = client.extractOutputImages(historyEntry)
 
@@ -97,6 +138,17 @@ export async function generateTxt2Img(
       }
       images.push(image)
       seeds.push(seed)
+
+      sendProgress(event, {
+        index: i,
+        total: count,
+        promptId,
+        value: 1,
+        max: 1,
+        node: null,
+        phase: 'done',
+      })
+
       event.sender.send('txt2img:image', {
         image,
         seed,
@@ -108,6 +160,7 @@ export async function generateTxt2Img(
 
     return { promptId: lastPromptId, seed: seeds[0], seeds, images }
   } finally {
+    client.closeProgress()
     holder.client = null
   }
 }

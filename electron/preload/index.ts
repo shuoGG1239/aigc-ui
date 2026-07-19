@@ -73,6 +73,11 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.on('txt2img:image', handler)
       return () => ipcRenderer.removeListener('txt2img:image', handler)
     },
+    onProgress: (cb: (payload: unknown) => void) => {
+      const handler = (_e: IpcRendererEvent, payload: unknown) => cb(payload)
+      ipcRenderer.on('txt2img:progress', handler)
+      return () => ipcRenderer.removeListener('txt2img:progress', handler)
+    },
   },
   image: {
     readMetadata: (filePath: string) => ipcRenderer.invoke('image:readMetadata', filePath),

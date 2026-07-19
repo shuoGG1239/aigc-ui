@@ -3,6 +3,7 @@ export type {
   AppSettings,
   ComfyLogLine,
   ComfyProcessStatus,
+  GenerateProgress,
   GenerateResult,
   GeneratedImage,
   HealthResult,

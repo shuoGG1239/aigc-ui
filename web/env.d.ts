@@ -4,6 +4,7 @@ import type {
   AppSettings,
   ComfyLogLine,
   ComfyProcessStatus,
+  GenerateProgress,
   GenerateResult,
   GeneratedImage,
   HealthResult,
@@ -80,6 +81,7 @@ declare global {
             promptId: string
           }) => void,
         ) => () => void
+        onProgress: (cb: (payload: GenerateProgress) => void) => () => void
       }
       image: {
         readMetadata: (filePath: string) => Promise<Record<string, unknown>>

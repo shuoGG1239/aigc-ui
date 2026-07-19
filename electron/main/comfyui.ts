@@ -1,13 +1,31 @@
 import { randomUUID } from 'crypto'
 import type { HealthResult } from './types'
 
+export type ComfyProgressEvent = {
+  promptId: string
+  value: number
+  max: number
+  node: string | null
+  kind: 'progress' | 'executing' | 'started'
+}
+
+type ProgressListener = (evt: ComfyProgressEvent) => void
+
 export class ComfyUIClient {
   private cancelled = false
+  readonly clientId = randomUUID()
+  private ws: WebSocket | null = null
+  private progressListener: ProgressListener | null = null
+  private watchedPromptId: string | null = null
+  /** Last step progress for the watched prompt (so executing can keep value/max). */
+  private lastValue = 0
+  private lastMax = 0
 
   constructor(private baseUrl: string) {}
 
   cancel(): void {
     this.cancelled = true
+    void this.interrupt()
   }
 
   resetCancel(): void {
@@ -16,6 +34,158 @@ export class ComfyUIClient {
 
   private url(path: string): string {
     return `${this.baseUrl.replace(/\/$/, '')}${path}`
+  }
+
+  private wsUrl(): string {
+    const u = new URL(this.baseUrl.replace(/\/$/, ''))
+    u.protocol = u.protocol === 'https:' ? 'wss:' : 'ws:'
+    u.pathname = '/ws'
+    u.search = `clientId=${encodeURIComponent(this.clientId)}`
+    return u.toString()
+  }
+
+  /** Open `/ws` for progress. Soft-fails: generate still works via history poll. */
+  async openProgress(listener: ProgressListener): Promise<void> {
+    this.closeProgress()
+    this.progressListener = listener
+
+    await new Promise<void>((resolve) => {
+      let settled = false
+      const finish = () => {
+        if (settled) return
+        settled = true
+        resolve()
+      }
+
+      let ws: WebSocket
+      try {
+        ws = new WebSocket(this.wsUrl())
+      } catch {
+        finish()
+        return
+      }
+
+      this.ws = ws
+      const timer = setTimeout(() => {
+        try {
+          ws.close()
+        } catch {
+          // ignore
+        }
+        if (this.ws === ws) this.ws = null
+        finish()
+      }, 8_000)
+
+      ws.onopen = () => {
+        clearTimeout(timer)
+        finish()
+      }
+
+      ws.onerror = () => {
+        clearTimeout(timer)
+        finish()
+      }
+
+      ws.onclose = () => {
+        clearTimeout(timer)
+        if (this.ws === ws) this.ws = null
+        finish()
+      }
+
+      ws.onmessage = (ev) => {
+        if (typeof ev.data !== 'string') return
+        this.handleWsMessage(ev.data)
+      }
+    })
+  }
+
+  closeProgress(): void {
+    this.progressListener = null
+    this.watchedPromptId = null
+    this.lastValue = 0
+    this.lastMax = 0
+    if (this.ws) {
+      try {
+        this.ws.close()
+      } catch {
+        // ignore
+      }
+      this.ws = null
+    }
+  }
+
+  watchPrompt(promptId: string): void {
+    this.watchedPromptId = promptId
+    this.lastValue = 0
+    this.lastMax = 0
+  }
+
+  private handleWsMessage(raw: string): void {
+    const listener = this.progressListener
+    if (!listener) return
+
+    let msg: { type?: string; data?: Record<string, unknown> }
+    try {
+      msg = JSON.parse(raw) as { type?: string; data?: Record<string, unknown> }
+    } catch {
+      return
+    }
+
+    const type = msg.type
+    const data = msg.data ?? {}
+    const promptId = typeof data.prompt_id === 'string' ? data.prompt_id : ''
+    if (this.watchedPromptId && promptId && promptId !== this.watchedPromptId) {
+      return
+    }
+
+    if (type === 'execution_start') {
+      if (!promptId) return
+      listener({
+        promptId,
+        value: this.lastValue,
+        max: this.lastMax,
+        node: null,
+        kind: 'started',
+      })
+      return
+    }
+
+    if (type === 'progress') {
+      const value = Number(data.value)
+      const max = Number(data.max)
+      if (!Number.isFinite(value) || !Number.isFinite(max) || max <= 0) return
+      this.lastValue = value
+      this.lastMax = max
+      const node = data.node != null ? String(data.node) : null
+      listener({
+        promptId: promptId || this.watchedPromptId || '',
+        value,
+        max,
+        node,
+        kind: 'progress',
+      })
+      return
+    }
+
+    if (type === 'executing') {
+      const node =
+        data.node === null || data.node === undefined ? null : String(data.node)
+      listener({
+        promptId: promptId || this.watchedPromptId || '',
+        value: this.lastValue,
+        max: this.lastMax,
+        node,
+        kind: 'executing',
+      })
+    }
+  }
+
+  async interrupt(): Promise<void> {
+    try {
+      await this.request('POST', '/interrupt', {}, 5_000)
+    } catch {
+      // best-effort
+    }
   }
 
   async request(method: string, path: string, payload?: unknown, timeoutMs = 120_000): Promise<unknown> {
@@ -98,15 +268,15 @@ export class ComfyUIClient {
   }
 
   async queuePrompt(workflow: Record<string, unknown>): Promise<string> {
-    const clientId = randomUUID()
     const result = (await this.request('POST', '/prompt', {
       prompt: workflow,
-      client_id: clientId,
+      client_id: this.clientId,
     })) as { prompt_id?: string }
 
     if (!result.prompt_id) {
       throw new Error('提交失败：未返回 prompt_id')
     }
+    this.watchPrompt(result.prompt_id)
     return result.prompt_id
   }
 
@@ -115,6 +285,7 @@ export class ComfyUIClient {
     pollIntervalMs = 1_000,
     timeoutMs = 600_000,
   ): Promise<Record<string, unknown>> {
+    this.watchPrompt(promptId)
     const deadline = Date.now() + timeoutMs
 
     while (Date.now() < deadline) {
