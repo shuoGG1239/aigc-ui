@@ -68,6 +68,7 @@ defineExpose({
       :rows="rows"
       :placeholder="placeholder"
       :data-prompt-field="fieldAttr"
+      wrap="soft"
       spellcheck="false"
       autocomplete="off"
       autocapitalize="off"
@@ -120,6 +121,23 @@ defineExpose({
 <style scoped>
 .prompt-textarea {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.prompt-textarea :deep(.textarea) {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 </style>
 

@@ -452,6 +452,7 @@ body.is-resizing-split * {
   flex-direction: column;
   gap: 6px;
   margin-bottom: 12px;
+  min-width: 0;
 }
 
 .field-row {
@@ -595,7 +596,15 @@ body.is-resizing-split * {
 
 .textarea {
   min-height: 120px;
+  max-width: 100%;
   resize: vertical;
+  /* Chromium textarea: overflow-x:auto will scroll instead of wrapping long tokens. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .textarea--sm {
