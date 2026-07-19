@@ -13,6 +13,8 @@ export interface ImageMeta {
   cfg: number | null
   sampler: string
   scheduler: string
+  /** A1111 Clip skip / ComfyUI |stop_at_clip_layer|. */
+  clipSkip: number | null
   seed: string
   model: string
   family: ModelFamily | null

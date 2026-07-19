@@ -45,6 +45,7 @@ export function parseA1111ParametersText(text: string): ImageMeta | null {
   const seed = pickParam(paramsLine, /Seed:\s*([-\d]+)/i)
   const size = pickParam(paramsLine, /Size:\s*(\d+)x(\d+)/i)
   const model = pickParam(paramsLine, /Model:\s*([^,\n]+)/i)
+  const clipSkip = pickParam(paramsLine, /Clip skip:\s*([\d.]+)/i)
 
   if (steps) meta.steps = Math.round(Number(steps[1]))
   if (sampler) meta.sampler = normalizeSamplerName(sampler[1].trim())
@@ -56,6 +57,10 @@ export function parseA1111ParametersText(text: string): ImageMeta | null {
     meta.height = Number(size[2])
   }
   if (model) meta.model = model[1].trim()
+  if (clipSkip) {
+    const n = Math.round(Number(clipSkip[1]))
+    if (Number.isFinite(n) && n >= 1) meta.clipSkip = n
+  }
   meta.family = guessFamily({
     model: meta.model,
     width: meta.width,
@@ -93,6 +98,7 @@ export function parseA1111FieldMap(raw: Record<string, unknown>): ImageMeta | nu
   meta.height = intOrNull(raw.height)
   meta.model = str(raw.sd_model_name)
   meta.scheduler = ''
+  meta.clipSkip = intOrNull(raw.clip_skip)
   meta.family = guessFamily({
     model: meta.model,
     width: meta.width,
@@ -101,7 +107,7 @@ export function parseA1111FieldMap(raw: Record<string, unknown>): ImageMeta | nu
   })
 
   // If discrete fields lack prompt but infotexts exists, merge prompt/neg from it.
-  if ((!meta.prompt || !meta.negativePrompt) && Array.isArray(raw.infotexts)) {
+  if ((!meta.prompt || !meta.negativePrompt || meta.clipSkip == null) && Array.isArray(raw.infotexts)) {
     const fromText = parseA1111ParametersText(firstString(raw.infotexts))
     if (fromText) {
       if (!meta.prompt) meta.prompt = fromText.prompt
@@ -113,6 +119,7 @@ export function parseA1111FieldMap(raw: Record<string, unknown>): ImageMeta | nu
       if (meta.width == null) meta.width = fromText.width
       if (meta.height == null) meta.height = fromText.height
       if (!meta.model) meta.model = fromText.model
+      if (meta.clipSkip == null) meta.clipSkip = fromText.clipSkip
     }
   }
 

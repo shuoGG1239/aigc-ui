@@ -6,6 +6,11 @@ declare module '*.vue' {
   export default component
 }
 
+declare module '*.csv?raw' {
+  const content: string
+  export default content
+}
+
 interface AppSettings {
   serverUrl: string
   outputDir: string
@@ -49,6 +54,7 @@ interface Txt2ImgParams {
   auraflowShift: number
   checkpoint: string
   outputPrefix: string
+  clipSkip?: number
 }
 
 interface GeneratedImage {

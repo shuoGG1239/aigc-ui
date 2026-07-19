@@ -8,6 +8,8 @@ export interface FamilySamplingDefaults {
   sampler: string
   scheduler: string
   denoise: number
+  /** A1111 Clip skip; SDXL anime checkpoints commonly use 2. */
+  clipSkip: number
   outputPrefix: string
   negativePrompt: string
 }
@@ -20,6 +22,7 @@ const ANIMA_DEFAULTS: FamilySamplingDefaults = {
   sampler: 'er_sde',
   scheduler: 'simple',
   denoise: 1.0,
+  clipSkip: 1,
   outputPrefix: 'anima',
   negativePrompt:
     'worst quality, low quality, score_1, score_2, score_3, ' +
@@ -34,6 +37,7 @@ const SDXL_DEFAULTS: FamilySamplingDefaults = {
   sampler: 'euler_ancestral',
   scheduler: 'normal',
   denoise: 1.0,
+  clipSkip: 2,
   outputPrefix: 'sdxl',
   negativePrompt:
     '(worst quality, abstract, signature, low quality, normal quality), ' +

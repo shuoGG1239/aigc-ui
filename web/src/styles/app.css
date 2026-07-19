@@ -450,6 +450,10 @@ body.is-resizing-split * {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.field-row--5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .field-label {
   font-size: 0.75rem;
   font-weight: 500;
@@ -1967,7 +1971,8 @@ body.is-resizing-split * {
 
   .field-row,
   .field-row--3,
-  .field-row--4 {
+  .field-row--4,
+  .field-row--5 {
     grid-template-columns: 1fr 1fr;
   }
 }

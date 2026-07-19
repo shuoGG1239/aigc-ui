@@ -4,6 +4,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  renameSync,
   unlinkSync,
   writeFileSync,
 } from 'fs'
@@ -26,7 +27,11 @@ const builtins = loadBuiltinPromptPools()
 
 /** User-editable pools live under userData (overrides builtins by name). */
 export function promptPoolsDir(): string {
-  const dir = join(app.getPath('userData'), 'prompt_pools')
+  const dir = join(app.getPath('userData'), 'prompt-pools')
+  const legacy = join(app.getPath('userData'), 'prompt_pools')
+  if (!existsSync(dir) && existsSync(legacy)) {
+    renameSync(legacy, dir)
+  }
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   return dir
 }

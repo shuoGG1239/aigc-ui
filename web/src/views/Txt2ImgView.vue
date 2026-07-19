@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch
 import AppSelect from '@/components/common/AppSelect.vue'
 import { IconShredder } from '@/components/icons'
 import ModelSelect from '@/components/common/ModelSelect.vue'
+import PromptTextarea from '@/components/common/PromptTextarea.vue'
 import SplitPane from '@/components/common/SplitPane.vue'
 import { useToast } from '@/composables/useToast'
 import type { ModelFamily } from '@/models/family'
@@ -44,8 +45,8 @@ const menuFilterRef = ref<HTMLInputElement | null>(null)
 let submenuCloseTimer: number | null = null
 /** Last focused prompt field; dice inserts at saved caret. */
 const focusedPromptField = ref<'prompt' | 'negativePrompt'>('prompt')
-const promptTaRef = ref<HTMLTextAreaElement | null>(null)
-const negTaRef = ref<HTMLTextAreaElement | null>(null)
+const promptFieldRef = ref<InstanceType<typeof PromptTextarea> | null>(null)
+const negFieldRef = ref<InstanceType<typeof PromptTextarea> | null>(null)
 /** null = insert at end of field. */
 const promptCaret = ref<{ start: number; end: number } | null>(null)
 const infoOpen = ref(false)
@@ -69,7 +70,8 @@ const previewDragOver = ref(false)
 let previewDragDepth = 0
 
 function taRef(field: 'prompt' | 'negativePrompt'): HTMLTextAreaElement | null {
-  return field === 'prompt' ? promptTaRef.value : negTaRef.value
+  const comp = field === 'prompt' ? promptFieldRef.value : negFieldRef.value
+  return comp?.getTextarea() ?? null
 }
 
 function savePromptCaret(field: 'prompt' | 'negativePrompt', el?: HTMLTextAreaElement | null): void {
@@ -86,8 +88,8 @@ function onPromptFocus(field: 'prompt' | 'negativePrompt', e: FocusEvent): void 
   savePromptCaret(field, e.target as HTMLTextAreaElement)
 }
 
-function onPromptSelect(field: 'prompt' | 'negativePrompt', e: Event): void {
-  savePromptCaret(field, e.target as HTMLTextAreaElement)
+function onPromptSelect(field: 'prompt' | 'negativePrompt', e?: Event): void {
+  savePromptCaret(field, (e?.target as HTMLTextAreaElement | undefined) ?? null)
 }
 
 function onPromptBlur(field: 'prompt' | 'negativePrompt', e: FocusEvent): void {
@@ -686,7 +688,7 @@ async function onPreviewDrop(e: DragEvent): Promise<void> {
 
 function onNumberWheel(
   e: WheelEvent,
-  key: 'width' | 'height' | 'batchSize' | 'steps',
+  key: 'width' | 'height' | 'batchSize' | 'steps' | 'clipSkip',
   step: number,
   min: number,
   max: number,
@@ -981,38 +983,49 @@ function onResultListWheel(e: WheelEvent): void {
                     <code>&lt;random:文本:0.8,0.9&gt;</code>
                     <span>字面量 + 强度</span>
                   </div>
+                  <div class="field-help-sep"></div>
+                  <div class="field-help-block">
+                    <code>&lt;lora:名称&gt;</code>
+                    <span>加载 LoRA（强度 1）</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;lora:名称:0.8&gt;</code>
+                    <span>model/clip 同强度</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;lora:名称:0.8:0.6&gt;</code>
+                    <span>model / clip 分离强度</span>
+                  </div>
                 </div>
               </span>
             </div>
-            <textarea
+            <PromptTextarea
               id="txt2img-prompt"
-              ref="promptTaRef"
+              ref="promptFieldRef"
               v-model="store.form.prompt"
-              class="textarea"
-              rows="5"
-              data-prompt-field="prompt"
+              :family="store.form.family"
+              :rows="5"
+              field-attr="prompt"
               placeholder="可用 <pool:chara> / <pool:artist:0.8,0.9:3> / <random:my_tag:0.8,0.9>"
               @focus="onPromptFocus('prompt', $event)"
               @blur="onPromptBlur('prompt', $event)"
-              @select="onPromptSelect('prompt', $event)"
-              @keyup="onPromptSelect('prompt', $event)"
-              @click="onPromptSelect('prompt', $event)"
+              @caret="onPromptSelect('prompt')"
             />
           </div>
           <div class="field">
             <label class="field-label">Negative Prompt</label>
-            <textarea
-              ref="negTaRef"
+            <PromptTextarea
+              id="txt2img-negative"
+              ref="negFieldRef"
               v-model="store.form.negativePrompt"
-              class="textarea textarea--sm"
-              rows="2"
-              data-prompt-field="negativePrompt"
+              :family="store.form.family"
+              :rows="2"
+              sm
+              field-attr="negativePrompt"
               placeholder="同样可用 <pool:chara:1,2,3> 或 <random:tag:0.9>"
               @focus="onPromptFocus('negativePrompt', $event)"
               @blur="onPromptBlur('negativePrompt', $event)"
-              @select="onPromptSelect('negativePrompt', $event)"
-              @keyup="onPromptSelect('negativePrompt', $event)"
-              @click="onPromptSelect('negativePrompt', $event)"
+              @caret="onPromptSelect('negativePrompt')"
             />
           </div>
 
@@ -1052,7 +1065,7 @@ function onResultListWheel(e: WheelEvent): void {
             </div>
           </div>
 
-          <div class="field-row field-row--4">
+          <div class="field-row field-row--5">
             <div class="field">
               <label class="field-label">Steps</label>
               <input
@@ -1067,6 +1080,18 @@ function onResultListWheel(e: WheelEvent): void {
             <div class="field">
               <label class="field-label">CFG</label>
               <input v-model.number="store.form.cfg" class="input" type="number" min="0" step="0.1" />
+            </div>
+            <div class="field">
+              <label class="field-label">Clip skip</label>
+              <input
+                v-model.number="store.form.clipSkip"
+                class="input"
+                type="number"
+                min="1"
+                max="12"
+                step="1"
+                @wheel.prevent="onNumberWheel($event, 'clipSkip', 1, 1, 12)"
+              />
             </div>
             <div class="field">
               <label class="field-label">Denoise</label>

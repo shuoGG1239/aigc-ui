@@ -29,6 +29,8 @@ export interface Txt2ImgForm {
   sampler: string
   scheduler: string
   denoise: number
+  /** A1111 Clip skip → ComfyUI CLIPSetLastLayer(-N). */
+  clipSkip: number
   seed: string
   unetModel: string
   clipModel: string
@@ -66,6 +68,7 @@ export function createDefaultForm(): Txt2ImgForm {
     sampler: anima.sampler,
     scheduler: anima.scheduler,
     denoise: anima.denoise,
+    clipSkip: anima.clipSkip,
     seed: '',
     unetModel: 'anima-base-v1.0.safetensors',
     clipModel: 'qwen_3_06b_base.safetensors',
@@ -78,15 +81,23 @@ export function createDefaultForm(): Txt2ImgForm {
   }
 }
 
+function clampClipSkip(value: unknown, fallback: number): number {
+  const n = Math.floor(Number(value))
+  if (!Number.isFinite(n)) return fallback
+  return Math.min(12, Math.max(1, n))
+}
+
 export function normalizeForm(partial: Partial<Txt2ImgForm> | null | undefined): Txt2ImgForm {
   const base = createDefaultForm()
   if (!partial || typeof partial !== 'object') return base
   const family = isModelFamily(partial.family) ? partial.family : base.family
+  const familyDefaults = getFamilyDefaults(family)
   return {
     ...base,
     ...partial,
     family,
     checkpoint: typeof partial.checkpoint === 'string' ? partial.checkpoint : base.checkpoint,
+    clipSkip: clampClipSkip(partial.clipSkip, familyDefaults.clipSkip),
   }
 }
 
@@ -126,6 +137,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       sampler: defaults.sampler,
       scheduler: defaults.scheduler,
       denoise: defaults.denoise,
+      clipSkip: defaults.clipSkip,
       outputPrefix: defaults.outputPrefix,
       negativePrompt: defaults.negativePrompt,
       prompt,
@@ -253,6 +265,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
         sampler: form.value.sampler,
         scheduler: form.value.scheduler,
         denoise: Number(form.value.denoise),
+        clipSkip: Number(form.value.clipSkip),
         seed,
         unetModel: form.value.unetModel,
         clipModel: form.value.clipModel,

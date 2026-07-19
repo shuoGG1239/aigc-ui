@@ -14,6 +14,14 @@ export interface ComfyProcessStatus {
 
 export type ModelFamily = 'anima' | 'sdxl'
 
+/** Resolved LoRA for workflow injection (main process only). */
+export interface ResolvedLora {
+  name: string
+  fileName: string
+  strengthModel: number
+  strengthClip: number
+}
+
 export interface Txt2ImgParams {
   family: ModelFamily
   prompt: string
@@ -39,6 +47,13 @@ export interface Txt2ImgParams {
   auraflowShift: number
   checkpoint: string
   outputPrefix: string
+  /**
+   * A1111-style Clip skip. 1 = default CLIP; 2 → CLIPSetLastLayer(-2).
+   * Injected into workflow after LoRA chain, before CLIPTextEncode.
+   */
+  clipSkip?: number
+  /** Injected by main process after parsing `<lora:>` tags. */
+  loras?: ResolvedLora[]
 }
 
 export interface GeneratedImage {

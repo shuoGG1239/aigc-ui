@@ -12,6 +12,7 @@ export function emptyMeta(source: ImageMetaSource = 'unknown'): ImageMeta {
     cfg: null,
     sampler: '',
     scheduler: '',
+    clipSkip: null,
     seed: '',
     model: '',
     family: null,
@@ -56,6 +57,46 @@ export function normalizeSamplerName(raw: string): string {
     uni_pc: 'uni_pc',
   }
   return map[s.toLowerCase()] || s
+}
+
+/** ComfyUI KSampler scheduler values (core). */
+export const COMFY_SCHEDULERS = [
+  'simple',
+  'sgm_uniform',
+  'karras',
+  'exponential',
+  'ddim_uniform',
+  'beta',
+  'normal',
+  'linear_quadratic',
+  'kl_optimal',
+] as const
+
+const COMFY_SCHEDULER_SET = new Set<string>(COMFY_SCHEDULERS)
+
+/**
+ * Map A1111 / WebUI schedule labels to ComfyUI schedulers.
+ * Unknown values (e.g. "Automatic") fall back to `fallback`.
+ */
+export function normalizeSchedulerName(raw: string, fallback = 'normal'): string {
+  const s = raw.trim()
+  if (!s) return fallback
+  const key = s.toLowerCase().replace(/[\s-]+/g, '_')
+  if (key === 'automatic' || key === 'auto') return fallback
+
+  const map: Record<string, string> = {
+    simple: 'simple',
+    normal: 'normal',
+    karras: 'karras',
+    exponential: 'exponential',
+    sgm_uniform: 'sgm_uniform',
+    ddim_uniform: 'ddim_uniform',
+    beta: 'beta',
+    linear_quadratic: 'linear_quadratic',
+    kl_optimal: 'kl_optimal',
+  }
+  const mapped = map[key] || key
+  return COMFY_SCHEDULER_SET.has(mapped) ? mapped : fallback
 }
 
 export function guessFamily(hints: {

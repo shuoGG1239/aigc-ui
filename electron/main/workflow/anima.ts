@@ -1,4 +1,6 @@
 import type { Txt2ImgParams } from '../types'
+import { applyClipSkip } from './clip'
+import { appendLoraChain } from './lora'
 import { resolveSeed } from './seed'
 
 /** 工作流内 latent batch 固定为 1；UI 的 batchSize 由主进程循环多次提交实现。 */
@@ -34,56 +36,64 @@ export function buildAnimaWorkflow(
         shift: params.auraflowShift,
       },
     },
-    '5': {
-      class_type: 'CLIPTextEncode',
-      inputs: {
-        clip: ['2', 0],
-        text: params.prompt,
-      },
+  }
+
+  const { modelRef, clipRef: loraClip } = appendLoraChain(workflow, {
+    modelRef: ['4', 0],
+    clipRef: ['2', 0],
+    loras: params.loras ?? [],
+  })
+  const clipRef = applyClipSkip(workflow, loraClip, params.clipSkip)
+
+  workflow['5'] = {
+    class_type: 'CLIPTextEncode',
+    inputs: {
+      clip: clipRef,
+      text: params.prompt,
     },
-    '6': {
-      class_type: 'CLIPTextEncode',
-      inputs: {
-        clip: ['2', 0],
-        text: params.negativePrompt,
-      },
+  }
+  workflow['6'] = {
+    class_type: 'CLIPTextEncode',
+    inputs: {
+      clip: clipRef,
+      text: params.negativePrompt,
     },
-    '7': {
-      class_type: 'EmptyLatentImage',
-      inputs: {
-        width: params.width,
-        height: params.height,
-        batch_size: 1,
-      },
+  }
+  workflow['7'] = {
+    class_type: 'EmptyLatentImage',
+    inputs: {
+      width: params.width,
+      height: params.height,
+      batch_size: 1,
     },
-    '8': {
-      class_type: 'KSampler',
-      inputs: {
-        model: ['4', 0],
-        positive: ['5', 0],
-        negative: ['6', 0],
-        latent_image: ['7', 0],
-        seed,
-        steps: params.steps,
-        cfg: params.cfg,
-        sampler_name: params.sampler,
-        scheduler: params.scheduler,
-        denoise: params.denoise,
-      },
+  }
+  workflow['8'] = {
+    class_type: 'KSampler',
+    inputs: {
+      model: modelRef,
+      positive: ['5', 0],
+      negative: ['6', 0],
+      latent_image: ['7', 0],
+      seed,
+      steps: params.steps,
+      cfg: params.cfg,
+      sampler_name: params.sampler,
+      scheduler: params.scheduler,
+      denoise: params.denoise,
     },
-    '9': {
-      class_type: 'VAEDecode',
-      inputs: {
-        samples: ['8', 0],
-        vae: ['3', 0],
-      },
+  }
+  workflow['9'] = {
+    class_type: 'VAEDecode',
+    inputs: {
+      samples: ['8', 0],
+      vae: ['3', 0],
     },
-    '10': {
-      class_type: 'SaveImage',
-      inputs: {
-        images: ['9', 0],
-        filename_prefix: params.outputPrefix || 'anima',
-      },
+  }
+  workflow['10'] = {
+    class_type: 'SaveImage',
+    inputs: {
+      images: ['9', 0],
+      filename_prefix: params.outputPrefix || 'anima',
     },
   }
 

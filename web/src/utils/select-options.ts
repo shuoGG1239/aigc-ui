@@ -34,6 +34,8 @@ export const SCHEDULER_OPTIONS: SelectOption[] = [
   { label: 'sgm_uniform', value: 'sgm_uniform' },
   { label: 'ddim_uniform', value: 'ddim_uniform' },
   { label: 'beta', value: 'beta' },
+  { label: 'linear_quadratic', value: 'linear_quadratic' },
+  { label: 'kl_optimal', value: 'kl_optimal' },
 ]
 
 export const CLIP_TYPE_OPTIONS: SelectOption[] = [

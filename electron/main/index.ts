@@ -6,6 +6,7 @@ import { extractPngInfo } from './png-info'
 import { getSettings, setSettings, defaultOutputDir, defaultPromptPreviewDir } from './settings'
 import { resolvePromptPreview } from './prompt-preview'
 import { buildWorkflow } from './workflow'
+import { extractLoraTags, resolveLoras } from './workflow/lora'
 import {
   clearLogs,
   getLogs,
@@ -15,7 +16,7 @@ import {
   stopComfy,
   stopComfySync,
 } from './comfy-process'
-import type { AppSettings, GenerateResult, Txt2ImgParams } from './types'
+import type { AppSettings, GenerateResult, ResolvedLora, Txt2ImgParams } from './types'
 import {
   listPromptPools,
   removePromptPool,
@@ -369,6 +370,7 @@ function registerIpc(): void {
       const images: GenerateResult['images'] = []
       const seeds: number[] = []
       let lastPromptId = ''
+      let availableLoras: string[] | null = null
 
       for (let i = 0; i < count; i++) {
         const seedForRun =
@@ -384,8 +386,21 @@ function registerIpc(): void {
           Array.isArray(params.negativePrompts) && params.negativePrompts[i] !== undefined
             ? params.negativePrompts[i]
             : params.negativePrompt
+        const extracted = extractLoraTags(promptForRun, negativeForRun)
+        let loras: ResolvedLora[] = []
+        if (extracted.loras.length) {
+          if (!availableLoras) {
+            availableLoras = await client.listModels('loras')
+          }
+          loras = resolveLoras(extracted.loras, availableLoras)
+        }
         const { workflow, seed } = buildWorkflow(
-          { ...params, prompt: promptForRun, negativePrompt: negativeForRun },
+          {
+            ...params,
+            prompt: extracted.prompt,
+            negativePrompt: extracted.negativePrompt,
+            loras,
+          },
           seedForRun,
         )
         const promptId = await client.queuePrompt(workflow)

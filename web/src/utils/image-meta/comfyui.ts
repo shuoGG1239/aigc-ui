@@ -21,6 +21,7 @@ export function parseComfyUiMeta(raw: Record<string, unknown>): ImageMeta | null
   meta.cfg = form.cfg
   meta.sampler = form.sampler
   meta.scheduler = form.scheduler
+  meta.clipSkip = form.clipSkip
   meta.seed = form.seed
   meta.family = form.family
   meta.model = form.family === 'sdxl' ? form.checkpoint : form.unetModel || form.checkpoint
@@ -55,6 +56,7 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
   form.sampler = defaults.sampler
   form.scheduler = defaults.scheduler
   form.denoise = defaults.denoise
+  form.clipSkip = defaults.clipSkip
   form.outputPrefix = defaults.outputPrefix
   form.negativePrompt = defaults.negativePrompt
 
@@ -75,6 +77,12 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
 
   const aura = findFirst(nodes, 'ModelSamplingAuraFlow')
   if (aura) form.auraflowShift = num(aura.inputs?.shift) ?? form.auraflowShift
+
+  const clipSkipNode = findFirst(nodes, 'CLIPSetLastLayer')
+  if (clipSkipNode) {
+    const layer = num(clipSkipNode.inputs?.stop_at_clip_layer)
+    if (layer != null && layer !== 0) form.clipSkip = Math.abs(Math.round(layer))
+  }
 
   const latent = findFirst(nodes, 'EmptyLatentImage')
   if (latent) {

@@ -29,6 +29,7 @@ export function imageMetaToForm(
   if (meta.cfg != null) form.cfg = meta.cfg
   if (meta.sampler) form.sampler = meta.sampler
   if (meta.scheduler) form.scheduler = meta.scheduler
+  if (meta.clipSkip != null) form.clipSkip = meta.clipSkip
   if (meta.seed) form.seed = meta.seed
 
   // Avoid stuffing NovelAI "Source" labels into unet/checkpoint when merging / preferring family.
