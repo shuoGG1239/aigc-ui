@@ -51,7 +51,7 @@ function createWindow(): void {
     }
   })
 
-  // 右键菜单：编辑项 / 格式化 Prompt / 复制元数据 / 检查
+  // 右键菜单：查看词条 / 格式化 Prompt / 复制元数据 / 检查元素（剪切复制粘贴用快捷键）
   mainWindow.webContents.on('context-menu', async (_event, params) => {
     const win = mainWindow
     if (!win) return
@@ -98,12 +98,14 @@ function createWindow(): void {
 
     const template: Electron.MenuItemConstructorOptions[] = []
 
-    if (params.isEditable || (params.selectionText && params.selectionText.length > 0)) {
-      template.push(
-        { role: 'cut', label: '剪切' },
-        { role: 'copy', label: '复制' },
-        { role: 'paste', label: '粘贴' },
-      )
+    const selectedTag = params.selectionText?.trim()
+    if (selectedTag) {
+      template.push({
+        label: '查看词条',
+        click: () => {
+          win.webContents.send('promptPreview:view-tag', selectedTag)
+        },
+      })
     }
 
     if (promptField) {
@@ -136,7 +138,7 @@ function createWindow(): void {
     }
 
     template.push({
-      label: '检查',
+      label: '检查元素',
       click: () => {
         win.webContents.inspectElement(params.x, params.y)
       },

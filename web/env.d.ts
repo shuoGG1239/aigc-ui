@@ -54,6 +54,7 @@ declare global {
       }
       promptPreview: {
         resolve: (prompt: string) => Promise<PromptPreviewResolveResult>
+        onViewTag: (cb: (prompt: string) => void) => () => void
       }
       shell: {
         showItemInFolder: (filePath: string) => Promise<void>

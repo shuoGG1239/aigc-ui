@@ -71,7 +71,7 @@ defineExpose({
       class="pool-preview-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="提示词预览图"
+      aria-label="词条预览图"
       @click.self="close"
     >
       <div class="pool-preview-card">

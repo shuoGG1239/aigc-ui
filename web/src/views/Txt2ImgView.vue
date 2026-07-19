@@ -84,7 +84,7 @@ function appendToFocusedPrompt(text: string): void {
   end = Math.max(start, Math.min(end, cur.length))
 
   const left = cur.slice(0, start)
-  const needComma = left.trim().length > 0 && !/,\s*$/.test(left)
+  const needComma = left.trim().length > 0 && !/[,|｜]\s*$/.test(left)
   const insert = (needComma ? ', ' : '') + piece
 
   if (ta) {

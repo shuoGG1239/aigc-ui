@@ -17,6 +17,11 @@ contextBridge.exposeInMainWorld('api', {
   },
   promptPreview: {
     resolve: (prompt: string) => ipcRenderer.invoke('promptPreview:resolve', prompt),
+    onViewTag: (cb: (prompt: string) => void) => {
+      const handler = (_e: IpcRendererEvent, prompt: string) => cb(prompt)
+      ipcRenderer.on('promptPreview:view-tag', handler)
+      return () => ipcRenderer.removeListener('promptPreview:view-tag', handler)
+    },
   },
   shell: {
     showItemInFolder: (filePath: string) => ipcRenderer.invoke('shell:showItemInFolder', filePath),

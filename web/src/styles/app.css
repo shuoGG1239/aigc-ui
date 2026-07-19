@@ -1316,6 +1316,19 @@ body.is-resizing-split * {
   flex-shrink: 0;
 }
 
+.pool-preview-header .btn-icon {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.pool-preview-header .btn-icon:hover {
+  background: var(--bg-soft);
+  color: var(--text);
+  border: none;
+}
+
 .pool-preview-name {
   flex: 1;
   min-width: 0;
