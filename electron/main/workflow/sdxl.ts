@@ -1,3 +1,4 @@
+import { ComfyClass } from '@shared/comfy-class'
 import type { Txt2ImgParams } from '../types'
 import { applyClipSkip } from './clip'
 import { appendLoraChain } from './lora'
@@ -16,7 +17,7 @@ export function buildSdxlWorkflow(
 
   const workflow: Record<string, unknown> = {
     '1': {
-      class_type: 'CheckpointLoaderSimple',
+      class_type: ComfyClass.CheckpointLoaderSimple,
       inputs: {
         ckpt_name: ckpt,
       },
@@ -31,21 +32,21 @@ export function buildSdxlWorkflow(
   const clipRef = applyClipSkip(workflow, loraClip, params.clipSkip)
 
   workflow['2'] = {
-    class_type: 'CLIPTextEncode',
+    class_type: ComfyClass.CLIPTextEncode,
     inputs: {
       clip: clipRef,
       text: params.prompt,
     },
   }
   workflow['3'] = {
-    class_type: 'CLIPTextEncode',
+    class_type: ComfyClass.CLIPTextEncode,
     inputs: {
       clip: clipRef,
       text: params.negativePrompt,
     },
   }
   workflow['4'] = {
-    class_type: 'EmptyLatentImage',
+    class_type: ComfyClass.EmptyLatentImage,
     inputs: {
       width: params.width,
       height: params.height,
@@ -53,7 +54,7 @@ export function buildSdxlWorkflow(
     },
   }
   workflow['5'] = {
-    class_type: 'KSampler',
+    class_type: ComfyClass.KSampler,
     inputs: {
       model: modelRef,
       positive: ['2', 0],
@@ -68,17 +69,16 @@ export function buildSdxlWorkflow(
     },
   }
   workflow['6'] = {
-    class_type: 'VAEDecode',
+    class_type: ComfyClass.VAEDecode,
     inputs: {
       samples: ['5', 0],
       vae: ['1', 2],
     },
   }
   workflow['7'] = {
-    class_type: 'SaveImage',
+    class_type: ComfyClass.PreviewImage,
     inputs: {
       images: ['6', 0],
-      filename_prefix: params.outputPrefix || 'sdxl',
     },
   }
 

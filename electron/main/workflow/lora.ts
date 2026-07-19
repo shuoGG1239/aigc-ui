@@ -1,3 +1,4 @@
+import { ComfyClass } from '@shared/comfy-class'
 import {
   extractLoraTags,
   loraFileStem,
@@ -56,7 +57,7 @@ export function appendLoraChain(
   opts.loras.forEach((lora, i) => {
     const id = `lora_${i + 1}`
     workflow[id] = {
-      class_type: 'LoraLoader',
+      class_type: ComfyClass.LoraLoader,
       inputs: {
         model: modelRef,
         clip: clipRef,

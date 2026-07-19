@@ -1,3 +1,4 @@
+import { ComfyClass } from '@shared/comfy-class'
 import { getFamilyDefaults, resolveFamily } from '@shared/family'
 import { formatLoraTag } from '@shared/lora-tag'
 import { createDefaultForm, normalizeForm, type Txt2ImgForm } from '@shared/txt2img-form'
@@ -37,10 +38,12 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
   const form = createDefaultForm()
   const nodes = Object.entries(graph)
 
-  const hasAuraFlow = nodes.some(([, n]) => n.class_type === 'ModelSamplingAuraFlow')
-  const hasCheckpointLoader = nodes.some(([, n]) => n.class_type === 'CheckpointLoaderSimple')
-  const unet = findFirst(nodes, 'UNETLoader')
-  const ckpt = findFirst(nodes, 'CheckpointLoaderSimple')
+  const hasAuraFlow = nodes.some(([, n]) => n.class_type === ComfyClass.ModelSamplingAuraFlow)
+  const hasCheckpointLoader = nodes.some(
+    ([, n]) => n.class_type === ComfyClass.CheckpointLoaderSimple,
+  )
+  const unet = findFirst(nodes, ComfyClass.UNETLoader)
+  const ckpt = findFirst(nodes, ComfyClass.CheckpointLoaderSimple)
 
   form.family = resolveFamily({
     hasAuraFlow,
@@ -68,25 +71,25 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
   }
   if (ckpt) form.checkpoint = str(ckpt.inputs?.ckpt_name, form.checkpoint)
 
-  const clip = findFirst(nodes, 'CLIPLoader')
+  const clip = findFirst(nodes, ComfyClass.CLIPLoader)
   if (clip) {
     form.clipModel = str(clip.inputs?.clip_name, form.clipModel)
     form.clipType = str(clip.inputs?.type, form.clipType)
   }
 
-  const vae = findFirst(nodes, 'VAELoader')
+  const vae = findFirst(nodes, ComfyClass.VAELoader)
   if (vae) form.vaeModel = str(vae.inputs?.vae_name, form.vaeModel)
 
-  const aura = findFirst(nodes, 'ModelSamplingAuraFlow')
+  const aura = findFirst(nodes, ComfyClass.ModelSamplingAuraFlow)
   if (aura) form.auraflowShift = num(aura.inputs?.shift) ?? form.auraflowShift
 
-  const clipSkipNode = findFirst(nodes, 'CLIPSetLastLayer')
+  const clipSkipNode = findFirst(nodes, ComfyClass.CLIPSetLastLayer)
   if (clipSkipNode) {
     const layer = num(clipSkipNode.inputs?.stop_at_clip_layer)
     if (layer != null && layer !== 0) form.clipSkip = Math.abs(Math.round(layer))
   }
 
-  const latent = findFirst(nodes, 'EmptyLatentImage')
+  const latent = findFirst(nodes, ComfyClass.EmptyLatentImage)
   if (latent) {
     form.width = Math.round(num(latent.inputs?.width) ?? form.width)
     form.height = Math.round(num(latent.inputs?.height) ?? form.height)
@@ -94,7 +97,7 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
 
   let gotPrompt = false
   let gotNegative = false
-  const sampler = findFirst(nodes, 'KSampler')
+  const sampler = findFirst(nodes, ComfyClass.KSampler)
   if (sampler) {
     form.steps = Math.round(num(sampler.inputs?.steps) ?? form.steps)
     form.cfg = num(sampler.inputs?.cfg) ?? form.cfg
@@ -117,7 +120,7 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
   }
 
   if (!gotPrompt || !gotNegative) {
-    const encodes = nodes.filter(([, n]) => n.class_type === 'CLIPTextEncode')
+    const encodes = nodes.filter(([, n]) => n.class_type === ComfyClass.CLIPTextEncode)
     encodes.sort(([a], [b]) => Number(a) - Number(b))
     if (!gotPrompt && encodes[0]?.[1].inputs?.text !== undefined) {
       form.prompt = String(encodes[0][1].inputs!.text)
@@ -130,7 +133,7 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
   // aigc-ui strips <lora:> from CLIP text at generate time; restore from LoraLoader.
   form.prompt = prependMissingLoraTags(form.prompt, collectLoraTagsFromGraph(nodes))
 
-  const save = findFirst(nodes, 'SaveImage')
+  const save = findFirst(nodes, ComfyClass.SaveImage)
   if (save) form.outputPrefix = str(save.inputs?.filename_prefix, form.outputPrefix)
 
   return normalizeForm(form)
@@ -138,7 +141,7 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
 
 /** Collect `<lora:…>` tags from LoraLoader nodes (lora_1, lora_2, … then other ids). */
 function collectLoraTagsFromGraph(nodes: [string, ComfyNode][]): string[] {
-  const loaders = nodes.filter(([, n]) => n.class_type === 'LoraLoader')
+  const loaders = nodes.filter(([, n]) => n.class_type === ComfyClass.LoraLoader)
   loaders.sort(([a], [b]) => {
     const na = /^lora_(\d+)$/i.exec(a)
     const nb = /^lora_(\d+)$/i.exec(b)

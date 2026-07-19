@@ -1,3 +1,4 @@
+import { ComfyClass } from '@shared/comfy-class'
 import type { NodeRef } from './lora'
 
 /**
@@ -13,7 +14,7 @@ export function applyClipSkip(
   const n = Math.floor(Number(clipSkip))
   if (!Number.isFinite(n) || n <= 1) return clipRef
   workflow[nodeId] = {
-    class_type: 'CLIPSetLastLayer',
+    class_type: ComfyClass.CLIPSetLastLayer,
     inputs: {
       clip: clipRef,
       stop_at_clip_layer: -n,

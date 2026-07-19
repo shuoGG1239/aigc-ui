@@ -1,3 +1,4 @@
+/** Danbooru tags: 2025-09-01 snapshot (Anima-base cutoff ≈ Sep 2025), pt≥20 + aliases. */
 import danbooruCsv from './data/danbooru.csv?raw'
 import { parseCsv } from './csv'
 

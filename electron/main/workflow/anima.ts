@@ -1,3 +1,4 @@
+import { ComfyClass } from '@shared/comfy-class'
 import type { Txt2ImgParams } from '../types'
 import { applyClipSkip } from './clip'
 import { appendLoraChain } from './lora'
@@ -12,25 +13,25 @@ export function buildAnimaWorkflow(
 
   const workflow: Record<string, unknown> = {
     '1': {
-      class_type: 'UNETLoader',
+      class_type: ComfyClass.UNETLoader,
       inputs: {
         unet_name: params.unetModel,
         weight_dtype: params.unetWeightDtype,
       },
     },
     '2': {
-      class_type: 'CLIPLoader',
+      class_type: ComfyClass.CLIPLoader,
       inputs: {
         clip_name: params.clipModel,
         type: params.clipType,
       },
     },
     '3': {
-      class_type: 'VAELoader',
+      class_type: ComfyClass.VAELoader,
       inputs: { vae_name: params.vaeModel },
     },
     '4': {
-      class_type: 'ModelSamplingAuraFlow',
+      class_type: ComfyClass.ModelSamplingAuraFlow,
       inputs: {
         model: ['1', 0],
         shift: params.auraflowShift,
@@ -46,21 +47,21 @@ export function buildAnimaWorkflow(
   const clipRef = applyClipSkip(workflow, loraClip, params.clipSkip)
 
   workflow['5'] = {
-    class_type: 'CLIPTextEncode',
+    class_type: ComfyClass.CLIPTextEncode,
     inputs: {
       clip: clipRef,
       text: params.prompt,
     },
   }
   workflow['6'] = {
-    class_type: 'CLIPTextEncode',
+    class_type: ComfyClass.CLIPTextEncode,
     inputs: {
       clip: clipRef,
       text: params.negativePrompt,
     },
   }
   workflow['7'] = {
-    class_type: 'EmptyLatentImage',
+    class_type: ComfyClass.EmptyLatentImage,
     inputs: {
       width: params.width,
       height: params.height,
@@ -68,7 +69,7 @@ export function buildAnimaWorkflow(
     },
   }
   workflow['8'] = {
-    class_type: 'KSampler',
+    class_type: ComfyClass.KSampler,
     inputs: {
       model: modelRef,
       positive: ['5', 0],
@@ -83,17 +84,16 @@ export function buildAnimaWorkflow(
     },
   }
   workflow['9'] = {
-    class_type: 'VAEDecode',
+    class_type: ComfyClass.VAEDecode,
     inputs: {
       samples: ['8', 0],
       vae: ['3', 0],
     },
   }
   workflow['10'] = {
-    class_type: 'SaveImage',
+    class_type: ComfyClass.PreviewImage,
     inputs: {
       images: ['9', 0],
-      filename_prefix: params.outputPrefix || 'anima',
     },
   }
 
