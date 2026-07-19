@@ -3,6 +3,9 @@ import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'ele
 contextBridge.exposeInMainWorld('api', {
   platform: process.platform as NodeJS.Platform,
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
+  theme: {
+    set: (mode: 'light' | 'dark') => ipcRenderer.invoke('theme:set', mode),
+  },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
     set: (patch: Record<string, unknown>) => ipcRenderer.invoke('settings:set', patch),

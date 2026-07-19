@@ -22,11 +22,35 @@ import {
 } from './prompt-pools'
 import { generateTxt2Img, type ActiveClientHolder } from './txt2img-generate'
 
+function applyWindowChrome(win: BrowserWindow, theme: 'light' | 'dark'): void {
+  const bg = theme === 'dark' ? '#080808' : '#f4f7fc'
+  const symbol = theme === 'dark' ? '#b4b4b4' : '#475569'
+  win.setBackgroundColor(bg)
+  if (process.platform === 'win32') {
+    try {
+      win.setTitleBarOverlay({
+        color: bg,
+        symbolColor: symbol,
+        height: 36,
+      })
+    } catch {
+      // overlay unsupported / not enabled
+    }
+  }
+}
+
 export function registerIpc(opts: {
   getMainWindow: () => BrowserWindow | null
   activeClient: ActiveClientHolder
 }): void {
   const { getMainWindow, activeClient } = opts
+
+  ipcMain.handle('theme:set', (_event, theme: unknown) => {
+    const mode = theme === 'dark' ? 'dark' : 'light'
+    const win = getMainWindow()
+    if (win) applyWindowChrome(win, mode)
+    return mode
+  })
 
   ipcMain.handle('settings:get', () => getSettings())
 

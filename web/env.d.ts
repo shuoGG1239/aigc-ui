@@ -40,6 +40,9 @@ declare global {
         | 'cygwin'
         | 'netbsd'
       getPathForFile: (file: File) => string
+      theme: {
+        set: (mode: 'light' | 'dark') => Promise<'light' | 'dark'>
+      }
       settings: {
         get: () => Promise<AppSettings>
         set: (patch: Partial<AppSettings>) => Promise<AppSettings>

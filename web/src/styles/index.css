@@ -1,7 +1,9 @@
 :root {
   --bg: #ffffff;
+  --bg-page: #ffffff;
   --bg-elevated: #ffffff;
   --bg-soft: #f8fafc;
+  --bg-input: #ffffff;
   --bg-sidebar: #f4f7fc;
   --bg-sidebar-item-hover: #e2e8f0;
   --bg-sidebar-item-active: #d8dee8;
@@ -32,6 +34,52 @@
   --page-gutter: clamp(8px, 1.2vw, 12px);
   --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
+  --scrollbar-thumb: #cfd2dc;
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  --overlay-scrim: rgba(15, 23, 42, 0.45);
+  --chrome-bg: #f4f7fc;
+  --chrome-fg: #475569;
+}
+
+/*
+  Dark hierarchy (dark → light):
+  sidebar/chrome → page gutter → input inset → panel → header soft → elevated menus
+*/
+html[data-theme='dark'] {
+  --bg-sidebar: #080808;
+  --bg-page: #1c1c1c;
+  --bg-input: #121212;
+  --bg: #222222;
+  --bg-soft: #2c2c2c;
+  --bg-elevated: #343434;
+  --bg-sidebar-item-hover: #1a1a1a;
+  --bg-sidebar-item-active: #242424;
+  --border-sidebar-item-active: #3f3f3f;
+  --border: #363636;
+  --border-strong: #525252;
+  --text: #ececec;
+  --text-soft: #b4b4b4;
+  --text-secondary: #b4b4b4;
+  --text-muted: #7a7a7a;
+  --placeholder: #5c5c5c;
+  --primary: #4d9eff;
+  --primary-soft: #1a2f4a;
+  --primary-hover: #6eb0ff;
+  --accent: #4d9eff;
+  --accent-hover: #6eb0ff;
+  --accent-soft: #1a2f4a;
+  --success: #3dd68c;
+  --warning: #f5a623;
+  --danger: #ff5555;
+  --info: #4d9eff;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 8px 28px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --scrollbar-thumb: #4a4a4a;
+  --focus-ring: 0 0 0 3px rgba(77, 158, 255, 0.28);
+  --overlay-scrim: rgba(0, 0, 0, 0.6);
+  --chrome-bg: #080808;
+  --chrome-fg: #b4b4b4;
+  color-scheme: dark;
 }
 
 *,
@@ -48,7 +96,7 @@ body,
   font-family: var(--font);
   font-size: 14px;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-page);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -65,7 +113,7 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cfd2dc;
+  background: var(--scrollbar-thumb);
   border-radius: 5px;
 }
 

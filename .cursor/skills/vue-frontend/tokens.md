@@ -5,8 +5,10 @@
 ```css
 :root {
   --bg: #ffffff;
+  --bg-page: #ffffff;
   --bg-elevated: #ffffff;
   --bg-soft: #f8fafc;
+  --bg-input: #ffffff;
   --bg-sidebar: #f4f7fc;
   --bg-sidebar-item-hover: #e2e8f0;
   --bg-sidebar-item-active: #d8dee8;
@@ -37,8 +39,15 @@
   --page-gutter: clamp(8px, 1.2vw, 12px);
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
   --font: "Inter", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+  --scrollbar-thumb: #cfd2dc;
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  --chrome-bg: #f4f7fc;
+  --chrome-fg: #475569;
 }
 ```
+
+暗色层级（深→浅）：`--bg-sidebar` `#080808` → `--bg-page` `#1c1c1c` → `--bg-input` → `--bg` 面板 → `--bg-soft` → `--bg-elevated`；accent `#4d9eff`。侧栏太阳/月亮切换；偏好 `localStorage` `aigc-ui:theme`。
+
 
 ## 字号惯例
 

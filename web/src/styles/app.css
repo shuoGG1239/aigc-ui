@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
+  background: var(--bg-page);
 }
 
 .titlebar {
@@ -185,7 +185,7 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background: var(--bg);
+  background: var(--bg-page);
 }
 
 .page-view {
@@ -649,7 +649,7 @@ body.is-resizing-split * {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
-  background: var(--bg);
+  background: var(--bg-input);
   outline: none;
   font-family: var(--mono);
   font-size: 12.5px;
@@ -665,7 +665,7 @@ body.is-resizing-split * {
 .input:focus,
 .textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  box-shadow: var(--focus-ring);
 }
 
 .textarea {
@@ -1695,7 +1695,7 @@ body.is-resizing-split * {
 
 .app-select-trigger.open {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  box-shadow: var(--focus-ring);
 }
 
 .app-select-value {
@@ -2087,4 +2087,70 @@ body.is-resizing-split * {
   .field-row--5 {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* —— Dark theme surface overrides —— */
+html[data-theme='dark'] .preview-main {
+  background:
+    linear-gradient(180deg, rgba(42, 42, 42, 0.96), rgba(16, 16, 16, 0.98)),
+    radial-gradient(circle at 20% 20%, rgba(77, 158, 255, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.3), transparent 45%);
+}
+
+html[data-theme='dark'] .preview-float-actions .btn-icon {
+  background: rgba(16, 16, 16, 0.6);
+  border-color: rgba(82, 82, 82, 0.85);
+  color: rgba(236, 236, 236, 0.9);
+}
+
+html[data-theme='dark'] .preview-float-actions .btn-icon:hover {
+  background: rgba(42, 42, 42, 0.92);
+  color: var(--text);
+}
+
+html[data-theme='dark'] .preview-float-actions .btn-icon.is-active {
+  background: rgba(50, 50, 50, 0.95);
+  border-color: rgba(90, 90, 90, 0.95);
+}
+
+html[data-theme='dark'] .preview-info-panel {
+  background: rgba(30, 30, 30, 0.97);
+}
+
+html[data-theme='dark'] .btn-danger.btn-ghost,
+html[data-theme='dark'] .btn.btn-danger.btn-ghost {
+  background: transparent;
+  border-color: #5c2020;
+  color: #ff8a8a;
+}
+
+html[data-theme='dark'] .toast.info {
+  background: #1a2f4a;
+  border-color: #2a4a73;
+  color: #b3d4ff;
+}
+
+html[data-theme='dark'] .toast.ok {
+  background: #143528;
+  border-color: #1f5c3a;
+  color: #9fe3bc;
+}
+
+html[data-theme='dark'] .toast.error {
+  background: #3a1515;
+  border-color: #5c2020;
+  color: #ffb3b3;
+}
+
+html[data-theme='dark'] .toast-close:hover {
+  background: rgba(228, 228, 228, 0.08);
+}
+
+html[data-theme='dark'] .detail-panel.is-drop-target {
+  outline-color: rgba(77, 158, 255, 0.5);
+  background: rgba(77, 158, 255, 0.08);
+}
+
+html[data-theme='dark'] .pool-preview-overlay {
+  background: var(--overlay-scrim);
 }

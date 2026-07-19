@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { IconMoon, IconSun } from '@/components/icons'
+import { useTheme } from '@/composables/useTheme'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+const { isDark, toggleTheme } = useTheme()
 
 const primaryItems = [
   { path: '/', label: '文生图', icon: 'spark' as const },
@@ -74,6 +77,17 @@ function go(path: string): void {
     </nav>
 
     <div class="sidebar-footer">
+      <button
+        type="button"
+        class="nav-item"
+        :title="isDark ? '切换到白天模式' : '切换到暗黑模式'"
+        :aria-label="isDark ? '切换到白天模式' : '切换到暗黑模式'"
+        @click="toggleTheme"
+      >
+        <IconSun v-if="!isDark" class="nav-icon" :size="22" />
+        <IconMoon v-else class="nav-icon" :size="22" />
+        <span class="nav-label">{{ isDark ? '暗黑' : '白天' }}</span>
+      </button>
       <button
         type="button"
         class="nav-item"
