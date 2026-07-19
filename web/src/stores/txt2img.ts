@@ -21,6 +21,7 @@ import {
   loadParamHistory,
   pushParamHistory,
   saveParamHistory,
+  toggleStarParamHistory,
   type ParamHistoryEntry,
 } from '@/utils/param-history'
 
@@ -117,6 +118,15 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     const hit = paramHistory.value.find((e) => e.fingerprint === fingerprint)
     if (!hit) return false
     applyForm(hit.form)
+    return true
+  }
+
+  function toggleHistoryStar(fingerprint: string): boolean {
+    const before = paramHistory.value
+    const next = toggleStarParamHistory(before, fingerprint)
+    if (next === before) return false
+    paramHistory.value = next
+    saveParamHistory(paramHistory.value)
     return true
   }
 
@@ -227,7 +237,8 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       throw err
     }
 
-    const snapshot: Txt2ImgForm = { ...form.value }
+    recordParamHistory({ ...form.value })
+
     let streamed = 0
     const offImage = window.api.txt2img.onImage((payload) => {
       results.value = [payload.image, ...results.value].slice(0, MAX_RESULTS)
@@ -275,14 +286,10 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       lastPromptId.value = result.promptId
       status.value = 'success'
 
-      recordParamHistory(snapshot)
-
       return result.images.length
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       const cancelled = msg === '已取消生成'
-      // Manual stop still counts as a submitted run — keep params in history.
-      if (cancelled) recordParamHistory(snapshot)
       status.value = cancelled ? 'idle' : 'error'
       errorMessage.value = cancelled ? '' : msg
       throw err
@@ -344,6 +351,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     applyForm,
     setFamily,
     restoreHistory,
+    toggleHistoryStar,
     generate,
     cancel,
     clearResults,

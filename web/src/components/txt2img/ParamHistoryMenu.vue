@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { IconStar } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { fuzzyMatches, fuzzyParts } from '@/utils/fuzzy'
-import { formatHms, promptSummary } from '@/utils/param-history'
+import { formatHms, promptSummary, sortParamHistory } from '@/utils/param-history'
 
 const emit = defineEmits<{
   /** Fired when the menu opens (parent should close sibling popovers). */
@@ -22,10 +23,12 @@ const query = ref('')
 const filtered = computed(() => {
   const q = query.value
   const list = store.paramHistory
-  if (!q.trim()) return list
-  return list.filter(
-    (e) => fuzzyMatches(e.form.prompt, q) || fuzzyMatches(e.form.negativePrompt || '', q),
-  )
+  const matched = !q.trim()
+    ? list
+    : list.filter(
+        (e) => fuzzyMatches(e.form.prompt, q) || fuzzyMatches(e.form.negativePrompt || '', q),
+      )
+  return sortParamHistory(matched)
 })
 
 function updateMenuPosition(): void {
@@ -80,6 +83,14 @@ function onRestore(fingerprint: string): void {
     close()
     toast.ok('已恢复历史参数')
   }
+}
+
+function onToggleStar(fingerprint: string, event: MouseEvent): void {
+  event.preventDefault()
+  event.stopPropagation()
+  const before = store.paramHistory.find((e) => e.fingerprint === fingerprint)
+  if (!store.toggleHistoryStar(fingerprint) || !before) return
+  toast.ok(before.starred ? '已取消收藏' : '已收藏')
 }
 
 function onDocClick(e: MouseEvent): void {
@@ -162,14 +173,23 @@ defineExpose({
       @blur="onFilterBlur"
     />
     <div v-if="open" class="param-history-menu" role="listbox" :style="menuStyle">
-      <button
+      <div
         v-for="item in filtered"
         :key="item.fingerprint + item.at"
-        type="button"
         class="param-history-item"
         role="option"
         @click="onRestore(item.fingerprint)"
       >
+        <button
+          type="button"
+          class="param-history-star"
+          :class="{ 'is-starred': item.starred }"
+          :title="item.starred ? '取消收藏' : '收藏'"
+          :aria-label="item.starred ? '取消收藏' : '收藏'"
+          @click="onToggleStar(item.fingerprint, $event)"
+        >
+          <IconStar :filled="!!item.starred" />
+        </button>
         <span class="param-history-summary" :title="item.form.prompt">
           <template v-for="(part, i) in fuzzyParts(promptSummary(item.form.prompt), query)" :key="i">
             <mark v-if="part.hit" class="menu-hl">{{ part.text }}</mark>
@@ -177,7 +197,7 @@ defineExpose({
           </template>
         </span>
         <span class="param-history-time">{{ formatHms(item.at) }}</span>
-      </button>
+      </div>
       <div v-if="!store.paramHistory.length" class="param-history-empty">暂无历史参数</div>
       <div v-else-if="!filtered.length" class="param-history-empty">无匹配</div>
     </div>
