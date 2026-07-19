@@ -13,12 +13,15 @@ const props = withDefaults(
     rows?: number
     placeholder?: string
     sm?: boolean
+    /** Fill parent height (for flex layouts that grow with the window). */
+    fill?: boolean
     fieldAttr?: string
   }>(),
   {
     rows: 5,
     placeholder: '',
     sm: false,
+    fill: false,
   },
 )
 
@@ -58,14 +61,14 @@ defineExpose({
 </script>
 
 <template>
-  <div class="prompt-textarea">
+  <div class="prompt-textarea" :class="{ 'prompt-textarea--fill': fill }">
     <textarea
       :id="id"
       ref="textareaRef"
       v-model="model"
       class="textarea"
-      :class="{ 'textarea--sm': sm }"
-      :rows="rows"
+      :class="{ 'textarea--sm': sm && !fill, 'textarea--fill': fill }"
+      :rows="fill ? undefined : rows"
       :placeholder="placeholder"
       :data-prompt-field="fieldAttr"
       wrap="soft"
@@ -126,6 +129,13 @@ defineExpose({
   min-width: 0;
 }
 
+.prompt-textarea--fill {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .prompt-textarea :deep(.textarea) {
   display: block;
   box-sizing: border-box;
@@ -138,6 +148,13 @@ defineExpose({
   overflow-wrap: anywhere;
   word-wrap: break-word;
   word-break: break-all;
+}
+
+.prompt-textarea :deep(.textarea--fill) {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  resize: none;
 }
 </style>
 

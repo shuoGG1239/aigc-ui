@@ -244,7 +244,7 @@ function onNumberWheel(
 
 <template>
   <div class="page-shell">
-    <SplitPane storage-key="aigc-ui:txt2img-split-v2" :default-width="624" :min-width="360" :max-width="960">
+    <SplitPane storage-key="aigc-ui:txt2img-split-v3" :default-width="624" :min-width="360" :max-ratio="0.72">
       <template #left>
       <section class="list-panel">
         <div class="panel-header">
@@ -334,8 +334,9 @@ function onNumberWheel(
           </div>
         </div>
 
-        <div class="panel-body">
-          <div class="field">
+        <div class="panel-body txt2img-body">
+          <div class="txt2img-prompts">
+          <div class="field field--grow field--prompt">
             <div class="field-label-row">
               <label class="field-label" for="txt2img-prompt">Prompt</label>
               <span class="field-help" tabindex="0" aria-label="特殊语法说明">
@@ -392,7 +393,7 @@ function onNumberWheel(
               ref="promptFieldRef"
               v-model="store.form.prompt"
               :family="store.form.family"
-              :rows="5"
+              fill
               field-attr="prompt"
               placeholder="可用 <pool:chara> / <pool:artist:0.8,0.9:3> / <random:my_tag:0.8,0.9>"
               @focus="onPromptFocus('prompt', $event)"
@@ -400,15 +401,15 @@ function onNumberWheel(
               @caret="onPromptSelect('prompt')"
             />
           </div>
-          <div class="field">
-            <label class="field-label">Negative Prompt</label>
+
+          <div class="field field--grow field--negative">
+            <label class="field-label" for="txt2img-negative">Negative Prompt</label>
             <PromptTextarea
               id="txt2img-negative"
               ref="negFieldRef"
               v-model="store.form.negativePrompt"
               :family="store.form.family"
-              :rows="2"
-              sm
+              fill
               field-attr="negativePrompt"
               placeholder="同样可用 <pool:chara:1,2,3> 或 <random:tag:0.9>"
               @focus="onPromptFocus('negativePrompt', $event)"
@@ -416,7 +417,9 @@ function onNumberWheel(
               @caret="onPromptSelect('negativePrompt')"
             />
           </div>
+          </div>
 
+          <div class="txt2img-rest">
           <div class="field-row field-row--3">
             <div class="field">
               <label class="field-label">Width</label>
@@ -568,6 +571,7 @@ function onNumberWheel(
                 </div>
               </div>
             </template>
+          </div>
           </div>
 
         </div>
