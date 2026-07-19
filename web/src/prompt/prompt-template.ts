@@ -24,7 +24,23 @@ function isIntegerCountsPool(raw: string): boolean {
   return parts.length > 0 && parts.every((p) => /^\d+$/.test(p))
 }
 
-/** Parse inner body after `pool:` / `random:`. */
+/** Classify one numeric segment: integers → counts, floats → strengths. */
+function classifyNumericSegment(raw: string): {
+  counts?: number[]
+  strengths?: number[]
+} {
+  const t = raw.trim()
+  if (!t) return {}
+  if (isIntegerCountsPool(t)) return { counts: parseCountsInput(t) }
+  const strengths = parseStrengthsPool(t)
+  return strengths.length ? { strengths } : {}
+}
+
+/**
+ * Parse inner body after `pool:` / `random:`.
+ * Trailing `:…` segments are typed by value: integers = counts, floats = strengths
+ * (order does not matter; e.g. `:2,3:0.8,0.9` ≡ `:0.8,0.9:2,3`).
+ */
 export function parsePlaceholderBody(raw: string): PlaceholderBody {
   const s = String(raw || '').trim()
   const first = s.indexOf(':')
@@ -36,23 +52,16 @@ export function parsePlaceholderBody(raw: string): PlaceholderBody {
   const rest = s.slice(first + 1).trim()
   if (!rest) return { name, counts: [1] }
 
-  const second = rest.indexOf(':')
-  if (second < 0) {
-    if (isIntegerCountsPool(rest)) {
-      return { name, counts: parseCountsInput(rest) }
-    }
-    const strengths = parseStrengthsPool(rest)
-    return strengths.length ? { name, strengths, counts: [1] } : { name, counts: [1] }
+  let counts: number[] | undefined
+  let strengths: number[] | undefined
+  for (const seg of rest.split(':')) {
+    const classified = classifyNumericSegment(seg)
+    if (classified.counts) counts = classified.counts
+    if (classified.strengths) strengths = classified.strengths
   }
 
-  const strengthRaw = rest.slice(0, second).trim()
-  const countRaw = rest.slice(second + 1).trim()
-  const strengths = parseStrengthsPool(strengthRaw)
-  const out: PlaceholderBody = {
-    name,
-    counts: countRaw ? parseCountsInput(countRaw) : [1],
-  }
-  if (strengths.length) out.strengths = strengths
+  const out: PlaceholderBody = { name, counts: counts ?? [1] }
+  if (strengths?.length) out.strengths = strengths
   return out
 }
 
@@ -61,7 +70,7 @@ function formatPoolPlaceholder(name: string, counts?: number[], strengths?: numb
   const countPart =
     counts?.length && !(counts.length === 1 && counts[0] === 1) ? counts.join('|') : ''
   const strengthPart = strengths?.length ? strengths.join('|') : ''
-  if (strengthPart && countPart) return `<pool:${n}:${strengthPart}:${countPart}>`
+  if (countPart && strengthPart) return `<pool:${n}:${countPart}:${strengthPart}>`
   if (strengthPart) return `<pool:${n}:${strengthPart}>`
   if (countPart) return `<pool:${n}:${countPart}>`
   return `<pool:${n}>`

@@ -256,7 +256,7 @@ function onPreviewEntry(prompt: string): void {
                     ? '程序池名称只读'
                     : locked
                       ? '内置池名称只读；可复制后改'
-                      : '唯一名称；Prompt 中写 &lt;pool:name&gt; / &lt;pool:name:0.8|0.9:2&gt;'
+                      : '唯一名称；Prompt 中写 &lt;pool:name&gt; / &lt;pool:name:2:0.8|0.9&gt;'
                 "
                 spellcheck="false"
                 @blur="commitName"

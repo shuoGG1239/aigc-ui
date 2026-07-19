@@ -205,7 +205,9 @@ async function onGenerate(): Promise<void> {
     const count = await store.generate()
     toast.ok(count > 1 ? `生成完成 ${count} 张` : `生成完成 (seed=${store.lastSeed})`)
   } catch (err) {
-    toast.error(err instanceof Error ? err.message : String(err))
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg === '已取消生成') return
+    toast.error(msg)
   }
 }
 
@@ -355,11 +357,11 @@ function onNumberWheel(
                   </div>
                   <div class="field-help-block">
                     <code>&lt;pool:名称:0.8|0.9&gt;</code>
-                    <span>强度池（| 或 , 均可）</span>
+                    <span>浮点为强度池（| 或 ,）</span>
                   </div>
                   <div class="field-help-block">
-                    <code>&lt;pool:名称:0.8|0.9:2|3&gt;</code>
-                    <span>强度池 + 数量池</span>
+                    <code>&lt;pool:名称:2,3:0.8,0.9&gt;</code>
+                    <span>整数=数量，浮点=强度（顺序无关）</span>
                   </div>
                   <div class="field-help-block">
                     <code>&lt;pool:名称:1,2,3&gt;</code>
@@ -375,8 +377,8 @@ function onNumberWheel(
                     <span>等概率多选一</span>
                   </div>
                   <div class="field-help-block">
-                    <code>&lt;random:文本:0.8|0.9&gt;</code>
-                    <span>字面量 + 强度</span>
+                    <code>&lt;random:a|b:2,3:0.8,0.9&gt;</code>
+                    <span>多选一 + 数量/强度（顺序无关）</span>
                   </div>
                   <div class="field-help-sep"></div>
                   <div class="field-help-block">
@@ -401,7 +403,7 @@ function onNumberWheel(
               :family="store.form.family"
               fill
               field-attr="prompt"
-              placeholder="可用 <pool:chara> / <pool:artist:0.8|0.9:3> / <random:a|b:0.8|0.9>"
+              placeholder="可用 <pool:chara> / <pool:artist:2,3:0.8,0.9> / <random:a|b:0.8,0.9>"
               @focus="onPromptFocus('prompt', $event)"
               @blur="onPromptBlur('prompt', $event)"
               @caret="onPromptSelect('prompt')"
