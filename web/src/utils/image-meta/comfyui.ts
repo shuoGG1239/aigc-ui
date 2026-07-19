@@ -1,4 +1,5 @@
 import { getFamilyDefaults, resolveFamily } from '@/models/family'
+import { formatLoraTag } from '@/prompt/lora-tag'
 import { createDefaultForm, normalizeForm, type Txt2ImgForm } from '@/stores/txt2img'
 import { asRecord, emptyMeta, num, str } from './helpers'
 import type { ImageMeta } from './types'
@@ -133,19 +134,6 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
   if (save) form.outputPrefix = str(save.inputs?.filename_prefix, form.outputPrefix)
 
   return normalizeForm(form)
-}
-
-function loraFileStem(fileName: string): string {
-  const base = fileName.replace(/^.*[/\\]/, '')
-  return base.replace(/\.(safetensors|pt|ckpt)$/i, '')
-}
-
-function formatLoraTag(fileName: string, strengthModel: number, strengthClip: number): string {
-  const stem = loraFileStem(fileName)
-  const sm = Number.isFinite(strengthModel) ? strengthModel : 1
-  const sc = Number.isFinite(strengthClip) ? strengthClip : sm
-  if (sm === sc) return `<lora:${stem}:${sm}>`
-  return `<lora:${stem}:${sm}:${sc}>`
 }
 
 /** Collect `<lora:…>` tags from LoraLoader nodes (lora_1, lora_2, … then other ids). */

@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
+  getAnimaModelDefaults,
   getFamilyDefaults,
   isModelFamily,
   type ModelFamily,
 } from '@/models/family'
+import { clampBatchSize, clampClipSkip } from '@/models/limits'
 import { presetNegativePrompt } from '@/prompt/model-prompt-presets'
 import {
   expandPromptTemplate,
@@ -60,6 +62,7 @@ const DEFAULT_PROMPT =
 
 export function createDefaultForm(): Txt2ImgForm {
   const anima = getFamilyDefaults('anima')
+  const models = getAnimaModelDefaults()
   return {
     family: 'anima',
     prompt: DEFAULT_PROMPT,
@@ -74,21 +77,15 @@ export function createDefaultForm(): Txt2ImgForm {
     denoise: anima.denoise,
     clipSkip: anima.clipSkip,
     seed: '',
-    unetModel: 'anima-base-v1.0.safetensors',
-    clipModel: 'qwen_3_06b_base.safetensors',
-    clipType: 'stable_diffusion',
-    vaeModel: 'qwen_image_vae.safetensors',
-    unetWeightDtype: 'default',
-    auraflowShift: 3.0,
+    unetModel: models.unetModel,
+    clipModel: models.clipModel,
+    clipType: models.clipType,
+    vaeModel: models.vaeModel,
+    unetWeightDtype: models.unetWeightDtype,
+    auraflowShift: models.auraflowShift,
     checkpoint: '',
     outputPrefix: anima.outputPrefix,
   }
-}
-
-function clampClipSkip(value: unknown, fallback: number): number {
-  const n = Math.floor(Number(value))
-  if (!Number.isFinite(n)) return fallback
-  return Math.min(12, Math.max(1, n))
 }
 
 export function normalizeForm(partial: Partial<Txt2ImgForm> | null | undefined): Txt2ImgForm {
@@ -240,7 +237,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       throw new Error(errorMessage.value)
     }
 
-    const batchSize = Math.max(1, Math.min(Math.floor(Number(form.value.batchSize) || 1), 64))
+    const batchSize = clampBatchSize(form.value.batchSize)
     let prompt = form.value.prompt
     let prompts: string[] | undefined
     let negativePrompt = form.value.negativePrompt

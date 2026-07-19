@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { DEFAULT_SERVER_URL } from '@/models/app-defaults'
 
 export type ConnStatus = 'unknown' | 'checking' | 'ok' | 'bad'
 
 export const useSettingsStore = defineStore('settings', () => {
-  const serverUrl = ref('http://127.0.0.1:8188')
+  const serverUrl = ref(DEFAULT_SERVER_URL)
   const outputDir = ref('')
   const launchCommand = ref('')
   const promptPreviewDir = ref('')

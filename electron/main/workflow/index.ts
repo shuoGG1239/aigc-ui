@@ -1,12 +1,14 @@
-import type { ModelFamily, Txt2ImgParams } from '../types'
+import { resolveFamily, type ModelFamily } from '../../../web/src/models/family'
+import type { Txt2ImgParams } from '../types'
 import { buildAnimaWorkflow } from './anima'
 import { buildSdxlWorkflow } from './sdxl'
 
 export function resolveWorkflowFamily(params: Txt2ImgParams): ModelFamily {
-  if (params.family === 'sdxl' || params.family === 'anima') return params.family
-  if ((params.unetModel || '').toLowerCase().includes('anima')) return 'anima'
-  if ((params.checkpoint || '').trim()) return 'sdxl'
-  return 'anima'
+  return resolveFamily({
+    family: params.family,
+    unetModel: params.unetModel,
+    checkpoint: params.checkpoint,
+  })
 }
 
 export function buildWorkflow(

@@ -2,9 +2,8 @@ import { app } from 'electron'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
+import { DEFAULT_SERVER_URL } from '../../web/src/models/app-defaults'
 import type { AppSettings } from './types'
-
-const DEFAULT_SERVER_URL = 'http://127.0.0.1:8188'
 const DEFAULT_COMFY_ROOT = 'C:\\c_git_project\\ComfyUI-aki-v2'
 
 const DEFAULT_LAUNCH_COMMAND =

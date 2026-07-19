@@ -1,5 +1,8 @@
 import type { ModelFamily } from '@/models/family'
+import { COMFY_SCHEDULERS } from '@/utils/select-options'
 import type { ImageMeta, ImageMetaSource } from './types'
+
+export { COMFY_SCHEDULERS }
 
 export function emptyMeta(source: ImageMetaSource = 'unknown'): ImageMeta {
   return {
@@ -58,19 +61,6 @@ export function normalizeSamplerName(raw: string): string {
   }
   return map[s.toLowerCase()] || s
 }
-
-/** ComfyUI KSampler scheduler values (core). */
-export const COMFY_SCHEDULERS = [
-  'simple',
-  'sgm_uniform',
-  'karras',
-  'exponential',
-  'ddim_uniform',
-  'beta',
-  'normal',
-  'linear_quadratic',
-  'kl_optimal',
-] as const
 
 const COMFY_SCHEDULER_SET = new Set<string>(COMFY_SCHEDULERS)
 

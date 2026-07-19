@@ -18,6 +18,18 @@ export interface FamilySamplingDefaults {
   negativePrompt: string
 }
 
+/** Anima (Qwen/AuraFlow) loader filenames & sampling shift. */
+export interface AnimaModelDefaults {
+  unetModel: string
+  clipModel: string
+  clipType: string
+  vaeModel: string
+  unetWeightDtype: string
+  auraflowShift: number
+}
+
+const SDXL_CHECKPOINT = 'noobaiXLNAIXL_vPred10Version.safetensors'
+
 const ANIMA_DEFAULTS: FamilySamplingDefaults = {
   width: 896,
   height: 1152,
@@ -41,16 +53,29 @@ const SDXL_DEFAULTS: FamilySamplingDefaults = {
   scheduler: 'normal',
   denoise: 1.0,
   clipSkip: 2,
-  checkpoint: 'noobaiXLNAIXL_vPred10Version.safetensors',
+  checkpoint: SDXL_CHECKPOINT,
   outputPrefix: 'sdxl',
   negativePrompt: presetNegativePrompt({
     family: 'sdxl',
-    checkpoint: 'noobaiXLNAIXL_vPred10Version.safetensors',
+    checkpoint: SDXL_CHECKPOINT,
   }),
+}
+
+const ANIMA_MODEL_DEFAULTS: AnimaModelDefaults = {
+  unetModel: 'anima-base-v1.0.safetensors',
+  clipModel: 'qwen_3_06b_base.safetensors',
+  clipType: 'stable_diffusion',
+  vaeModel: 'qwen_image_vae.safetensors',
+  unetWeightDtype: 'default',
+  auraflowShift: 3.0,
 }
 
 export function getFamilyDefaults(family: ModelFamily): FamilySamplingDefaults {
   return family === 'sdxl' ? { ...SDXL_DEFAULTS } : { ...ANIMA_DEFAULTS }
+}
+
+export function getAnimaModelDefaults(): AnimaModelDefaults {
+  return { ...ANIMA_MODEL_DEFAULTS }
 }
 
 export function isModelFamily(value: unknown): value is ModelFamily {

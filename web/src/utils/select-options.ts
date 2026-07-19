@@ -26,17 +26,25 @@ export const SAMPLER_OPTIONS: SelectOption[] = [
   { label: 'uni_pc_bh2', value: 'uni_pc_bh2' },
 ]
 
-export const SCHEDULER_OPTIONS: SelectOption[] = [
-  { label: 'simple', value: 'simple' },
-  { label: 'normal', value: 'normal' },
-  { label: 'karras', value: 'karras' },
-  { label: 'exponential', value: 'exponential' },
-  { label: 'sgm_uniform', value: 'sgm_uniform' },
-  { label: 'ddim_uniform', value: 'ddim_uniform' },
-  { label: 'beta', value: 'beta' },
-  { label: 'linear_quadratic', value: 'linear_quadratic' },
-  { label: 'kl_optimal', value: 'kl_optimal' },
-]
+/** ComfyUI KSampler scheduler values (single source for UI + meta normalize). */
+export const COMFY_SCHEDULERS = [
+  'simple',
+  'normal',
+  'karras',
+  'exponential',
+  'sgm_uniform',
+  'ddim_uniform',
+  'beta',
+  'linear_quadratic',
+  'kl_optimal',
+] as const
+
+export type ComfyScheduler = (typeof COMFY_SCHEDULERS)[number]
+
+export const SCHEDULER_OPTIONS: SelectOption[] = COMFY_SCHEDULERS.map((value) => ({
+  label: value,
+  value,
+}))
 
 export const CLIP_TYPE_OPTIONS: SelectOption[] = [
   { label: 'stable_diffusion', value: 'stable_diffusion' },

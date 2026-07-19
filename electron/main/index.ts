@@ -16,6 +16,8 @@ import {
   stopComfy,
   stopComfySync,
 } from './comfy-process'
+import { APP_DISPLAY_NAME } from '../../web/src/models/app-defaults'
+import { clampBatchSize } from '../../web/src/models/limits'
 import type { AppSettings, GenerateResult, ResolvedLora, Txt2ImgParams } from './types'
 import {
   listPromptPools,
@@ -37,7 +39,7 @@ function createWindow(): void {
     minWidth: 960,
     minHeight: 640,
     show: false,
-    title: 'AIGC UI',
+    title: APP_DISPLAY_NAME,
     backgroundColor: '#f4f7fc',
     titleBarStyle: 'hidden',
     ...(isMac
@@ -358,7 +360,7 @@ function registerIpc(): void {
         throw new Error(health.message)
       }
 
-      const count = Math.max(1, Math.min(Math.floor(params.batchSize || 1), 64))
+      const count = clampBatchSize(params.batchSize)
       const outputDir = settings.outputDir || defaultOutputDir()
       if (!existsSync(outputDir)) {
         mkdirSync(outputDir, { recursive: true })

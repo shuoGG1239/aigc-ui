@@ -1,4 +1,4 @@
-import { loraStem } from './token'
+import { loraFileStem } from '@/prompt/lora-tag'
 
 let cache: string[] | null = null
 let loadPromise: Promise<string[]> | null = null
@@ -38,7 +38,7 @@ export function searchLoras(files: string[], query: string, limit = 25): LoraHit
   const q = query.trim().toLowerCase().replace(/\s+/g, '_')
   const hits: LoraHit[] = []
   for (const fileName of files) {
-    const stem = loraStem(fileName)
+    const stem = loraFileStem(fileName)
     const stemLower = stem.toLowerCase()
     const fileLower = fileName.toLowerCase()
     if (!q || stemLower.includes(q) || fileLower.includes(q)) {

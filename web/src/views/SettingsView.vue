@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { IconFolderPick, IconSave } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
+import { DEFAULT_SERVER_URL } from '@/models/app-defaults'
 import { useSettingsStore } from '@/stores/settings'
 
 const settings = useSettingsStore()
@@ -73,7 +74,7 @@ async function onSaveServerUrl(): Promise<void> {
             v-model="serverUrlDraft"
             class="input"
             type="text"
-            placeholder="http://127.0.0.1:8188"
+            :placeholder="DEFAULT_SERVER_URL"
             title="ComfyUI HTTP 地址"
             @keydown.enter="onSaveServerUrl"
           />

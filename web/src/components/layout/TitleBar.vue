@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { APP_DISPLAY_NAME } from '@/models/app-defaults'
+
 const platform = window.api?.platform ?? 'win32'
 </script>
 
@@ -12,7 +14,7 @@ const platform = window.api?.platform ?? 'win32'
           fill="#fff"
         />
       </svg>
-      <span class="titlebar-title">AIGC UI</span>
+      <span class="titlebar-title">{{ APP_DISPLAY_NAME }}</span>
     </div>
   </header>
 </template>

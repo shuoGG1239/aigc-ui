@@ -1,3 +1,5 @@
+import { formatLoraTag } from '@/prompt/lora-tag'
+
 export type CompleteMode = 'tag' | 'lora'
 
 export interface CaretToken {
@@ -65,11 +67,6 @@ export function formatTagInsert(name: string, family: 'anima' | 'sdxl'): string 
   return name
 }
 
-export function loraStem(fileName: string): string {
-  const base = fileName.replace(/^.*[/\\]/, '')
-  return base.replace(/\.(safetensors|pt|ckpt)$/i, '')
-}
-
 export function formatLoraInsert(fileName: string): string {
-  return `<lora:${loraStem(fileName)}:1>`
+  return formatLoraTag(fileName, 1)
 }
