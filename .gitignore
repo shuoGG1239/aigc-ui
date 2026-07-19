@@ -9,3 +9,5 @@ output/
 .env
 .env.*
 .idea
+*.tsbuildinfo
+

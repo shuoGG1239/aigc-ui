@@ -4,6 +4,7 @@ import Sidebar from '@/components/layout/Sidebar.vue'
 import TitleBar from '@/components/layout/TitleBar.vue'
 import ToastHost from '@/components/common/ToastHost.vue'
 import { useToast } from '@/composables/useToast'
+import { preloadTagDb } from '@/prompt/tag-complete/tag-db'
 import { useSettingsStore } from '@/stores/settings'
 
 const settings = useSettingsStore()
@@ -18,6 +19,12 @@ onMounted(async () => {
     if (result.ok) toast.ok('已复制元数据')
     else toast.error(result.message || '复制元数据失败')
   })
+  // Parse tag CSV while idle so the first prompt focus/type is less likely to hitch.
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(() => preloadTagDb(), { timeout: 1200 })
+  } else {
+    window.setTimeout(() => preloadTagDb(), 200)
+  }
 })
 
 onUnmounted(() => {

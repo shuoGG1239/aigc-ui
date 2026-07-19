@@ -40,6 +40,8 @@ const {
   hasItems,
   applyAt,
   onKeydown,
+  onCompositionStart,
+  onCompositionEnd,
   onFocus,
   onBlur,
   onInput,
@@ -80,6 +82,8 @@ defineExpose({
       @blur="onBlur"
       @input="onInput"
       @keydown="onKeydown"
+      @compositionstart="onCompositionStart"
+      @compositionend="onCompositionEnd"
       @click="onPointerCaret"
       @keyup="onCaret"
       @select="onPointerCaret"
@@ -113,6 +117,7 @@ defineExpose({
               <template v-else>{{ part.text }}</template>
             </template>
             <span v-if="item.matchedAlias" class="tac-alias">← {{ item.matchedAlias }}</span>
+            <span v-if="item.translation" class="tac-zh">{{ item.translation }}</span>
           </span>
           <span class="tac-meta">{{ item.meta }}</span>
         </button>
@@ -204,6 +209,13 @@ defineExpose({
   margin-left: 6px;
   color: var(--text-muted);
   font-size: 11.5px;
+}
+
+.tac-zh {
+  margin-left: 8px;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .tac-meta {

@@ -14,8 +14,10 @@ import {
   type LoraHit,
 } from '@/prompt/tag-complete/lora-db'
 import {
+  canSearchTags,
   ensureTagDb,
   formatCount,
+  isTagDbReady,
   searchTags,
   type TagHit,
 } from '@/prompt/tag-complete/tag-db'
@@ -35,6 +37,7 @@ export interface SuggestItem {
   category?: number
   insert: string
   matchedAlias?: string
+  translation?: string
 }
 
 export interface UseTagCompleteOptions {
@@ -56,9 +59,12 @@ export function useTagComplete(options: UseTagCompleteOptions) {
   const panelStyle = ref<Record<string, string>>({})
   let debounceTimer: number | null = null
   let blurTimer: number | null = null
-  let dbReady = false
   /** Only open suggestions after real typing (not format / apply / paste insertText). */
   let allowSuggestFromTyping = false
+  /** True while IME composition is active (pinyin etc.). */
+  let imeComposing = false
+  /** Ignore stale async refresh after a newer schedule. */
+  let refreshGen = 0
 
   const hasItems = computed(() => open.value && items.value.length > 0)
 
@@ -103,13 +109,8 @@ export function useTagComplete(options: UseTagCompleteOptions) {
     }
   }
 
-  function ensureDb(): void {
-    if (dbReady) return
-    ensureTagDb()
-    dbReady = true
-  }
-
   async function refresh(): Promise<void> {
+    const gen = ++refreshGen
     const ta = textareaRef.value
     if (!ta || document.activeElement !== ta) {
       hide()
@@ -124,7 +125,7 @@ export function useTagComplete(options: UseTagCompleteOptions) {
       hide()
       return
     }
-    if (tok.mode === 'tag' && tok.query.trim().length < 2) {
+    if (tok.mode === 'tag' && !canSearchTags(tok.query)) {
       hide()
       return
     }
@@ -133,7 +134,7 @@ export function useTagComplete(options: UseTagCompleteOptions) {
     if (tok.mode === 'lora') {
       try {
         const files = await ensureLoraList()
-        if (document.activeElement !== ta) return
+        if (gen !== refreshGen || document.activeElement !== ta) return
         next = searchLoras(files, tok.query).map((h: LoraHit) => ({
           kind: 'lora' as const,
           key: `lora:${h.fileName}`,
@@ -148,7 +149,8 @@ export function useTagComplete(options: UseTagCompleteOptions) {
       }
     } else {
       try {
-        ensureDb()
+        if (!isTagDbReady()) await ensureTagDb()
+        if (gen !== refreshGen || document.activeElement !== ta) return
       } catch (err) {
         console.error('[tag-complete] 标签词库加载失败', err)
         hide()
@@ -162,11 +164,12 @@ export function useTagComplete(options: UseTagCompleteOptions) {
         meta: formatCount(h.count),
         category: h.category,
         matchedAlias: h.matchedAlias,
+        translation: h.translation,
         insert: formatTagInsert(h.name, family),
       }))
     }
 
-    if (document.activeElement !== ta) return
+    if (gen !== refreshGen || document.activeElement !== ta) return
 
     items.value = next
     active.value = 0
@@ -242,10 +245,18 @@ export function useTagComplete(options: UseTagCompleteOptions) {
 
   function onKeydown(e: KeyboardEvent): void {
     if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-      if (e.key === 'Backspace' || e.key === 'Delete' || e.key.length === 1) {
+      // IME often reports key as "Process"; still count as typing intent.
+      if (
+        e.key === 'Backspace' ||
+        e.key === 'Delete' ||
+        e.key === 'Process' ||
+        e.key.length === 1
+      ) {
         allowSuggestFromTyping = true
       }
     }
+    // While composing, do not hijack keys for the suggestion panel.
+    if (imeComposing || e.isComposing) return
     if (!hasItems.value) return
     if (e.key === 'ArrowDown') {
       e.preventDefault()
@@ -268,13 +279,28 @@ export function useTagComplete(options: UseTagCompleteOptions) {
     }
   }
 
+  function onCompositionStart(): void {
+    imeComposing = true
+    // Avoid matching half-finished pinyin against zh translations.
+    suppressSuggest()
+  }
+
+  function onCompositionEnd(): void {
+    imeComposing = false
+    allowSuggestFromTyping = true
+    // compositionend fires before the final input in some engines — wait a tick.
+    void nextTick(() => {
+      scheduleRefresh()
+      emitCaret()
+    })
+  }
+
   function onFocus(e: FocusEvent): void {
     clearBlurTimer()
-    try {
-      ensureDb()
-    } catch (err) {
-      console.error('[tag-complete] 预加载词库失败', err)
-    }
+    // Background load only — never sync-parse on the UI thread here.
+    void ensureTagDb().catch((err) => {
+      console.error('[tag-complete] 词库加载失败', err)
+    })
     // Do not open suggestions on focus/click — only while typing (input).
     emitFocus(e)
   }
@@ -297,17 +323,22 @@ export function useTagComplete(options: UseTagCompleteOptions) {
       emitCaret()
       return
     }
+    // During IME composition, wait for compositionend (final CJK chars).
+    if (imeComposing || ie.isComposing || inputType === 'insertCompositionText') {
+      emitCaret()
+      return
+    }
+    // Confirmed IME commit — treat as typing even without a prior keydown.
+    if (inputType === 'insertFromComposition') {
+      allowSuggestFromTyping = true
+    }
     // Format / apply use insertText without a prior typing key — do not suggest.
-    const ime =
-      ie.isComposing ||
-      inputType === 'insertCompositionText' ||
-      inputType === 'insertFromComposition'
-    if (!allowSuggestFromTyping && !ime) {
+    if (!allowSuggestFromTyping) {
       suppressSuggest()
       emitCaret()
       return
     }
-    if (!ime) allowSuggestFromTyping = false
+    allowSuggestFromTyping = false
     scheduleRefresh()
     emitCaret()
   }
@@ -352,6 +383,8 @@ export function useTagComplete(options: UseTagCompleteOptions) {
     applyAt,
     moveActive,
     onKeydown,
+    onCompositionStart,
+    onCompositionEnd,
     onFocus,
     onBlur,
     onInput,
