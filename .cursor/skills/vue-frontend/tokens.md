@@ -43,10 +43,12 @@
   --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.12);
   --chrome-bg: #f4f7fc;
   --chrome-fg: #475569;
+  /* + --danger-ghost-* / --toast-info|ok|error-*（bg/border/fg）；暗色见 index.css */
 }
 ```
 
-暗色层级（深→浅）：`--bg-sidebar` `#080808` → `--bg-page` `#1c1c1c` → `--bg-input` → `--bg` 面板 → `--bg-soft` → `--bg-elevated`；accent `#4d9eff`。侧栏太阳/月亮切换；偏好 `localStorage` `aigc-ui:theme`。
+暗色层级（深→浅）：`--bg-sidebar` `#080808` → `--bg-page` `#1c1c1c` → `--bg-input` → `--bg` 面板 → `--bg-soft` → `--bg-elevated`；accent `#4d9eff`。  
+窗口铬色：`shared/theme.ts` `THEME_CHROME`（与 `--chrome-*` 同步）。侧栏太阳/月亮切换；偏好 `localStorage` `aigc-ui:theme`。
 
 
 ## 字号惯例

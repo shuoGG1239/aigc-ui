@@ -1,10 +1,11 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
+import type { ThemeMode } from '@shared/theme'
 
 contextBridge.exposeInMainWorld('api', {
   platform: process.platform as NodeJS.Platform,
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
   theme: {
-    set: (mode: 'light' | 'dark') => ipcRenderer.invoke('theme:set', mode),
+    set: (mode: ThemeMode) => ipcRenderer.invoke('theme:set', mode),
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),

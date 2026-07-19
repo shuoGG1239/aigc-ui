@@ -42,7 +42,7 @@ Token 细节见 [tokens.md](tokens.md)。
 
 | 路径 | 用途 |
 |------|------|
-| `shared/` | 跨进程纯 TS（`@shared/*`）：IPC、family、limits、txt2img-form、lora-tag、pool… |
+| `shared/` | 跨进程纯 TS（`@shared/*`）：IPC、theme chrome、family、limits、txt2img-form、lora-tag、pool… |
 | `web/src/views/` | 页面 |
 | `web/src/components/` | UI（`common/` / `layout/` / `txt2img/` / `prompt-pool/`） |
 | `web/src/stores/` | Pinia（kebab-case：`prompt-pool`、`comfy-process`） |

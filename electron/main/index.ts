@@ -4,6 +4,7 @@ import { readFileSync } from 'fs'
 import { extractPngInfo } from './png-info'
 import { initComfyProcess, stopComfySync } from './comfy-process'
 import { APP_DISPLAY_NAME } from '@shared/app-defaults'
+import { THEME_CHROME } from '@shared/theme'
 import { registerIpc } from './ipc'
 import type { ActiveClientHolder } from './txt2img-generate'
 
@@ -12,6 +13,7 @@ const activeClient: ActiveClientHolder = { client: null }
 
 function createWindow(): void {
   const isMac = process.platform === 'darwin'
+  const lightChrome = THEME_CHROME.light
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -20,14 +22,14 @@ function createWindow(): void {
     minHeight: 640,
     show: false,
     title: APP_DISPLAY_NAME,
-    backgroundColor: '#f4f7fc',
+    backgroundColor: lightChrome.bg,
     titleBarStyle: 'hidden',
     ...(isMac
       ? { trafficLightPosition: { x: 14, y: 10 } }
       : {
           titleBarOverlay: {
-            color: '#f4f7fc',
-            symbolColor: '#475569',
+            color: lightChrome.bg,
+            symbolColor: lightChrome.fg,
             height: 36,
           },
         }),

@@ -1,10 +1,9 @@
-export type ThemeMode = 'light' | 'dark'
+import { isThemeMode, type ThemeMode } from '@shared/theme'
+
+export type { ThemeMode }
+export { isThemeMode }
 
 const STORAGE_KEY = 'aigc-ui:theme'
-
-export function isThemeMode(v: unknown): v is ThemeMode {
-  return v === 'light' || v === 'dark'
-}
 
 export function readStoredTheme(): ThemeMode {
   try {

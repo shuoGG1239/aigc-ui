@@ -21,16 +21,16 @@ import {
   type PromptPoolFile,
 } from './prompt-pools'
 import { generateTxt2Img, type ActiveClientHolder } from './txt2img-generate'
+import { chromeForTheme, isThemeMode, type ThemeMode } from '@shared/theme'
 
-function applyWindowChrome(win: BrowserWindow, theme: 'light' | 'dark'): void {
-  const bg = theme === 'dark' ? '#080808' : '#f4f7fc'
-  const symbol = theme === 'dark' ? '#b4b4b4' : '#475569'
+function applyWindowChrome(win: BrowserWindow, theme: ThemeMode): void {
+  const { bg, fg } = chromeForTheme(theme)
   win.setBackgroundColor(bg)
   if (process.platform === 'win32') {
     try {
       win.setTitleBarOverlay({
         color: bg,
-        symbolColor: symbol,
+        symbolColor: fg,
         height: 36,
       })
     } catch {
@@ -46,7 +46,7 @@ export function registerIpc(opts: {
   const { getMainWindow, activeClient } = opts
 
   ipcMain.handle('theme:set', (_event, theme: unknown) => {
-    const mode = theme === 'dark' ? 'dark' : 'light'
+    const mode: ThemeMode = isThemeMode(theme) ? theme : 'light'
     const win = getMainWindow()
     if (win) applyWindowChrome(win, mode)
     return mode

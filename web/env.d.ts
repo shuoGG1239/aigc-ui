@@ -12,6 +12,7 @@ import type {
   Txt2ImgParams,
 } from '../shared/ipc-types'
 import type { PromptPool } from '../shared/prompt-pool-types'
+import type { ThemeMode } from '../shared/theme'
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
@@ -41,7 +42,7 @@ declare global {
         | 'netbsd'
       getPathForFile: (file: File) => string
       theme: {
-        set: (mode: 'light' | 'dark') => Promise<'light' | 'dark'>
+        set: (mode: ThemeMode) => Promise<ThemeMode>
       }
       settings: {
         get: () => Promise<AppSettings>

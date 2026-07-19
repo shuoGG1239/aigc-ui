@@ -451,6 +451,13 @@ body.is-resizing-split * {
   background: #fef2f2;
 }
 
+.btn-danger.btn-ghost,
+.btn.btn-danger.btn-ghost {
+  background: transparent;
+  border-color: var(--danger-ghost-border);
+  color: var(--danger-ghost-fg);
+}
+
 .btn-sm {
   padding: 6px 12px;
   font-size: 0.75rem;
@@ -1890,21 +1897,21 @@ body.is-resizing-split * {
 }
 
 .toast.info {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1e40af;
+  background: var(--toast-info-bg);
+  border-color: var(--toast-info-border);
+  color: var(--toast-info-fg);
 }
 
 .toast.ok {
-  background: #ecfdf5;
-  border-color: #bbf7d0;
-  color: #166534;
+  background: var(--toast-ok-bg);
+  border-color: var(--toast-ok-border);
+  color: var(--toast-ok-fg);
 }
 
 .toast.error {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #991b1b;
+  background: var(--toast-error-bg);
+  border-color: var(--toast-error-border);
+  color: var(--toast-error-fg);
 }
 
 .toast-enter-active,
@@ -2115,31 +2122,6 @@ html[data-theme='dark'] .preview-float-actions .btn-icon.is-active {
 
 html[data-theme='dark'] .preview-info-panel {
   background: rgba(30, 30, 30, 0.97);
-}
-
-html[data-theme='dark'] .btn-danger.btn-ghost,
-html[data-theme='dark'] .btn.btn-danger.btn-ghost {
-  background: transparent;
-  border-color: #5c2020;
-  color: #ff8a8a;
-}
-
-html[data-theme='dark'] .toast.info {
-  background: #1a2f4a;
-  border-color: #2a4a73;
-  color: #b3d4ff;
-}
-
-html[data-theme='dark'] .toast.ok {
-  background: #143528;
-  border-color: #1f5c3a;
-  color: #9fe3bc;
-}
-
-html[data-theme='dark'] .toast.error {
-  background: #3a1515;
-  border-color: #5c2020;
-  color: #ffb3b3;
 }
 
 html[data-theme='dark'] .toast-close:hover {

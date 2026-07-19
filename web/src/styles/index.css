@@ -37,8 +37,20 @@
   --scrollbar-thumb: #cfd2dc;
   --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.12);
   --overlay-scrim: rgba(15, 23, 42, 0.45);
+  /* Keep in sync with shared/theme.ts THEME_CHROME */
   --chrome-bg: #f4f7fc;
   --chrome-fg: #475569;
+  --danger-ghost-border: #fecaca;
+  --danger-ghost-fg: #dc2626;
+  --toast-info-bg: #eff6ff;
+  --toast-info-border: #bfdbfe;
+  --toast-info-fg: #1e40af;
+  --toast-ok-bg: #ecfdf5;
+  --toast-ok-border: #bbf7d0;
+  --toast-ok-fg: #166534;
+  --toast-error-bg: #fef2f2;
+  --toast-error-border: #fecaca;
+  --toast-error-fg: #991b1b;
 }
 
 /*
@@ -77,8 +89,20 @@ html[data-theme='dark'] {
   --scrollbar-thumb: #4a4a4a;
   --focus-ring: 0 0 0 3px rgba(77, 158, 255, 0.28);
   --overlay-scrim: rgba(0, 0, 0, 0.6);
+  /* Keep in sync with shared/theme.ts THEME_CHROME */
   --chrome-bg: #080808;
   --chrome-fg: #b4b4b4;
+  --danger-ghost-border: #5c2020;
+  --danger-ghost-fg: #ff8a8a;
+  --toast-info-bg: #1a2f4a;
+  --toast-info-border: #2a4a73;
+  --toast-info-fg: #b3d4ff;
+  --toast-ok-bg: #143528;
+  --toast-ok-border: #1f5c3a;
+  --toast-ok-fg: #9fe3bc;
+  --toast-error-bg: #3a1515;
+  --toast-error-border: #5c2020;
+  --toast-error-fg: #ffb3b3;
   color-scheme: dark;
 }
 
