@@ -7,25 +7,35 @@ import {
 } from './prompt-canon'
 import { joinPrompts, prettyPrompt } from './prompt-tool'
 import { randomOne } from './pick'
-import { isProgramPoolName, sampleProgramPool } from './program-pools'
+import {
+  isProgramPoolName,
+  sampleProgramPool,
+  type ProgramPoolContext,
+} from './program-pools'
 import { clampCount, type PromptPool, type PromptPoolEntry } from './prompt-pool-types'
 
 /**
  * Sample one prompt from a prompt pool (with replacement).
  * `counts` / `strengths` come from `<pool:name:…>`.
- * Program pools are opaque: name → string only.
+ * Program pools are opaque: name → string only (may use `ctx` for model-aware pools).
  */
 export function nextPoolPrompt(
   pool: PromptPool,
   family: ModelFamily,
   counts: number[] = [1],
   strengths?: number[],
+  ctx?: Omit<ProgramPoolContext, 'family'>,
 ): string {
   const count = resolveSampleCount(counts)
   if (isProgramPoolName(pool.name)) {
+    const programCtx: ProgramPoolContext = {
+      family,
+      checkpoint: ctx?.checkpoint,
+      unetModel: ctx?.unetModel,
+    }
     const parts: string[] = []
     for (let i = 0; i < count; i++) {
-      const sampled = sampleProgramPool(pool.name)
+      const sampled = sampleProgramPool(pool.name, programCtx)
       if (!sampled) continue
       const piece = renderPrompt(sampled, strengths)
       if (piece) parts.push(piece)

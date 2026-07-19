@@ -1,9 +1,18 @@
 /**
  * Closed programmatic pools. Externally: name in → prompt string out.
  * Listed in the pool UI as black boxes (no internals).
+ * Some pools (`quality`, `neg`) adapt output to the active model family.
  */
+import type { ModelFamily } from '../models/family'
+import {
+  presetNegativePrompt,
+  presetQualityPrompt,
+  type PromptPresetContext,
+} from './model-prompt-presets'
 import { randomOne } from './pick'
 import { prettyPrompt } from './prompt-tool'
+
+export type ProgramPoolContext = PromptPresetContext
 
 type Slot = { prompts: string[]; chance: number }
 /** `[prompts | prompt, chance?]` — chance defaults to 100. */
@@ -309,19 +318,35 @@ const REGISTRY = new Map<string, Slot[]>([
   ],
 ])
 
+type DynamicSampler = (ctx: ProgramPoolContext) => string
+
+const DYNAMIC = new Map<string, DynamicSampler>([
+  ['quality', (ctx) => presetQualityPrompt(ctx)],
+  ['neg', (ctx) => presetNegativePrompt(ctx)],
+])
+
 /** Reserved names that must not be used by user/JSON pools. */
 export function isProgramPoolName(name: string): boolean {
-  return REGISTRY.has(name.trim().toLowerCase())
+  const key = name.trim().toLowerCase()
+  return REGISTRY.has(key) || DYNAMIC.has(key)
 }
 
 /** Names only — for listing. No internals. */
 export function listProgramPoolNames(): string[] {
-  return [...REGISTRY.keys()].sort((a, b) => a.localeCompare(b))
+  return [...new Set([...REGISTRY.keys(), ...DYNAMIC.keys()])].sort((a, b) =>
+    a.localeCompare(b),
+  )
 }
 
 /** One opaque sample. Returns null if name is not a program pool. */
-export function sampleProgramPool(name: string): string | null {
-  const slots = REGISTRY.get(name.trim().toLowerCase())
+export function sampleProgramPool(
+  name: string,
+  ctx: ProgramPoolContext = { family: 'anima' },
+): string | null {
+  const key = name.trim().toLowerCase()
+  const dyn = DYNAMIC.get(key)
+  if (dyn) return prettyPrompt(dyn(ctx))
+  const slots = REGISTRY.get(key)
   if (!slots) return null
   return sampleSlots(slots)
 }

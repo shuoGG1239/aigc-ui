@@ -126,10 +126,64 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
     }
   }
 
+  // aigc-ui strips <lora:> from CLIP text at generate time; restore from LoraLoader.
+  form.prompt = prependMissingLoraTags(form.prompt, collectLoraTagsFromGraph(nodes))
+
   const save = findFirst(nodes, 'SaveImage')
   if (save) form.outputPrefix = str(save.inputs?.filename_prefix, form.outputPrefix)
 
   return normalizeForm(form)
+}
+
+function loraFileStem(fileName: string): string {
+  const base = fileName.replace(/^.*[/\\]/, '')
+  return base.replace(/\.(safetensors|pt|ckpt)$/i, '')
+}
+
+function formatLoraTag(fileName: string, strengthModel: number, strengthClip: number): string {
+  const stem = loraFileStem(fileName)
+  const sm = Number.isFinite(strengthModel) ? strengthModel : 1
+  const sc = Number.isFinite(strengthClip) ? strengthClip : sm
+  if (sm === sc) return `<lora:${stem}:${sm}>`
+  return `<lora:${stem}:${sm}:${sc}>`
+}
+
+/** Collect `<lora:…>` tags from LoraLoader nodes (lora_1, lora_2, … then other ids). */
+function collectLoraTagsFromGraph(nodes: [string, ComfyNode][]): string[] {
+  const loaders = nodes.filter(([, n]) => n.class_type === 'LoraLoader')
+  loaders.sort(([a], [b]) => {
+    const na = /^lora_(\d+)$/i.exec(a)
+    const nb = /^lora_(\d+)$/i.exec(b)
+    if (na && nb) return Number(na[1]) - Number(nb[1])
+    if (na) return -1
+    if (nb) return 1
+    return a.localeCompare(b)
+  })
+
+  const tags: string[] = []
+  for (const [, node] of loaders) {
+    const name = str(node.inputs?.lora_name)
+    if (!name) continue
+    const sm = num(node.inputs?.strength_model) ?? 1
+    const sc = num(node.inputs?.strength_clip) ?? sm
+    tags.push(formatLoraTag(name, sm, sc))
+  }
+  return tags
+}
+
+function prependMissingLoraTags(prompt: string, tags: string[]): string {
+  if (!tags.length) return prompt
+  const existing = prompt.toLowerCase()
+  const missing = tags.filter((tag) => {
+    const m = tag.match(/^<lora:([^:>]+)/i)
+    if (!m) return true
+    const stem = m[1].toLowerCase()
+    return !existing.includes(`<lora:${stem}`)
+  })
+  if (!missing.length) return prompt
+  const head = missing.join(', ')
+  const body = prompt.trim()
+  return body ? `${head}, ${body}` : head
 }
 
 function extractGraph(data: unknown): Record<string, ComfyNode> | null {

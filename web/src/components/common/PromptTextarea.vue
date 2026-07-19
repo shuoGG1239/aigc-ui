@@ -266,7 +266,7 @@ function onFocus(e: FocusEvent): void {
   } catch (err) {
     console.error('[tag-complete] 预加载词库失败', err)
   }
-  scheduleRefresh()
+  // Do not open suggestions on focus/click — only while typing (input).
   emit('focus', e)
 }
 
@@ -284,8 +284,14 @@ function onInput(): void {
   emit('caret')
 }
 
+/** Click / select to copy — close suggestions; do not open a new list. */
+function onPointerCaret(): void {
+  hide()
+  emit('caret')
+}
+
+/** Keyboard caret moves — keep parent caret only. */
 function onCaret(): void {
-  scheduleRefresh()
   emit('caret')
 }
 
@@ -321,9 +327,9 @@ defineExpose({
       @blur="onBlur"
       @input="onInput"
       @keydown="onKeydown"
-      @click="onCaret"
+      @click="onPointerCaret"
       @keyup="onCaret"
-      @select="onCaret"
+      @select="onPointerCaret"
     />
     <Teleport to="body">
       <div

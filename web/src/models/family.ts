@@ -1,3 +1,5 @@
+import { presetNegativePrompt } from '../prompt/model-prompt-presets'
+
 export type ModelFamily = 'anima' | 'sdxl'
 
 export interface FamilySamplingDefaults {
@@ -27,9 +29,7 @@ const ANIMA_DEFAULTS: FamilySamplingDefaults = {
   clipSkip: 1,
   checkpoint: '',
   outputPrefix: 'anima',
-  negativePrompt:
-    'worst quality, low quality, score_1, score_2, score_3, ' +
-    'artist name, blurry, jpeg artifacts, chromatic aberration',
+  negativePrompt: presetNegativePrompt({ family: 'anima' }),
 }
 
 const SDXL_DEFAULTS: FamilySamplingDefaults = {
@@ -43,10 +43,10 @@ const SDXL_DEFAULTS: FamilySamplingDefaults = {
   clipSkip: 2,
   checkpoint: 'noobaiXLNAIXL_vPred10Version.safetensors',
   outputPrefix: 'sdxl',
-  negativePrompt:
-    '(worst quality, abstract, signature, low quality, normal quality), ' +
-    'low contrast, lowres, bad hands, mutated hands, blurry, bad anatomy, ' +
-    'bad proportions, extra limbs, watermark, username',
+  negativePrompt: presetNegativePrompt({
+    family: 'sdxl',
+    checkpoint: 'noobaiXLNAIXL_vPred10Version.safetensors',
+  }),
 }
 
 export function getFamilyDefaults(family: ModelFamily): FamilySamplingDefaults {

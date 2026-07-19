@@ -76,6 +76,7 @@ export function expandPromptTemplate(
   template: string,
   family: ModelFamily,
   resolve: (name: string) => PromptPool | null,
+  modelCtx?: { checkpoint?: string; unetModel?: string },
 ): { prompt: string; missing: string[] } {
   const missing: string[] = []
 
@@ -87,7 +88,7 @@ export function expandPromptTemplate(
       if (!missing.includes(name)) missing.push(name)
       return formatPoolPlaceholder(name, counts, strengths)
     }
-    return nextPoolPrompt(pool, family, counts, strengths)
+    return nextPoolPrompt(pool, family, counts, strengths, modelCtx)
   })
 
   prompt = prompt.replace(/<random:\s*([^<>]+?)\s*>/gi, (_full, raw: string) => {

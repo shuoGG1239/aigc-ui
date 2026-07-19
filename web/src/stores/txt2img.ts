@@ -5,6 +5,7 @@ import {
   isModelFamily,
   type ModelFamily,
 } from '@/models/family'
+import { presetNegativePrompt } from '@/prompt/model-prompt-presets'
 import {
   expandPromptTemplate,
   hasPromptPlaceholders,
@@ -49,6 +50,9 @@ export interface ResultImage {
 }
 
 export type GenStatus = 'idle' | 'running' | 'success' | 'error'
+
+/** Max images kept in the preview queue (newest first). */
+const MAX_RESULTS = 50
 
 const DEFAULT_PROMPT =
   '1girl,tachibana_arisu,@as109,@ciloranko,nude,bra, panties under pantyhose, bed sheet, on bed,sleep,' +
@@ -127,6 +131,10 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     if (form.value.family === family) return
     const defaults = getFamilyDefaults(family)
     const prompt = form.value.prompt
+    const checkpoint =
+      family === 'sdxl'
+        ? form.value.checkpoint.trim() || defaults.checkpoint
+        : form.value.checkpoint
     form.value = {
       ...form.value,
       family,
@@ -139,12 +147,13 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       denoise: defaults.denoise,
       clipSkip: defaults.clipSkip,
       outputPrefix: defaults.outputPrefix,
-      negativePrompt: defaults.negativePrompt,
+      negativePrompt: presetNegativePrompt({
+        family,
+        checkpoint,
+        unetModel: form.value.unetModel,
+      }),
       prompt,
-      checkpoint:
-        family === 'sdxl'
-          ? form.value.checkpoint.trim() || defaults.checkpoint
-          : form.value.checkpoint,
+      checkpoint,
     }
   }
 
@@ -158,8 +167,14 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   function expandField(template: string): string {
     if (!hasPromptPlaceholders(template)) return template
     const poolStore = usePromptPoolStore()
-    const { prompt, missing } = expandPromptTemplate(template, form.value.family, (name) =>
-      poolStore.getByName(name),
+    const { prompt, missing } = expandPromptTemplate(
+      template,
+      form.value.family,
+      (name) => poolStore.getByName(name),
+      {
+        checkpoint: form.value.checkpoint,
+        unetModel: form.value.unetModel,
+      },
     )
     if (missing.length) {
       throw new Error(`未找到提示词池：${missing.join(', ')}`)
@@ -247,7 +262,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     const snapshot: Txt2ImgForm = { ...form.value }
     let streamed = 0
     const offImage = window.api.txt2img.onImage((payload) => {
-      results.value = [payload.image, ...results.value].slice(0, 24)
+      results.value = [payload.image, ...results.value].slice(0, MAX_RESULTS)
       selectedIndex.value = 0
       lastSeed.value = payload.seed
       lastPromptId.value = payload.promptId
@@ -282,7 +297,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       })
 
       if (streamed === 0 && result.images.length) {
-        results.value = [...result.images, ...results.value].slice(0, 24)
+        results.value = [...result.images, ...results.value].slice(0, MAX_RESULTS)
         selectedIndex.value = 0
       }
       lastSeed.value = result.seed
@@ -316,7 +331,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   }
 
   function setResults(images: ResultImage[]): void {
-    results.value = images.slice(0, 24)
+    results.value = images.slice(0, MAX_RESULTS)
     selectedIndex.value = 0
     lastSeed.value = null
     lastPromptId.value = ''
@@ -326,7 +341,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     if (!images.length) return
     const seen = new Set(images.map((img) => img.path))
     const rest = results.value.filter((img) => !seen.has(img.path))
-    results.value = [...images, ...rest].slice(0, 24)
+    results.value = [...images, ...rest].slice(0, MAX_RESULTS)
     selectedIndex.value = 0
   }
 
