@@ -712,7 +712,27 @@ function onResultListWheel(e: WheelEvent): void {
       <template #left>
       <section class="list-panel">
         <div class="panel-header">
-          <div class="panel-title">参数</div>
+          <div class="panel-header-left">
+            <div class="panel-title">参数</div>
+            <div class="family-switch" role="group" aria-label="模型模式">
+              <button
+                type="button"
+                class="family-switch-btn"
+                :class="{ active: store.form.family === 'anima' }"
+                @click="onFamilyChange('anima')"
+              >
+                Anima
+              </button>
+              <button
+                type="button"
+                class="family-switch-btn"
+                :class="{ active: store.form.family === 'sdxl' }"
+                @click="onFamilyChange('sdxl')"
+              >
+                SDXL
+              </button>
+            </div>
+          </div>
           <div class="form-actions" style="padding-top: 0">
             <button
               ref="historyBtnRef"
@@ -1115,28 +1135,6 @@ function onResultListWheel(e: WheelEvent): void {
           </div>
 
           <div class="model-block">
-            <div class="model-block-header">
-              <div class="field-label">模型</div>
-              <div class="family-switch" role="group" aria-label="模型模式">
-                <button
-                  type="button"
-                  class="family-switch-btn"
-                  :class="{ active: store.form.family === 'anima' }"
-                  @click="onFamilyChange('anima')"
-                >
-                  Anima
-                </button>
-                <button
-                  type="button"
-                  class="family-switch-btn"
-                  :class="{ active: store.form.family === 'sdxl' }"
-                  @click="onFamilyChange('sdxl')"
-                >
-                  SDXL
-                </button>
-              </div>
-            </div>
-
             <template v-if="store.form.family === 'anima'">
               <div class="field-row field-row--3">
                 <div class="field">

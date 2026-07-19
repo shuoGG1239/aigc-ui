@@ -141,6 +141,10 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       outputPrefix: defaults.outputPrefix,
       negativePrompt: defaults.negativePrompt,
       prompt,
+      checkpoint:
+        family === 'sdxl'
+          ? form.value.checkpoint.trim() || defaults.checkpoint
+          : form.value.checkpoint,
     }
   }
 

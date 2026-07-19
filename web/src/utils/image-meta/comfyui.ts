@@ -57,6 +57,7 @@ export function parseComfyUiToForm(raw: Record<string, unknown>): Txt2ImgForm | 
   form.scheduler = defaults.scheduler
   form.denoise = defaults.denoise
   form.clipSkip = defaults.clipSkip
+  form.checkpoint = defaults.checkpoint
   form.outputPrefix = defaults.outputPrefix
   form.negativePrompt = defaults.negativePrompt
 

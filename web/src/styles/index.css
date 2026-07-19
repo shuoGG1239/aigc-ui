@@ -72,3 +72,21 @@ textarea {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Avoid the default opaque corner block at the bottom of vertical scrollbars. */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Subtle grip so vertical resize stays discoverable (replaces the default white block). */
+.textarea::-webkit-resizer {
+  background: linear-gradient(
+      -45deg,
+      transparent 0 42%,
+      var(--border-strong) 42% 48%,
+      transparent 48% 58%,
+      var(--border-strong) 58% 64%,
+      transparent 64%
+    )
+    bottom right / 12px 12px no-repeat;
+}

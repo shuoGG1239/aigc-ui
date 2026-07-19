@@ -23,7 +23,8 @@ export function parseA1111ParametersText(text: string): ImageMeta | null {
   if (stepsIdx >= 0) {
     const head = raw.slice(0, stepsIdx)
     paramsLine = raw.slice(stepsIdx).replace(/^\nSteps:\s*/i, 'Steps: ')
-    const negMatch = head.match(/^(.*?)\nNegative prompt:\s*([\s\S]*)$/i)
+    // Prompt may span multiple lines; `.` does not cross `\n`, so use [\s\S].
+    const negMatch = head.match(/^([\s\S]*?)\nNegative prompt:\s*([\s\S]*)$/i)
     if (negMatch) {
       prompt = negMatch[1].trim()
       negative = negMatch[2].trim()
