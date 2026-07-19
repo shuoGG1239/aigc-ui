@@ -1473,11 +1473,33 @@ body.is-resizing-split * {
   justify-content: space-between;
   gap: 8px;
   padding: 6px 8px 6px 12px;
+  min-height: 40px;
+  background: var(--bg-soft);
   border-bottom: 1px solid var(--border);
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text);
   flex-shrink: 0;
+}
+
+.preview-info-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.preview-info-header-actions .btn-icon {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.preview-info-header-actions .btn-icon:hover {
+  background: var(--bg);
+  color: var(--text);
+  border: none;
 }
 
 .preview-info-body {

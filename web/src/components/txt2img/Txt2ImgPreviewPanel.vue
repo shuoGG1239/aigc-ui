@@ -15,6 +15,8 @@ const toast = useToast()
 
 const infoOpen = ref(false)
 const infoRaw = ref('')
+/** Raw PNG text chunks from `extractPngInfo` (for copy). */
+const infoPng = ref<Record<string, unknown> | null>(null)
 const infoSummary = ref<{
   source: string
   prompt: string
@@ -56,6 +58,7 @@ async function onToggleImageInfo(): Promise<void> {
   if (!img) return
   try {
     const info = await window.api.image.readMetadata(img.path)
+    infoPng.value = info
     const payload = { path: img.path, filename: img.filename, ...info }
     infoRaw.value = JSON.stringify(payload, null, 2)
 
@@ -91,12 +94,23 @@ async function onToggleImageInfo(): Promise<void> {
   }
 }
 
+async function onCopyPngInfo(): Promise<void> {
+  if (!infoPng.value) return
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(infoPng.value))
+    toast.ok('已复制 PNG Info')
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  }
+}
+
 watch(
   () => store.selectedImage?.path,
   () => {
     infoOpen.value = false
     infoSummary.value = null
     infoRaw.value = ''
+    infoPng.value = null
   },
 )
 
@@ -263,22 +277,49 @@ function onResultListWheel(e: WheelEvent): void {
           <div v-if="infoOpen && infoSummary" class="preview-info-panel">
             <div class="preview-info-header">
               <span>图片信息</span>
-              <button
-                type="button"
-                class="btn btn-ghost btn-icon"
-                title="关闭"
-                aria-label="关闭"
-                @click="infoOpen = false"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path
-                    d="M4.5 4.5l7 7M11.5 4.5l-7 7"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </button>
+              <div class="preview-info-header-actions">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-icon"
+                  title="复制 PNG Info"
+                  aria-label="复制 PNG Info"
+                  @click="onCopyPngInfo"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <rect
+                      x="5.5"
+                      y="5.5"
+                      width="7"
+                      height="7"
+                      rx="1.2"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                    />
+                    <path
+                      d="M10.5 5.5V4.2A1.2 1.2 0 0 0 9.3 3H4.2A1.2 1.2 0 0 0 3 4.2v5.1A1.2 1.2 0 0 0 4.2 10.5H5.5"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-icon"
+                  title="关闭"
+                  aria-label="关闭"
+                  @click="infoOpen = false"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path
+                      d="M4.5 4.5l7 7M11.5 4.5l-7 7"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="preview-info-body">
               <div class="preview-info-summary">
