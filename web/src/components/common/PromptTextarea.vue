@@ -105,6 +105,7 @@ defineExpose({
             { 'is-active': i === active },
             item.kind === 'tag' && item.category != null ? tagCategoryClass(item.category) : '',
             item.kind === 'lora' ? 'tac-kind-lora' : '',
+            item.kind === 'syntax' ? 'tac-kind-syntax' : '',
           ]"
           role="option"
           :aria-selected="i === active"
@@ -249,13 +250,17 @@ defineExpose({
 .tac-kind-lora {
   color: #0f766e;
 }
+.tac-kind-syntax {
+  color: var(--accent);
+}
 
 .tac-cat-general .tac-meta,
 .tac-cat-artist .tac-meta,
 .tac-cat-copyright .tac-meta,
 .tac-cat-character .tac-meta,
 .tac-cat-meta .tac-meta,
-.tac-kind-lora .tac-meta {
+.tac-kind-lora .tac-meta,
+.tac-kind-syntax .tac-meta {
   color: var(--text-muted);
 }
 </style>

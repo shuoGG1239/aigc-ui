@@ -25,12 +25,13 @@ import {
   formatLoraInsert,
   formatTagInsert,
   getCaretToken,
+  searchSyntaxCompletions,
   type CaretToken,
 } from '@/prompt/tag-complete/token'
 import { fuzzyParts } from '@/utils/fuzzy'
 
 export interface SuggestItem {
-  kind: 'tag' | 'lora'
+  kind: 'tag' | 'lora' | 'syntax'
   key: string
   label: string
   meta: string
@@ -131,7 +132,15 @@ export function useTagComplete(options: UseTagCompleteOptions) {
     }
 
     let next: SuggestItem[] = []
-    if (tok.mode === 'lora') {
+    if (tok.mode === 'syntax') {
+      next = searchSyntaxCompletions(tok.query).map((s) => ({
+        kind: 'syntax' as const,
+        key: `syntax:${s.key}`,
+        label: s.label,
+        meta: s.meta,
+        insert: s.insert,
+      }))
+    } else if (tok.mode === 'lora') {
       try {
         const files = await ensureLoraList()
         if (gen !== refreshGen || document.activeElement !== ta) return

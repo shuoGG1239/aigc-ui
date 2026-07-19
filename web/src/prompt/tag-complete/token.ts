@@ -1,31 +1,36 @@
 import { formatLoraTag } from '@shared/lora-tag'
 
-export type CompleteMode = 'tag' | 'lora'
+export type CompleteMode = 'tag' | 'lora' | 'syntax'
 
 export interface CaretToken {
   mode: CompleteMode
   /** Range in full text to replace on accept. */
   start: number
   end: number
-  /** Query used for filtering (no `<lora:` prefix). */
+  /** Query used for filtering (no `<lora:` prefix; syntax = keyword stem). */
   query: string
 }
 
+/** Angle-bracket syntax starters offered while typing `<…`. */
+export const SYNTAX_COMPLETIONS = [
+  { key: 'lora', label: '<lora:>', insert: '<lora:>', meta: 'LoRA' },
+  { key: 'random', label: '<random:>', insert: '<random:>', meta: '随机' },
+  { key: 'pool', label: '<pool:>', insert: '<pool:>', meta: '提示词池' },
+] as const
+
 /**
- * Resolve the token being typed at `caret` for tag / LoRA autocomplete.
+ * Resolve the token being typed at `caret` for tag / LoRA / syntax autocomplete.
  */
 export function getCaretToken(text: string, caret: number): CaretToken | null {
   const pos = Math.max(0, Math.min(caret, text.length))
   const before = text.slice(0, pos)
 
-  // Inside any unclosed `<…>`: only offer LoRA completion for `<lora…`
+  // Inside any unclosed `<…>`
   const lt = before.lastIndexOf('<')
   if (lt >= 0) {
     const frag = before.slice(lt)
     if (!frag.includes('>')) {
-      if (/^<lora?:?$/i.test(frag)) {
-        return { mode: 'lora', start: lt, end: pos, query: '' }
-      }
+      // `<lora:name` → LoRA file completion
       if (/^<lora:/i.test(frag)) {
         return {
           mode: 'lora',
@@ -34,7 +39,12 @@ export function getCaretToken(text: string, caret: number): CaretToken | null {
           query: frag.replace(/^<lora:/i, ''),
         }
       }
-      // e.g. <pool: / <random: — do not tag-complete inside
+      // `<` / `<lo` / `<pool` (no colon yet) → syntax keywords
+      const syn = /^<([a-zA-Z]*)$/.exec(frag)
+      if (syn) {
+        return { mode: 'syntax', start: lt, end: pos, query: syn[1].toLowerCase() }
+      }
+      // e.g. <pool: / <random: — not tag-complete inside
       return null
     }
   }
@@ -69,4 +79,20 @@ export function formatTagInsert(name: string, family: 'anima' | 'sdxl'): string 
 
 export function formatLoraInsert(fileName: string): string {
   return formatLoraTag(fileName, 1)
+}
+
+/** Filter `<lora:>` / `<random:>` / `<pool:>` by typed stem after `<`. */
+export function searchSyntaxCompletions(query: string): Array<{
+  key: string
+  label: string
+  insert: string
+  meta: string
+}> {
+  const q = query.trim().toLowerCase()
+  return SYNTAX_COMPLETIONS.filter((s) => !q || s.key.startsWith(q)).map((s) => ({
+    key: s.key,
+    label: s.label,
+    insert: s.insert,
+    meta: s.meta,
+  }))
 }
