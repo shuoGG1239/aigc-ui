@@ -29,12 +29,14 @@ export function clampCount(n: number): number {
   return Math.max(1, Math.min(32, Math.floor(n) || 1))
 }
 
-/** Split `<random:a|b>` choice branches on `|` (fullwidth `｜` accepted). */
+/**
+ * Split `<random:a|b>` choice branches on `|` (fullwidth `｜` accepted).
+ * Empty branches are kept so `<random:tag|>` is ~50% tag / ~50% nothing.
+ */
 export function splitPipeList(raw: string): string[] {
   return String(raw || '')
     .split(/[|｜]/)
     .map((s) => s.trim())
-    .filter(Boolean)
 }
 
 /** Split count / strength pools on `|` or `,` (fullwidth accepted). */

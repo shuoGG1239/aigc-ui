@@ -47,7 +47,7 @@ export function nextPoolPrompt(
 
 /**
  * Literal / choice prompt for `<random:xxx:…>`.
- * `prompt` may be `a|b|c` — each sample picks one branch; count > 1 avoids repeats until exhausted.
+ * `prompt` may be `a|b|c` (empty branch = omit); count > 1 avoids repeats until exhausted.
  */
 export function nextLiteralPrompt(
   prompt: string,
@@ -56,13 +56,16 @@ export function nextLiteralPrompt(
   strengths?: number[],
 ): string {
   const choices = splitPipeList(prompt)
+  // All-empty (e.g. `<|>`) still counts as valid branches.
   if (!choices.length) return ''
   const count = resolveSampleCount(counts)
   const picked: string[] = []
   for (const t of sampleWithoutReplacement(choices, count)) {
+    if (!t) continue
     const piece = renderPrompt(t, strengths)
     if (piece) picked.push(piece)
   }
+  if (!picked.length) return ''
   return adaptRandomPrompt(prettyPrompt(picked.join(',')), family)
 }
 

@@ -377,6 +377,10 @@ function onNumberWheel(
                     <span>等概率多选一</span>
                   </div>
                   <div class="field-help-block">
+                    <code>&lt;random:a|&gt;</code>
+                    <span>50% 出 a，50% 空</span>
+                  </div>
+                  <div class="field-help-block">
                     <code>&lt;random:a|b:2,3:0.8,0.9&gt;</code>
                     <span>多选一 + 数量/强度（顺序无关）</span>
                   </div>
