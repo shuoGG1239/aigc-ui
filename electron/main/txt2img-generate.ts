@@ -5,6 +5,7 @@ import { ComfyUIClient } from './comfyui'
 import { defaultOutputDir, getSettings } from './settings'
 import { buildWorkflow } from './workflow/index'
 import { extractLoraTags, resolveLoras } from './workflow/lora'
+import { IPC } from '@shared/ipc-channels'
 import { clampBatchSize } from '@shared/limits'
 import type { GenerateProgress, GenerateResult, ResolvedLora, Txt2ImgParams } from './types'
 
@@ -13,7 +14,7 @@ export type ActiveClientHolder = {
 }
 
 function sendProgress(event: IpcMainInvokeEvent, payload: GenerateProgress): void {
-  event.sender.send('txt2img:progress', payload)
+  event.sender.send(IPC.txt2img.progress, payload)
 }
 
 export async function generateTxt2Img(
@@ -149,7 +150,7 @@ export async function generateTxt2Img(
         phase: 'done',
       })
 
-      event.sender.send('txt2img:image', {
+      event.sender.send(IPC.txt2img.image, {
         image,
         seed,
         index: i,

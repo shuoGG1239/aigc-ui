@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
 import { DEFAULT_SERVER_URL } from '@shared/app-defaults'
+import { clampParamHistoryMax, PARAM_HISTORY_MAX_DEFAULT } from '@shared/limits'
 import type { AppSettings } from './types'
 const DEFAULT_COMFY_ROOT = 'C:\\c_git_project\\ComfyUI-aki-v2'
 
@@ -34,6 +35,7 @@ export function getSettings(): AppSettings {
     outputDir: defaultOutputDir(),
     launchCommand: DEFAULT_LAUNCH_COMMAND,
     promptPreviewDir: defaultPromptPreviewDir(),
+    paramHistoryMax: PARAM_HISTORY_MAX_DEFAULT,
   }
 
   try {
@@ -59,6 +61,7 @@ export function getSettings(): AppSettings {
         typeof raw.promptPreviewDir === 'string'
           ? raw.promptPreviewDir.trim()
           : defaults.promptPreviewDir,
+      paramHistoryMax: clampParamHistoryMax(raw.paramHistoryMax, defaults.paramHistoryMax),
     }
   } catch {
     return defaults
@@ -79,6 +82,7 @@ export function setSettings(patch: Partial<AppSettings>): AppSettings {
   if (typeof next.promptPreviewDir === 'string') {
     next.promptPreviewDir = next.promptPreviewDir.trim()
   }
+  next.paramHistoryMax = clampParamHistoryMax(next.paramHistoryMax)
   writeFileSync(settingsPath(), JSON.stringify(next, null, 2), 'utf-8')
   return next
 }

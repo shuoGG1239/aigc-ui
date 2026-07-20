@@ -1,6 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams, execFile, execFileSync } from 'child_process'
 import { promisify } from 'util'
 import type { BrowserWindow } from 'electron'
+import { IPC } from '@shared/ipc-channels'
 import type { AppSettings, ComfyProcessStatus } from './types'
 
 const execFileAsync = promisify(execFile)
@@ -39,7 +40,7 @@ function pushLog(level: ComfyLogLevel, text: string): void {
     logs.splice(0, logs.length - MAX_LOG_LINES)
   }
   try {
-    getWindow()?.webContents.send('comfyProcess:log', line)
+    getWindow()?.webContents.send(IPC.comfyProcess.log, line)
   } catch {
     // window may already be destroyed during quit
   }
@@ -47,7 +48,7 @@ function pushLog(level: ComfyLogLevel, text: string): void {
 
 function emitStatus(): void {
   try {
-    getWindow()?.webContents.send('comfyProcess:status', getStatus())
+    getWindow()?.webContents.send(IPC.comfyProcess.status, getStatus())
   } catch {
     // ignore
   }
@@ -67,7 +68,7 @@ export function getLogs(): ComfyLogLine[] {
 export function clearLogs(): void {
   logs.length = 0
   try {
-    getWindow()?.webContents.send('comfyProcess:cleared')
+    getWindow()?.webContents.send(IPC.comfyProcess.cleared)
   } catch {
     // ignore
   }

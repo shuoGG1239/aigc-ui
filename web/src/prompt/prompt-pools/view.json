@@ -1,0 +1,8 @@
+{
+  "name": "view",
+  "entries": [
+    { "prompt": "from side", "weight": 1 },
+    { "prompt": "from above", "weight": 1 },
+    { "prompt": "from below", "weight": 1 }
+  ]
+}

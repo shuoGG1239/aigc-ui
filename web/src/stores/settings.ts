@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { DEFAULT_SERVER_URL } from '@shared/app-defaults'
+import type { AppSettings } from '@shared/ipc-types'
+import { PARAM_HISTORY_MAX_DEFAULT } from '@shared/limits'
 
 export type ConnStatus = 'unknown' | 'checking' | 'ok' | 'bad'
 
@@ -9,6 +11,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const outputDir = ref('')
   const launchCommand = ref('')
   const promptPreviewDir = ref('')
+  const paramHistoryMax = ref(PARAM_HISTORY_MAX_DEFAULT)
   const connStatus = ref<ConnStatus>('unknown')
   const connMessage = ref('')
   const loaded = ref(false)
@@ -18,6 +21,7 @@ export const useSettingsStore = defineStore('settings', () => {
     outputDir.value = s.outputDir
     launchCommand.value = s.launchCommand
     promptPreviewDir.value = s.promptPreviewDir || ''
+    paramHistoryMax.value = s.paramHistoryMax
   }
 
   async function load(): Promise<void> {
@@ -66,6 +70,7 @@ export const useSettingsStore = defineStore('settings', () => {
     outputDir,
     launchCommand,
     promptPreviewDir,
+    paramHistoryMax,
     connStatus,
     connMessage,
     loaded,

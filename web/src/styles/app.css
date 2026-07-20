@@ -1724,6 +1724,10 @@ body.is-resizing-split * {
   min-width: 0;
 }
 
+.settings-path .settings-save-end {
+  flex-shrink: 0;
+}
+
 .path-row {
   display: flex;
   gap: 8px;

@@ -35,8 +35,10 @@ function updateMenuPosition(): void {
   const el = btnRef.value
   if (!el) return
   const rect = el.getBoundingClientRect()
-  const width = 360
-  const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8)
+  const width = 520
+  // Center under the trigger so extra width extends both left and right.
+  let left = rect.left + rect.width / 2 - width / 2
+  left = Math.min(Math.max(8, left), window.innerWidth - width - 8)
   menuStyle.value = {
     left: `${left}px`,
     top: `${rect.bottom + 4}px`,

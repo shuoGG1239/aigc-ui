@@ -1,4 +1,5 @@
 import { isModelFamily, type ModelFamily } from '@shared/family'
+import { clampParamHistoryMax, PARAM_HISTORY_MAX_DEFAULT } from '@shared/limits'
 import type { Txt2ImgForm } from '@shared/txt2img-form'
 import { sha256Hex } from '@/utils/sha256'
 
@@ -13,8 +14,6 @@ export interface ParamHistoryEntry {
 }
 
 const STORAGE_KEY = 'aigc-ui:txt2img-param-history'
-/** Cap for non-starred entries; starred are kept in addition. */
-const MAX_UNSTARRED = 100
 
 function normalizeFamily(value: unknown): ModelFamily {
   return isModelFamily(value) ? value : 'anima'
@@ -38,6 +37,10 @@ function normalizeEntry(raw: ParamHistoryEntry): ParamHistoryEntry {
   return entry
 }
 
+function resolveMax(maxUnstarred?: number): number {
+  return clampParamHistoryMax(maxUnstarred, PARAM_HISTORY_MAX_DEFAULT)
+}
+
 /** Starred first (by starredAt), then recent unstarred (by at). */
 export function sortParamHistory(entries: ParamHistoryEntry[]): ParamHistoryEntry[] {
   const starred = entries
@@ -47,17 +50,23 @@ export function sortParamHistory(entries: ParamHistoryEntry[]): ParamHistoryEntr
   return [...starred, ...rest]
 }
 
-/** Keep all starred; keep at most MAX_UNSTARRED non-starred (newest by `at`). */
-export function trimParamHistory(entries: ParamHistoryEntry[]): ParamHistoryEntry[] {
+/** Keep all starred; keep at most `maxUnstarred` non-starred (newest by `at`). */
+export function trimParamHistory(
+  entries: ParamHistoryEntry[],
+  maxUnstarred: number = PARAM_HISTORY_MAX_DEFAULT,
+): ParamHistoryEntry[] {
+  const max = resolveMax(maxUnstarred)
   const starred = entries.filter((e) => e.starred)
   const unstarred = entries
     .filter((e) => !e.starred)
     .sort((a, b) => b.at - a.at)
-    .slice(0, MAX_UNSTARRED)
+    .slice(0, max)
   return sortParamHistory([...starred, ...unstarred])
 }
 
-export function loadParamHistory(): ParamHistoryEntry[] {
+export function loadParamHistory(
+  maxUnstarred: number = PARAM_HISTORY_MAX_DEFAULT,
+): ParamHistoryEntry[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
@@ -74,19 +83,23 @@ export function loadParamHistory(): ParamHistoryEntry[] {
         )
       })
       .map(normalizeEntry)
-    return trimParamHistory(entries)
+    return trimParamHistory(entries, maxUnstarred)
   } catch {
     return []
   }
 }
 
-export function saveParamHistory(entries: ParamHistoryEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(trimParamHistory(entries)))
+export function saveParamHistory(
+  entries: ParamHistoryEntry[],
+  maxUnstarred: number = PARAM_HISTORY_MAX_DEFAULT,
+): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(trimParamHistory(entries, maxUnstarred)))
 }
 
-/** SHA-256 hex of canonical form JSON (collision risk ignored). */
+/** SHA-256 hex of canonical form JSON; `batchSize` excluded from identity. */
 export function formFingerprint(form: Txt2ImgForm): string {
-  return sha256Hex(JSON.stringify(form))
+  const { batchSize: _batchSize, ...rest } = form
+  return sha256Hex(JSON.stringify(rest))
 }
 
 /** Insert or refresh entry (dedupe by fingerprint), preserve star, newest first among peers. */
@@ -94,6 +107,7 @@ export function pushParamHistory(
   entries: ParamHistoryEntry[],
   form: Txt2ImgForm,
   at = Date.now(),
+  maxUnstarred: number = PARAM_HISTORY_MAX_DEFAULT,
 ): ParamHistoryEntry[] {
   const fingerprint = formFingerprint(form)
   const prev = entries.find((e) => e.fingerprint === fingerprint)
@@ -106,7 +120,10 @@ export function pushParamHistory(
     entry.starred = true
     entry.starredAt = prev.starredAt ?? prev.at
   }
-  return trimParamHistory([entry, ...entries.filter((e) => e.fingerprint !== fingerprint)])
+  return trimParamHistory(
+    [entry, ...entries.filter((e) => e.fingerprint !== fingerprint)],
+    maxUnstarred,
+  )
 }
 
 /** Toggle star on an entry; no-op if fingerprint missing. */
@@ -114,6 +131,7 @@ export function toggleStarParamHistory(
   entries: ParamHistoryEntry[],
   fingerprint: string,
   at = Date.now(),
+  maxUnstarred: number = PARAM_HISTORY_MAX_DEFAULT,
 ): ParamHistoryEntry[] {
   let changed = false
   const next = entries.map((e) => {
@@ -124,20 +142,23 @@ export function toggleStarParamHistory(
     }
     return { ...e, starred: true as const, starredAt: at }
   })
-  return changed ? trimParamHistory(next) : entries
+  return changed ? trimParamHistory(next, maxUnstarred) : entries
 }
 
-export function promptSummary(prompt: string, maxLen = 42): string {
+export function promptSummary(prompt: string, maxLen = 56): string {
   const text = prompt.replace(/\s+/g, ' ').trim()
   if (!text) return '(空 Prompt)'
   if (text.length <= maxLen) return text
   return `${text.slice(0, maxLen - 1)}…`
 }
 
+/** e.g. `08/09 19:13:33` */
 export function formatHms(ts: number): string {
   const d = new Date(ts)
+  const mo = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
   const hh = String(d.getHours()).padStart(2, '0')
   const mm = String(d.getMinutes()).padStart(2, '0')
   const ss = String(d.getSeconds()).padStart(2, '0')
-  return `${hh}:${mm}:${ss}`
+  return `${mo}/${day} ${hh}:${mm}:${ss}`
 }

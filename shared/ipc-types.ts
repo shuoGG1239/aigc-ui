@@ -8,6 +8,8 @@ export interface AppSettings {
   launchCommand: string
   /** Directory of prompt preview images (filename stem ↔ normalized prompt). */
   promptPreviewDir: string
+  /** Max non-starred txt2img param-history entries (starred excluded). */
+  paramHistoryMax: number
 }
 
 export interface ComfyProcessStatus {

@@ -21,6 +21,7 @@ import {
   type PromptPoolFile,
 } from './prompt-pools'
 import { generateTxt2Img, type ActiveClientHolder } from './txt2img-generate'
+import { IPC } from '@shared/ipc-channels'
 import { chromeForTheme, isThemeMode, type ThemeMode } from '@shared/theme'
 
 function applyWindowChrome(win: BrowserWindow, theme: ThemeMode): void {
@@ -45,20 +46,20 @@ export function registerIpc(opts: {
 }): void {
   const { getMainWindow, activeClient } = opts
 
-  ipcMain.handle('theme:set', (_event, theme: unknown) => {
+  ipcMain.handle(IPC.theme.set, (_event, theme: unknown) => {
     const mode: ThemeMode = isThemeMode(theme) ? theme : 'light'
     const win = getMainWindow()
     if (win) applyWindowChrome(win, mode)
     return mode
   })
 
-  ipcMain.handle('settings:get', () => getSettings())
+  ipcMain.handle(IPC.settings.get, () => getSettings())
 
-  ipcMain.handle('settings:set', (_event, patch: Partial<AppSettings>) => {
+  ipcMain.handle(IPC.settings.set, (_event, patch: Partial<AppSettings>) => {
     return setSettings(patch)
   })
 
-  ipcMain.handle('settings:pickOutputDir', async () => {
+  ipcMain.handle(IPC.settings.pickOutputDir, async () => {
     const win = getMainWindow()
     if (!win) return null
     const current = getSettings().outputDir || defaultOutputDir()
@@ -73,7 +74,7 @@ export function registerIpc(opts: {
     return setSettings({ outputDir: result.filePaths[0] }).outputDir
   })
 
-  ipcMain.handle('settings:openOutputDir', async () => {
+  ipcMain.handle(IPC.settings.openOutputDir, async () => {
     const dir = getSettings().outputDir || defaultOutputDir()
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true })
@@ -84,7 +85,7 @@ export function registerIpc(opts: {
     }
   })
 
-  ipcMain.handle('settings:pickPromptPreviewDir', async () => {
+  ipcMain.handle(IPC.settings.pickPromptPreviewDir, async () => {
     const win = getMainWindow()
     if (!win) return null
     const current = getSettings().promptPreviewDir || defaultPromptPreviewDir() || undefined
@@ -99,7 +100,7 @@ export function registerIpc(opts: {
     return setSettings({ promptPreviewDir: result.filePaths[0] }).promptPreviewDir
   })
 
-  ipcMain.handle('settings:openPromptPreviewDir', async () => {
+  ipcMain.handle(IPC.settings.openPromptPreviewDir, async () => {
     const dir = getSettings().promptPreviewDir?.trim()
     if (!dir) {
       throw new Error('未配置预览图目录')
@@ -113,16 +114,16 @@ export function registerIpc(opts: {
     }
   })
 
-  ipcMain.handle('promptPreview:resolve', (_event, prompt: string) => resolvePromptPreview(prompt))
+  ipcMain.handle(IPC.promptPreview.resolve, (_event, prompt: string) => resolvePromptPreview(prompt))
 
-  ipcMain.handle('promptPools:list', () => listPromptPools())
-  ipcMain.handle('promptPools:write', (_event, pool: PromptPoolFile) => writePromptPool(pool))
-  ipcMain.handle('promptPools:remove', (_event, name: string) => removePromptPool(name))
-  ipcMain.handle('promptPools:rename', (_event, oldName: string, newName: string) =>
+  ipcMain.handle(IPC.promptPools.list, () => listPromptPools())
+  ipcMain.handle(IPC.promptPools.write, (_event, pool: PromptPoolFile) => writePromptPool(pool))
+  ipcMain.handle(IPC.promptPools.remove, (_event, name: string) => removePromptPool(name))
+  ipcMain.handle(IPC.promptPools.rename, (_event, oldName: string, newName: string) =>
     renamePromptPool(oldName, newName),
   )
 
-  ipcMain.handle('image:readMetadata', async (_event, filePath: string) => {
+  ipcMain.handle(IPC.image.readMetadata, async (_event, filePath: string) => {
     const target = filePath?.trim()
     if (!target) {
       throw new Error('路径为空')
@@ -133,7 +134,7 @@ export function registerIpc(opts: {
     return extractPngInfo(readFileSync(target))
   })
 
-  ipcMain.handle('image:loadPreviewFromPath', async (_event, targetPath: string, limit = 10) => {
+  ipcMain.handle(IPC.image.loadPreviewFromPath, async (_event, targetPath: string, limit = 10) => {
     const target = targetPath?.trim()
     if (!target) {
       throw new Error('路径为空')
@@ -179,7 +180,7 @@ export function registerIpc(opts: {
     return entries.map(({ path, filename }) => toImage(path, filename))
   })
 
-  ipcMain.handle('shell:showItemInFolder', async (_event, filePath: string) => {
+  ipcMain.handle(IPC.shell.showItemInFolder, async (_event, filePath: string) => {
     const target = filePath?.trim()
     if (!target) {
       throw new Error('路径为空')
@@ -197,37 +198,37 @@ export function registerIpc(opts: {
     throw new Error('文件或目录不存在')
   })
 
-  ipcMain.handle('comfy:healthCheck', async (_event, serverUrl?: string) => {
+  ipcMain.handle(IPC.comfy.healthCheck, async (_event, serverUrl?: string) => {
     const url = (serverUrl?.trim() || getSettings().serverUrl).replace(/\/$/, '')
     const client = new ComfyUIClient(url)
     return client.healthCheck()
   })
 
-  ipcMain.handle('comfy:listModels', async (_event, folder: string) => {
+  ipcMain.handle(IPC.comfy.listModels, async (_event, folder: string) => {
     const url = getSettings().serverUrl.replace(/\/$/, '')
     const client = new ComfyUIClient(url)
     return client.listModels(folder)
   })
 
-  ipcMain.handle('comfyProcess:getStatus', () => getStatus())
-  ipcMain.handle('comfyProcess:getLogs', () => getLogs())
-  ipcMain.handle('comfyProcess:clearLogs', () => {
+  ipcMain.handle(IPC.comfyProcess.getStatus, () => getStatus())
+  ipcMain.handle(IPC.comfyProcess.getLogs, () => getLogs())
+  ipcMain.handle(IPC.comfyProcess.clearLogs, () => {
     clearLogs()
   })
 
-  ipcMain.handle('comfyProcess:start', async () => {
+  ipcMain.handle(IPC.comfyProcess.start, async () => {
     return startComfy(getSettings())
   })
 
-  ipcMain.handle('comfyProcess:stop', async () => {
+  ipcMain.handle(IPC.comfyProcess.stop, async () => {
     return stopComfy()
   })
 
-  ipcMain.handle('txt2img:cancel', () => {
+  ipcMain.handle(IPC.txt2img.cancel, () => {
     activeClient.client?.cancel()
   })
 
-  ipcMain.handle('txt2img:generate', async (event, params: Txt2ImgParams) => {
+  ipcMain.handle(IPC.txt2img.generate, async (event, params: Txt2ImgParams) => {
     return generateTxt2Img(event, params, activeClient)
   })
 }

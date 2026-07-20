@@ -4,6 +4,7 @@ import { readFileSync } from 'fs'
 import { extractPngInfo } from './png-info'
 import { initComfyProcess, stopComfySync } from './comfy-process'
 import { APP_DISPLAY_NAME } from '@shared/app-defaults'
+import { IPC } from '@shared/ipc-channels'
 import { THEME_CHROME } from '@shared/theme'
 import { registerIpc } from './ipc'
 import type { ActiveClientHolder } from './txt2img-generate'
@@ -103,7 +104,7 @@ function createWindow(): void {
       template.push({
         label: '查看词条',
         click: () => {
-          win.webContents.send('promptPreview:view-tag', selectedTag)
+          win.webContents.send(IPC.promptPreview.viewTag, selectedTag)
         },
       })
     }
@@ -112,7 +113,7 @@ function createWindow(): void {
       template.push({
         label: '格式化',
         click: () => {
-          win.webContents.send('txt2img:format', promptField)
+          win.webContents.send(IPC.txt2img.format, promptField)
         },
       })
     }
@@ -126,9 +127,9 @@ function createWindow(): void {
             const buf = readFileSync(pathForCopy)
             const info = extractPngInfo(buf)
             clipboard.writeText(JSON.stringify(info))
-            win.webContents.send('image:metadata-copied', { ok: true })
+            win.webContents.send(IPC.image.metadataCopied, { ok: true })
           } catch (err) {
-            win.webContents.send('image:metadata-copied', {
+            win.webContents.send(IPC.image.metadataCopied, {
               ok: false,
               message: err instanceof Error ? err.message : String(err),
             })

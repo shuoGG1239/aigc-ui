@@ -3,17 +3,34 @@ import { ref, watch } from 'vue'
 import { IconFolderPick, IconSave } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
 import { DEFAULT_SERVER_URL } from '@shared/app-defaults'
+import {
+  clampParamHistoryMax,
+  PARAM_HISTORY_MAX_DEFAULT,
+  PARAM_HISTORY_MAX_MAX,
+  PARAM_HISTORY_MAX_MIN,
+} from '@shared/limits'
 import { useSettingsStore } from '@/stores/settings'
+import { useTxt2ImgStore } from '@/stores/txt2img'
 
 const settings = useSettingsStore()
+const txt2img = useTxt2ImgStore()
 const toast = useToast()
 const serverUrlDraft = ref(settings.serverUrl)
+const paramHistoryMaxDraft = ref(String(settings.paramHistoryMax))
 const savingUrl = ref(false)
+const savingHistoryMax = ref(false)
 
 watch(
   () => settings.serverUrl,
   (url) => {
     serverUrlDraft.value = url
+  },
+)
+
+watch(
+  () => settings.paramHistoryMax,
+  (n) => {
+    paramHistoryMaxDraft.value = String(n)
   },
 )
 
@@ -60,6 +77,24 @@ async function onSaveServerUrl(): Promise<void> {
     toast.error(err instanceof Error ? err.message : String(err))
   } finally {
     savingUrl.value = false
+  }
+}
+
+async function onSaveParamHistoryMax(): Promise<void> {
+  savingHistoryMax.value = true
+  try {
+    const paramHistoryMax = clampParamHistoryMax(
+      paramHistoryMaxDraft.value,
+      PARAM_HISTORY_MAX_DEFAULT,
+    )
+    paramHistoryMaxDraft.value = String(paramHistoryMax)
+    await settings.save({ paramHistoryMax })
+    txt2img.applyParamHistoryMax(paramHistoryMax)
+    toast.ok('参数历史上限已保存')
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  } finally {
+    savingHistoryMax.value = false
   }
 }
 </script>
@@ -127,6 +162,40 @@ async function onSaveServerUrl(): Promise<void> {
             @click="onPickDir"
           >
             <IconFolderPick />
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-panel settings-panel">
+      <div class="panel-header settings-header">
+        <div
+          class="panel-title"
+          :title="`非收藏参数历史最多保留条数（${PARAM_HISTORY_MAX_MIN}–${PARAM_HISTORY_MAX_MAX}）；收藏不计入`"
+        >
+          参数历史上限
+        </div>
+        <div class="path-row settings-path">
+          <input
+            v-model="paramHistoryMaxDraft"
+            class="input"
+            type="number"
+            :min="PARAM_HISTORY_MAX_MIN"
+            :max="PARAM_HISTORY_MAX_MAX"
+            step="1"
+            :placeholder="String(PARAM_HISTORY_MAX_DEFAULT)"
+            title="非收藏参数历史最多保留条数；收藏不计入"
+            @keydown.enter="onSaveParamHistoryMax"
+          />
+          <button
+            type="button"
+            class="btn btn-ghost btn-icon settings-save-end"
+            title="保存"
+            aria-label="保存参数历史上限"
+            :disabled="savingHistoryMax"
+            @click="onSaveParamHistoryMax"
+          >
+            <IconSave />
           </button>
         </div>
       </div>

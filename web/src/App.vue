@@ -7,8 +7,10 @@ import PromptPoolPreviewModal from '@/components/prompt-pool/PromptPoolPreviewMo
 import { useToast } from '@/composables/useToast'
 import { preloadTagDb } from '@/prompt/tag-complete/tag-db'
 import { useSettingsStore } from '@/stores/settings'
+import { useTxt2ImgStore } from '@/stores/txt2img'
 
 const settings = useSettingsStore()
+const txt2img = useTxt2ImgStore()
 const toast = useToast()
 const platform = window.api?.platform ?? 'win32'
 const tagPreviewRef = ref<InstanceType<typeof PromptPoolPreviewModal> | null>(null)
@@ -18,6 +20,7 @@ let offViewTag: (() => void) | undefined
 
 onMounted(async () => {
   await settings.load()
+  txt2img.applyParamHistoryMax()
   offMetadataCopied = window.api.image.onMetadataCopied((result) => {
     if (result.ok) toast.ok('已复制元数据')
     else toast.error(result.message || '复制元数据失败')

@@ -4,7 +4,7 @@ import {
   getFamilyDefaults,
   type ModelFamily,
 } from '@shared/family'
-import { clampBatchSize } from '@shared/limits'
+import { clampBatchSize, clampParamHistoryMax } from '@shared/limits'
 import { presetNegativePrompt } from '@shared/model-prompt-presets'
 import type { GenerateProgress } from '@shared/ipc-types'
 import {
@@ -17,11 +17,13 @@ import {
   hasPromptPlaceholders,
 } from '@/prompt/prompt-template'
 import { usePromptPoolStore } from '@/stores/prompt-pool'
+import { useSettingsStore } from '@/stores/settings'
 import {
   loadParamHistory,
   pushParamHistory,
   saveParamHistory,
   toggleStarParamHistory,
+  trimParamHistory,
   type ParamHistoryEntry,
 } from '@/utils/param-history'
 
@@ -114,6 +116,10 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     }
   }
 
+  function historyMax(): number {
+    return clampParamHistoryMax(useSettingsStore().paramHistoryMax)
+  }
+
   function restoreHistory(fingerprint: string): boolean {
     const hit = paramHistory.value.find((e) => e.fingerprint === fingerprint)
     if (!hit) return false
@@ -123,11 +129,19 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
 
   function toggleHistoryStar(fingerprint: string): boolean {
     const before = paramHistory.value
-    const next = toggleStarParamHistory(before, fingerprint)
+    const max = historyMax()
+    const next = toggleStarParamHistory(before, fingerprint, Date.now(), max)
     if (next === before) return false
     paramHistory.value = next
-    saveParamHistory(paramHistory.value)
+    saveParamHistory(paramHistory.value, max)
     return true
+  }
+
+  /** Re-trim local history after settings.paramHistoryMax changes. */
+  function applyParamHistoryMax(maxUnstarred?: number): void {
+    const max = clampParamHistoryMax(maxUnstarred ?? useSettingsStore().paramHistoryMax)
+    paramHistory.value = trimParamHistory(paramHistory.value, max)
+    saveParamHistory(paramHistory.value, max)
   }
 
   function expandField(template: string): string {
@@ -301,8 +315,9 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   }
 
   function recordParamHistory(snapshot: Txt2ImgForm): void {
-    paramHistory.value = pushParamHistory(paramHistory.value, snapshot)
-    saveParamHistory(paramHistory.value)
+    const max = historyMax()
+    paramHistory.value = pushParamHistory(paramHistory.value, snapshot, Date.now(), max)
+    saveParamHistory(paramHistory.value, max)
   }
 
   async function cancel(): Promise<void> {
@@ -352,6 +367,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     setFamily,
     restoreHistory,
     toggleHistoryStar,
+    applyParamHistoryMax,
     generate,
     cancel,
     clearResults,
