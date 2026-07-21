@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import AppSelect from '@/components/common/AppSelect.vue'
 import ModelSelect from '@/components/common/ModelSelect.vue'
 import PromptTextarea from '@/components/common/PromptTextarea.vue'
@@ -22,6 +22,7 @@ import { usePromptPoolStore } from '@/stores/prompt-pool'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { replaceEditableValue } from '@/utils/editable-text'
 import { formatPromptByFamily } from '@/prompt/prompt-format'
+import { expandPromptTemplate } from '@/prompt/prompt-template'
 import { parseWorkflowParams } from '@/utils/workflow-params'
 import {
   CLIP_TYPE_OPTIONS,
@@ -43,6 +44,110 @@ const promptFieldRef = ref<InstanceType<typeof PromptTextarea> | null>(null)
 const negFieldRef = ref<InstanceType<typeof PromptTextarea> | null>(null)
 /** null = insert at end of field. */
 const promptCaret = ref<{ start: number; end: number } | null>(null)
+/** Try `<pool:>` / `<random:>` from the Prompt field-help popover. */
+const syntaxTryInput = ref('')
+const fieldHelpRef = ref<HTMLElement | null>(null)
+const fieldHelpPopRef = ref<HTMLElement | null>(null)
+const fieldHelpOpen = ref(false)
+const fieldHelpPopStyle = ref<Record<string, string>>({})
+let fieldHelpCloseTimer: number | undefined
+/** Right-click opens Electron menu and fires mouseleave; hold until next outside click. */
+let fieldHelpContextHold = false
+
+function isInsideFieldHelp(target: EventTarget | null): boolean {
+  const node = target as Node | null
+  return !!(fieldHelpRef.value?.contains(node) || fieldHelpPopRef.value?.contains(node))
+}
+
+function updateFieldHelpPosition(): void {
+  const el = fieldHelpRef.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const maxWidth = Math.min(320, window.innerWidth * 0.7)
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - maxWidth - 8))
+  const gap = 6
+  const spaceBelow = window.innerHeight - rect.bottom - gap - 8
+  const spaceAbove = rect.top - gap - 8
+  const openUp = spaceBelow < 280 && spaceAbove > spaceBelow
+  const maxHeight = Math.max(160, openUp ? spaceAbove : spaceBelow)
+
+  fieldHelpPopStyle.value = {
+    left: `${left}px`,
+    maxWidth: `${maxWidth}px`,
+    maxHeight: `${maxHeight}px`,
+    ...(openUp
+      ? { bottom: `${window.innerHeight - rect.top + gap}px`, top: 'auto' }
+      : { top: `${rect.bottom + gap}px`, bottom: 'auto' }),
+  }
+}
+
+function openFieldHelp(): void {
+  if (fieldHelpCloseTimer != null) {
+    window.clearTimeout(fieldHelpCloseTimer)
+    fieldHelpCloseTimer = undefined
+  }
+  fieldHelpOpen.value = true
+  void nextTick(() => updateFieldHelpPosition())
+}
+
+function scheduleCloseFieldHelp(): void {
+  if (fieldHelpContextHold) return
+  if (fieldHelpCloseTimer != null) window.clearTimeout(fieldHelpCloseTimer)
+  fieldHelpCloseTimer = window.setTimeout(() => {
+    fieldHelpCloseTimer = undefined
+    if (fieldHelpContextHold) return
+    fieldHelpOpen.value = false
+  }, 120)
+}
+
+function onFieldHelpContextMenu(): void {
+  fieldHelpContextHold = true
+  openFieldHelp()
+}
+
+function onFieldHelpFocusOut(e: FocusEvent): void {
+  if (fieldHelpContextHold) return
+  if (isInsideFieldHelp(e.relatedTarget)) return
+  scheduleCloseFieldHelp()
+}
+
+function onFieldHelpDocMouseDown(e: MouseEvent): void {
+  if (isInsideFieldHelp(e.target)) {
+    fieldHelpContextHold = false
+    return
+  }
+  fieldHelpContextHold = false
+  if (fieldHelpCloseTimer != null) {
+    window.clearTimeout(fieldHelpCloseTimer)
+    fieldHelpCloseTimer = undefined
+  }
+  fieldHelpOpen.value = false
+}
+
+function onFieldHelpKey(e: KeyboardEvent): void {
+  if (e.key !== 'Escape') return
+  fieldHelpContextHold = false
+  if (fieldHelpCloseTimer != null) {
+    window.clearTimeout(fieldHelpCloseTimer)
+    fieldHelpCloseTimer = undefined
+  }
+  fieldHelpOpen.value = false
+}
+
+watch(fieldHelpOpen, (open) => {
+  if (open) {
+    window.addEventListener('resize', updateFieldHelpPosition)
+    window.addEventListener('scroll', updateFieldHelpPosition, true)
+    document.addEventListener('mousedown', onFieldHelpDocMouseDown, true)
+    document.addEventListener('keydown', onFieldHelpKey)
+  } else {
+    fieldHelpContextHold = false
+    window.removeEventListener('resize', updateFieldHelpPosition)
+    window.removeEventListener('scroll', updateFieldHelpPosition, true)
+    document.removeEventListener('mousedown', onFieldHelpDocMouseDown, true)
+    document.removeEventListener('keydown', onFieldHelpKey)
+  }
+})
 
 function promptTextareaEl(field: 'prompt' | 'negativePrompt'): HTMLTextAreaElement | null {
   const comp = field === 'prompt' ? promptFieldRef.value : negFieldRef.value
@@ -141,6 +246,35 @@ function onFormatParams(): void {
   onFormatField(focusedPromptField.value)
 }
 
+/** Expand special syntax once and show the sample in a toast. */
+function onTrySyntax(): void {
+  const template = syntaxTryInput.value.trim()
+  if (!template) {
+    toast.info('请输入要试运行的语法')
+    return
+  }
+  try {
+    const { prompt, missing } = expandPromptTemplate(
+      template,
+      store.form.family,
+      (name) => poolStore.getByName(name),
+      {
+        checkpoint: store.form.checkpoint,
+        unetModel: store.form.unetModel,
+      },
+    )
+    if (missing.length) {
+      toast.error(`未找到提示词池：${missing.join(', ')}`)
+      return
+    }
+    const text = prompt.trim() || '(空)'
+    const message = `抽样结果: ${text}`
+    toast.ok(message, Math.min(10000, Math.max(4500, 3000 + message.length * 25)))
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  }
+}
+
 /** Apply parsed form; prompt fields keep Ctrl+Z. */
 async function applyParsedForm(next: ReturnType<typeof parseWorkflowParams>): Promise<void> {
   const prompt = next.prompt
@@ -198,6 +332,12 @@ onMounted(() => {
 })
 onUnmounted(() => {
   offFormat?.()
+  fieldHelpContextHold = false
+  if (fieldHelpCloseTimer != null) window.clearTimeout(fieldHelpCloseTimer)
+  window.removeEventListener('resize', updateFieldHelpPosition)
+  window.removeEventListener('scroll', updateFieldHelpPosition, true)
+  document.removeEventListener('mousedown', onFieldHelpDocMouseDown, true)
+  document.removeEventListener('keydown', onFieldHelpKey)
 })
 
 async function onGenerate(): Promise<void> {
@@ -343,13 +483,62 @@ function onNumberWheel(
           <div class="field field--grow field--prompt">
             <div class="field-label-row">
               <label class="field-label" for="txt2img-prompt">Prompt</label>
-              <span class="field-help" tabindex="0" aria-label="特殊语法说明">
+              <span
+                ref="fieldHelpRef"
+                class="field-help"
+                :class="{ 'is-open': fieldHelpOpen }"
+                tabindex="0"
+                aria-label="特殊语法说明"
+                @mouseenter="openFieldHelp"
+                @mouseleave="scheduleCloseFieldHelp"
+                @focusin="openFieldHelp"
+                @focusout="onFieldHelpFocusOut"
+                @contextmenu="onFieldHelpContextMenu"
+              >
                 <svg class="field-help-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4" />
                   <path d="M8 7v4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
                   <circle cx="8" cy="5.2" r="0.9" fill="currentColor" />
                 </svg>
-                <div class="field-help-pop" role="tooltip">
+              </span>
+              <Teleport to="body">
+                <div
+                  v-if="fieldHelpOpen"
+                  ref="fieldHelpPopRef"
+                  class="field-help-pop field-help-pop--portal"
+                  role="tooltip"
+                  :style="fieldHelpPopStyle"
+                  @mouseenter="openFieldHelp"
+                  @mouseleave="scheduleCloseFieldHelp"
+                  @focusin="openFieldHelp"
+                  @focusout="onFieldHelpFocusOut"
+                  @contextmenu="onFieldHelpContextMenu"
+                  @mousedown.stop
+                >
+                  <div class="field-help-try">
+                    <input
+                      class="input"
+                      v-model="syntaxTryInput"
+                      type="text"
+                      spellcheck="false"
+                      placeholder="语法测试 <random:a|b> / <pool:chara>"
+                      aria-label="试运行特殊语法"
+                      @keydown.enter.prevent="onTrySyntax"
+                      @click.stop
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-icon field-help-try-btn"
+                      title="试运行"
+                      aria-label="试运行"
+                      @click.stop="onTrySyntax"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M5 3.5v9l8-4.5-8-4.5z" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="field-help-sep"></div>
                   <div class="field-help-title">特殊语法</div>
                   <div class="field-help-block">
                     <code>&lt;pool:名称&gt;</code>
@@ -398,7 +587,7 @@ function onNumberWheel(
                     <span>model / clip 分离强度</span>
                   </div>
                 </div>
-              </span>
+              </Teleport>
             </div>
             <PromptTextarea
               id="txt2img-prompt"

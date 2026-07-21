@@ -614,16 +614,12 @@ body.is-resizing-split * {
 }
 
 .field-help:hover,
-.field-help:focus-visible {
+.field-help:focus-visible,
+.field-help.is-open {
   color: var(--primary);
 }
 
 .field-help-pop {
-  display: none;
-  position: absolute;
-  left: 0;
-  top: calc(100% + 6px);
-  z-index: 40;
   width: max-content;
   max-width: min(320px, 70vw);
   padding: 10px 12px;
@@ -638,9 +634,36 @@ body.is-resizing-split * {
   white-space: normal;
 }
 
-.field-help:hover .field-help-pop,
-.field-help:focus-within .field-help-pop {
-  display: block;
+.field-help-pop--portal {
+  position: fixed;
+  z-index: 1000;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.field-help-try {
+  position: relative;
+}
+
+.field-help-try .input {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 30px 5px 8px;
+  font-size: 11.5px;
+}
+
+.field-help-try-btn {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+  margin: auto 0;
+}
+
+.field-help-try-btn:active {
+  transform: none;
 }
 
 .field-help-title {
