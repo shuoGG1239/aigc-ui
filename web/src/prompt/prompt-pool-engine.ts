@@ -11,9 +11,9 @@ import {
   sampleProgramPool,
   type ProgramPoolContext,
 } from '@shared/program-pools'
+import { splitPipeList } from '@shared/prompt-syntax'
 import {
   clampCount,
-  splitPipeList,
   type PromptPool,
   type PromptPoolEntry,
 } from '@shared/prompt-pool-types'

@@ -1,5 +1,5 @@
 import { resolveFamily, type ModelFamily } from '@shared/family'
-import { findAngleTagClose, isAngleTagOpen } from '@shared/prompt-pool-types'
+import { findAngleTagClose, isAngleTagOpen } from '@shared/prompt-syntax'
 import { parseNaiToSegments, segmentsToCanon } from '@/prompt/prompt-canon'
 
 export interface FormatPromptResult {

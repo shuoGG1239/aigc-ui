@@ -3,11 +3,13 @@ import { sampleWithoutReplacement } from '@shared/pick'
 import {
   findAngleTagClose,
   isAngleTagOpen,
+  splitColonList,
+  splitPipeList,
+} from '@shared/prompt-syntax'
+import {
   parseCountsInput,
   parseStrengthsPool,
-  splitColonListDepthAware,
   splitNumericList,
-  splitPipeList,
   type PromptPool,
 } from '@shared/prompt-pool-types'
 import {
@@ -15,9 +17,6 @@ import {
   nextPoolPrompt,
   resolveSampleCount,
 } from './prompt-pool-engine'
-
-/** Flat (non-nested) placeholder; kept for callers that only need a quick detect. */
-export const PROMPT_PLACEHOLDER_RE = /<(?:pool|random):\s*([^<>]+?)\s*>/gi
 
 const MAX_EXPAND_DEPTH = 16
 
@@ -54,7 +53,7 @@ function classifyNumericSegment(raw: string): {
  * Colons inside nested `<pool:>` / `<random:>` / `<lora:>` or `` `...` `` are ignored.
  */
 export function parsePlaceholderBody(raw: string): PlaceholderBody {
-  const segments = splitColonListDepthAware(String(raw || '').trim())
+  const segments = splitColonList(String(raw || '').trim())
   const name = (segments[0] ?? '').trim()
   if (segments.length <= 1) return { name, counts: [1] }
 
@@ -112,28 +111,39 @@ export function expandPromptTemplate(
   return { prompt, missing }
 }
 
-/** Next `<pool:` / `<random:` open at or after `from`, skipping `` `...` `` and `<lora:>`. */
-function findNextTagOpen(
+/** Next `<pool:` / `<random:` at or after `from`; skips `` `...` `` and whole `<lora:…>`. */
+function findNextExpandableTag(
   input: string,
   from: number,
 ): { index: number; kind: string; openLen: number } | null {
-  let inQuote = false
-  for (let i = from; i < input.length; i++) {
-    if (input[i] === '`') {
-      inQuote = !inQuote
-      continue
+  let i = from
+  while (i < input.length) {
+    let nextAt = -1
+    let inQuote = false
+    for (let j = i; j < input.length; j++) {
+      if (input[j] === '`') {
+        inQuote = !inQuote
+        continue
+      }
+      if (inQuote || !isAngleTagOpen(input, j)) continue
+      nextAt = j
+      break
     }
-    if (inQuote) continue
-    if (!isAngleTagOpen(input, i)) continue
-    const rest = input.slice(i + 1)
+    if (nextAt < 0) return null
+
+    const rest = input.slice(nextAt + 1)
     const m = /^(pool|random|lora):\s*/i.exec(rest)
-    if (!m) continue
-    if (m[1].toLowerCase() === 'lora') {
-      const close = findAngleTagClose(input, i)
-      if (close >= 0) i = close
+    if (!m) {
+      i = nextAt + 1
       continue
     }
-    return { index: i, kind: m[1].toLowerCase(), openLen: 1 + m[0].length }
+    const kind = m[1].toLowerCase()
+    if (kind === 'lora') {
+      const close = findAngleTagClose(input, nextAt)
+      i = close >= 0 ? close + 1 : nextAt + 1
+      continue
+    }
+    return { index: nextAt, kind, openLen: 1 + m[0].length }
   }
   return null
 }
@@ -148,17 +158,15 @@ function expandAll(input: string, ctx: ExpandContext, depth: number): string {
     if (input[i] === '`') {
       const end = input.indexOf('`', i + 1)
       if (end < 0) {
-        // Unclosed quote: keep backtick + rest as literal.
         out += input.slice(i)
         break
       }
-      // Strip one quote pair; interior is never expanded as tags.
       out += input.slice(i + 1, end)
       i = end + 1
       continue
     }
 
-    const open = findNextTagOpen(input, i)
+    const open = findNextExpandableTag(input, i)
     if (!open) {
       out += input.slice(i)
       break
