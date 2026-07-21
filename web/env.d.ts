@@ -4,6 +4,8 @@ import type {
   AppSettings,
   ComfyLogLine,
   ComfyProcessStatus,
+  FindInPageOptions,
+  FindInPageResult,
   GenerateProgress,
   GenerateResult,
   GeneratedImage,
@@ -98,6 +100,15 @@ declare global {
         write: (pool: PromptPool) => Promise<PromptPool>
         remove: (name: string) => Promise<boolean>
         rename: (oldName: string, newName: string) => Promise<PromptPool>
+      }
+      find: {
+        start: (text: string, opts?: FindInPageOptions) => Promise<number>
+        stop: () => Promise<void>
+        close: () => Promise<void>
+        onFound: (cb: (result: FindInPageResult) => void) => () => void
+        onActivate: (cb: () => void) => () => void
+        onDeactivate: (cb: () => void) => () => void
+        onTheme: (cb: (mode: ThemeMode) => void) => () => void
       }
     }
   }

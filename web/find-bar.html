@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    />
+    <title>查找</title>
+  </head>
+  <body>
+    <div class="find-bar" role="search" aria-label="在页面中查找">
+      <div class="find-bar-field">
+        <input
+          id="q"
+          class="find-bar-input"
+          type="text"
+          placeholder="查找"
+          spellcheck="false"
+          autocomplete="off"
+        />
+        <span id="status" class="find-bar-status" hidden></span>
+      </div>
+      <button type="button" id="prev" class="btn-icon" title="上一个 (Shift+Enter)" aria-label="上一个" disabled>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M8 3.5v9M4.5 7 8 3.5 11.5 7"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button type="button" id="next" class="btn-icon" title="下一个 (Enter)" aria-label="下一个" disabled>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M8 12.5v-9M4.5 9 8 12.5 11.5 9"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button type="button" id="close" class="btn-icon" title="关闭 (Esc)" aria-label="关闭查找">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </div>
+    <script type="module" src="./src/find-bar/main.ts"></script>
+  </body>
+</html>

@@ -12,7 +12,7 @@ import {
   startComfy,
   stopComfy,
 } from './comfy-process'
-import type { AppSettings, Txt2ImgParams } from './types'
+import type { AppSettings, FindInPageOptions, Txt2ImgParams } from './types'
 import {
   listPromptPools,
   removePromptPool,
@@ -21,6 +21,7 @@ import {
   type PromptPoolFile,
 } from './prompt-pools'
 import { generateTxt2Img, type ActiveClientHolder } from './txt2img-generate'
+import type { FindBarHost } from './find-bar'
 import { IPC } from '@shared/ipc-channels'
 import { chromeForTheme, isThemeMode, type ThemeMode } from '@shared/theme'
 
@@ -43,13 +44,15 @@ function applyWindowChrome(win: BrowserWindow, theme: ThemeMode): void {
 export function registerIpc(opts: {
   getMainWindow: () => BrowserWindow | null
   activeClient: ActiveClientHolder
+  findBar: FindBarHost
 }): void {
-  const { getMainWindow, activeClient } = opts
+  const { getMainWindow, activeClient, findBar } = opts
 
   ipcMain.handle(IPC.theme.set, (_event, theme: unknown) => {
     const mode: ThemeMode = isThemeMode(theme) ? theme : 'light'
     const win = getMainWindow()
     if (win) applyWindowChrome(win, mode)
+    findBar.setTheme(mode)
     return mode
   })
 
@@ -230,5 +233,18 @@ export function registerIpc(opts: {
 
   ipcMain.handle(IPC.txt2img.generate, async (event, params: Txt2ImgParams) => {
     return generateTxt2Img(event, params, activeClient)
+  })
+
+  // Always search the main page — never the find-bar WebContentsView.
+  ipcMain.handle(IPC.find.start, (_event, text: string, opts?: FindInPageOptions) => {
+    return findBar.findInPage(text, opts)
+  })
+
+  ipcMain.handle(IPC.find.stop, () => {
+    findBar.stopFind()
+  })
+
+  ipcMain.handle(IPC.find.close, () => {
+    findBar.close()
   })
 }

@@ -3,6 +3,8 @@ export type {
   AppSettings,
   ComfyLogLine,
   ComfyProcessStatus,
+  FindInPageOptions,
+  FindInPageResult,
   GenerateProgress,
   GenerateResult,
   GeneratedImage,

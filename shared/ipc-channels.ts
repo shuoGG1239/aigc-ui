@@ -53,4 +53,13 @@ export const IPC = {
     loadPreviewFromPath: 'image:loadPreviewFromPath',
     metadataCopied: 'image:metadata-copied',
   },
+  find: {
+    start: 'find:start',
+    stop: 'find:stop',
+    close: 'find:close',
+    found: 'find:found',
+    activate: 'find:activate',
+    deactivate: 'find:deactivate',
+    setTheme: 'find:setTheme',
+  },
 } as const

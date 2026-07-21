@@ -17,6 +17,21 @@ export interface ComfyProcessStatus {
   pid: number | null
 }
 
+/** Chromium find-in-page result (from `found-in-page`). */
+export interface FindInPageResult {
+  requestId: number
+  activeMatchOrdinal: number
+  matches: number
+  finalUpdate: boolean
+}
+
+export interface FindInPageOptions {
+  forward?: boolean
+  /** Electron: `true` = new session; `false` = follow-up (next/prev). */
+  findNext?: boolean
+  matchCase?: boolean
+}
+
 export interface ComfyLogLine {
   id: number
   ts: number

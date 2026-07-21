@@ -112,4 +112,47 @@ contextBridge.exposeInMainWorld('api', {
     rename: (oldName: string, newName: string) =>
       ipcRenderer.invoke(IPC.promptPools.rename, oldName, newName),
   },
+  find: {
+    start: (
+      text: string,
+      opts?: { forward?: boolean; findNext?: boolean; matchCase?: boolean },
+    ) => ipcRenderer.invoke(IPC.find.start, text, opts),
+    stop: () => ipcRenderer.invoke(IPC.find.stop),
+    close: () => ipcRenderer.invoke(IPC.find.close),
+    onFound: (
+      cb: (result: {
+        requestId: number
+        activeMatchOrdinal: number
+        matches: number
+        finalUpdate: boolean
+      }) => void,
+    ) => {
+      const handler = (
+        _e: IpcRendererEvent,
+        result: {
+          requestId: number
+          activeMatchOrdinal: number
+          matches: number
+          finalUpdate: boolean
+        },
+      ) => cb(result)
+      ipcRenderer.on(IPC.find.found, handler)
+      return () => ipcRenderer.removeListener(IPC.find.found, handler)
+    },
+    onActivate: (cb: () => void) => {
+      const handler = () => cb()
+      ipcRenderer.on(IPC.find.activate, handler)
+      return () => ipcRenderer.removeListener(IPC.find.activate, handler)
+    },
+    onDeactivate: (cb: () => void) => {
+      const handler = () => cb()
+      ipcRenderer.on(IPC.find.deactivate, handler)
+      return () => ipcRenderer.removeListener(IPC.find.deactivate, handler)
+    },
+    onTheme: (cb: (mode: ThemeMode) => void) => {
+      const handler = (_e: IpcRendererEvent, mode: ThemeMode) => cb(mode)
+      ipcRenderer.on(IPC.find.setTheme, handler)
+      return () => ipcRenderer.removeListener(IPC.find.setTheme, handler)
+    },
+  },
 })

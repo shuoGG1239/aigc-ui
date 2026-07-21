@@ -45,6 +45,7 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'web/index.html'),
+          findBar: resolve(__dirname, 'web/find-bar.html'),
         },
       },
     },

@@ -6,11 +6,13 @@ import { initComfyProcess, stopComfySync } from './comfy-process'
 import { APP_DISPLAY_NAME } from '@shared/app-defaults'
 import { IPC } from '@shared/ipc-channels'
 import { THEME_CHROME } from '@shared/theme'
+import { FindBarHost } from './find-bar'
 import { registerIpc } from './ipc'
 import type { ActiveClientHolder } from './txt2img-generate'
 
 let mainWindow: BrowserWindow | null = null
 const activeClient: ActiveClientHolder = { client: null }
+const findBar = new FindBarHost(() => mainWindow)
 
 function createWindow(): void {
   const isMac = process.platform === 'darwin'
@@ -46,10 +48,35 @@ function createWindow(): void {
     mainWindow?.show()
   })
 
-  mainWindow.webContents.on('before-input-event', (_event, input) => {
-    if (input.type === 'keyDown' && input.key === 'F12') {
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown') return
+    if (input.key === 'F12') {
       mainWindow?.webContents.toggleDevTools()
+      return
     }
+    const mod = input.control || input.meta
+    if (mod && !input.alt && input.key.toLowerCase() === 'f') {
+      event.preventDefault()
+      void findBar.open()
+      return
+    }
+    if (findBar.isOpen() && input.key === 'Escape') {
+      event.preventDefault()
+      findBar.close()
+    }
+  })
+
+  mainWindow.webContents.on('found-in-page', (_event, result) => {
+    findBar.sendFound({
+      requestId: result.requestId,
+      activeMatchOrdinal: result.activeMatchOrdinal,
+      matches: result.matches,
+      finalUpdate: result.finalUpdate,
+    })
+  })
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    findBar.prefetch()
   })
 
   // 右键菜单：查看词条 / 格式化 Prompt / 复制元数据 / 检查元素（剪切复制粘贴用快捷键）
@@ -169,6 +196,7 @@ app.whenReady().then(() => {
   registerIpc({
     getMainWindow: () => mainWindow,
     activeClient,
+    findBar,
   })
   createWindow()
 
