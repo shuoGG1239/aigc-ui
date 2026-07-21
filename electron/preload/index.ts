@@ -92,6 +92,7 @@ contextBridge.exposeInMainWorld('api', {
   },
   image: {
     readMetadata: (filePath: string) => ipcRenderer.invoke(IPC.image.readMetadata, filePath),
+    readClipboardMetadata: () => ipcRenderer.invoke(IPC.image.readClipboardMetadata),
     loadPreviewFromPath: (targetPath: string, limit?: number) =>
       ipcRenderer.invoke(IPC.image.loadPreviewFromPath, targetPath, limit),
     onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => {

@@ -50,6 +50,7 @@ export const IPC = {
   },
   image: {
     readMetadata: 'image:readMetadata',
+    readClipboardMetadata: 'image:readClipboardMetadata',
     loadPreviewFromPath: 'image:loadPreviewFromPath',
     metadataCopied: 'image:metadata-copied',
   },

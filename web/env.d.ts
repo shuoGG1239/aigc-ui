@@ -92,6 +92,7 @@ declare global {
       }
       image: {
         readMetadata: (filePath: string) => Promise<Record<string, unknown>>
+        readClipboardMetadata: () => Promise<Record<string, unknown>>
         loadPreviewFromPath: (targetPath: string, limit?: number) => Promise<GeneratedImage[]>
         onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => () => void
       }

@@ -2,6 +2,7 @@ import { dialog, ipcMain, shell, type BrowserWindow } from 'electron'
 import { basename, dirname, extname, join } from 'path'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs'
 import { ComfyUIClient } from './comfyui'
+import { readClipboardPngMetadata } from './clipboard-png'
 import { extractPngInfo } from './png-info'
 import { getSettings, setSettings, defaultOutputDir, defaultPromptPreviewDir } from './settings'
 import { resolvePromptPreview } from './prompt-preview'
@@ -136,6 +137,8 @@ export function registerIpc(opts: {
     }
     return extractPngInfo(readFileSync(target))
   })
+
+  ipcMain.handle(IPC.image.readClipboardMetadata, () => readClipboardPngMetadata())
 
   ipcMain.handle(IPC.image.loadPreviewFromPath, async (_event, targetPath: string, limit = 10) => {
     const target = targetPath?.trim()

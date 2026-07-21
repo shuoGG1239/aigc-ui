@@ -330,16 +330,30 @@ function onPoolPick(text: string): void {
 }
 
 async function onApplyClipboard(): Promise<void> {
+  const parseOpts = {
+    preferFamily: store.form.family,
+    base: store.form,
+  }
+
+  // 1) Clipboard PNG (raw bytes / Explorer file path / NativeImage)
+  try {
+    const info = await window.api.image.readClipboardMetadata()
+    const next = parseWorkflowParams(JSON.stringify(info), parseOpts)
+    await applyParsedForm(next)
+    toast.ok('已从剪贴板图片应用参数')
+    return
+  } catch {
+    // fall through to text
+  }
+
+  // 2) Text / JSON parameters
   try {
     const text = await navigator.clipboard.readText()
     if (!text.trim()) {
-      toast.error('剪贴板为空')
+      toast.error('剪贴板中没有可识别的参数或图片元数据')
       return
     }
-    const next = parseWorkflowParams(text, {
-      preferFamily: store.form.family,
-      base: store.form,
-    })
+    const next = parseWorkflowParams(text, parseOpts)
     await applyParsedForm(next)
     toast.ok('已从剪贴板应用参数')
   } catch (err) {
@@ -440,7 +454,7 @@ function onNumberWheel(
             <button
               type="button"
               class="btn btn-ghost btn-icon"
-              title="从剪贴板应用参数"
+              title="从剪贴板应用参数（支持文本或 PNG 图片）"
               aria-label="从剪贴板应用参数"
               @click="onApplyClipboard"
             >
