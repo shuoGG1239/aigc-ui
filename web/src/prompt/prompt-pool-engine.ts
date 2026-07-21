@@ -62,6 +62,20 @@ export function nextLiteralPrompt(
   const picked: string[] = []
   for (const t of sampleWithoutReplacement(choices, count)) {
     if (!t) continue
+    picked.push(t)
+  }
+  return joinLiteralPromptParts(picked, family, strengths)
+}
+
+/** Apply strength + family adapt to already-chosen literal branches (no re-sample). */
+export function joinLiteralPromptParts(
+  parts: string[],
+  family: ModelFamily,
+  strengths?: number[],
+): string {
+  const picked: string[] = []
+  for (const t of parts) {
+    if (!t) continue
     const piece = renderPrompt(t, strengths)
     if (piece) picked.push(piece)
   }

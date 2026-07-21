@@ -51,19 +51,22 @@ const fieldHelpPopRef = ref<HTMLElement | null>(null)
 const fieldHelpOpen = ref(false)
 const fieldHelpPopStyle = ref<Record<string, string>>({})
 let fieldHelpCloseTimer: number | undefined
-/** Right-click opens Electron menu and fires mouseleave; hold until next outside click. */
-let fieldHelpContextHold = false
+/** Click / right-click pins the pop; mouseleave won't close until outside click. */
+let fieldHelpPinned = false
 
 function isInsideFieldHelp(target: EventTarget | null): boolean {
-  const node = target as Node | null
-  return !!(fieldHelpRef.value?.contains(node) || fieldHelpPopRef.value?.contains(node))
+  const el =
+    target instanceof Element ? target : ((target as Node | null)?.parentElement ?? null)
+  if (!el) return false
+  if (el.closest('.field-help-pop--portal, .field-help')) return true
+  return !!(fieldHelpRef.value?.contains(el) || fieldHelpPopRef.value?.contains(el))
 }
 
 function updateFieldHelpPosition(): void {
   const el = fieldHelpRef.value
   if (!el) return
   const rect = el.getBoundingClientRect()
-  const maxWidth = Math.min(320, window.innerWidth * 0.7)
+  const maxWidth = Math.min(420, window.innerWidth * 0.8)
   const left = Math.max(8, Math.min(rect.left, window.innerWidth - maxWidth - 8))
   const gap = 6
   const spaceBelow = window.innerHeight - rect.bottom - gap - 8
@@ -90,48 +93,67 @@ function openFieldHelp(): void {
   void nextTick(() => updateFieldHelpPosition())
 }
 
+function closeFieldHelp(): void {
+  fieldHelpPinned = false
+  if (fieldHelpCloseTimer != null) {
+    window.clearTimeout(fieldHelpCloseTimer)
+    fieldHelpCloseTimer = undefined
+  }
+  fieldHelpOpen.value = false
+}
+
 function scheduleCloseFieldHelp(): void {
-  if (fieldHelpContextHold) return
+  if (fieldHelpPinned) return
   if (fieldHelpCloseTimer != null) window.clearTimeout(fieldHelpCloseTimer)
   fieldHelpCloseTimer = window.setTimeout(() => {
     fieldHelpCloseTimer = undefined
-    if (fieldHelpContextHold) return
+    if (fieldHelpPinned) return
     fieldHelpOpen.value = false
   }, 120)
 }
 
-function onFieldHelpContextMenu(): void {
-  fieldHelpContextHold = true
+function pinFieldHelp(): void {
+  fieldHelpPinned = true
   openFieldHelp()
 }
 
+function onFieldHelpTriggerClick(e: MouseEvent): void {
+  e.preventDefault()
+  e.stopPropagation()
+  if (fieldHelpPinned && fieldHelpOpen.value) {
+    closeFieldHelp()
+    return
+  }
+  pinFieldHelp()
+}
+
+function onFieldHelpContextMenu(): void {
+  pinFieldHelp()
+}
+
 function onFieldHelpFocusOut(e: FocusEvent): void {
-  if (fieldHelpContextHold) return
+  if (fieldHelpPinned) return
   if (isInsideFieldHelp(e.relatedTarget)) return
-  scheduleCloseFieldHelp()
+  // relatedTarget is often null when focus moves into the teleported pop on click.
+  window.setTimeout(() => {
+    if (fieldHelpPinned || !fieldHelpOpen.value) return
+    if (isInsideFieldHelp(document.activeElement)) return
+    if (fieldHelpRef.value?.matches(':hover') || fieldHelpPopRef.value?.matches(':hover')) return
+    scheduleCloseFieldHelp()
+  }, 0)
 }
 
 function onFieldHelpDocMouseDown(e: MouseEvent): void {
   if (isInsideFieldHelp(e.target)) {
-    fieldHelpContextHold = false
+    openFieldHelp()
     return
   }
-  fieldHelpContextHold = false
-  if (fieldHelpCloseTimer != null) {
-    window.clearTimeout(fieldHelpCloseTimer)
-    fieldHelpCloseTimer = undefined
-  }
-  fieldHelpOpen.value = false
+  closeFieldHelp()
 }
 
 function onFieldHelpKey(e: KeyboardEvent): void {
   if (e.key !== 'Escape') return
-  fieldHelpContextHold = false
-  if (fieldHelpCloseTimer != null) {
-    window.clearTimeout(fieldHelpCloseTimer)
-    fieldHelpCloseTimer = undefined
-  }
-  fieldHelpOpen.value = false
+  closeFieldHelp()
 }
 
 watch(fieldHelpOpen, (open) => {
@@ -141,7 +163,7 @@ watch(fieldHelpOpen, (open) => {
     document.addEventListener('mousedown', onFieldHelpDocMouseDown, true)
     document.addEventListener('keydown', onFieldHelpKey)
   } else {
-    fieldHelpContextHold = false
+    fieldHelpPinned = false
     window.removeEventListener('resize', updateFieldHelpPosition)
     window.removeEventListener('scroll', updateFieldHelpPosition, true)
     document.removeEventListener('mousedown', onFieldHelpDocMouseDown, true)
@@ -332,7 +354,7 @@ onMounted(() => {
 })
 onUnmounted(() => {
   offFormat?.()
-  fieldHelpContextHold = false
+  fieldHelpPinned = false
   if (fieldHelpCloseTimer != null) window.clearTimeout(fieldHelpCloseTimer)
   window.removeEventListener('resize', updateFieldHelpPosition)
   window.removeEventListener('scroll', updateFieldHelpPosition, true)
@@ -489,6 +511,7 @@ function onNumberWheel(
                 :class="{ 'is-open': fieldHelpOpen }"
                 tabindex="0"
                 aria-label="特殊语法说明"
+                @click="onFieldHelpTriggerClick"
                 @mouseenter="openFieldHelp"
                 @mouseleave="scheduleCloseFieldHelp"
                 @focusin="openFieldHelp"
@@ -556,6 +579,10 @@ function onNumberWheel(
                     <code>&lt;pool:名称:1,2,3&gt;</code>
                     <span>纯整数为数量池</span>
                   </div>
+                  <div class="field-help-block">
+                    <code>&lt;pool:&lt;random:a|b&gt;&gt;</code>
+                    <span>先随机池名再抽样</span>
+                  </div>
                   <div class="field-help-sep"></div>
                   <div class="field-help-block">
                     <code>&lt;random:文本&gt;</code>
@@ -572,6 +599,14 @@ function onNumberWheel(
                   <div class="field-help-block">
                     <code>&lt;random:a|b:2,3:0.8,0.9&gt;</code>
                     <span>多选一 + 数量/强度（顺序无关）</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;random:&lt;pool:a&gt;|&lt;pool:b&gt;&gt;</code>
+                    <span>先选枝再展开内层</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;random:`&lt;pool:a&gt;`|`&lt;pool:b&gt;`&gt;</code>
+                    <span>反引号内不展开，原样输出</span>
                   </div>
                   <div class="field-help-sep"></div>
                   <div class="field-help-block">

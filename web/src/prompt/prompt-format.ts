@@ -1,4 +1,5 @@
 import { resolveFamily, type ModelFamily } from '@shared/family'
+import { findAngleTagClose, isAngleTagOpen } from '@shared/prompt-pool-types'
 import { parseNaiToSegments, segmentsToCanon } from '@/prompt/prompt-canon'
 
 export interface FormatPromptResult {
@@ -72,8 +73,11 @@ export function formatSdxlPrompt(raw: string): string {
 }
 
 function formatAnimaTag(tag: string): string {
-  // Keep <pool:…> / <random:…> tokens untouched.
-  if (/^<[^<>]+>$/.test(tag.trim())) return tag.trim()
+  // Keep <pool:…> / <random:…> / <lora:…> tokens untouched (incl. nesting).
+  const trimmed = tag.trim()
+  if (isAngleTagOpen(trimmed, 0) && findAngleTagClose(trimmed, 0) === trimmed.length - 1) {
+    return trimmed
+  }
 
   const weight = tag.match(WEIGHT_RE)
   if (weight) {

@@ -606,11 +606,12 @@ body.is-resizing-split * {
   align-items: center;
   color: var(--text-muted);
   outline: none;
+  cursor: pointer;
 }
 
 .field-help-icon {
   display: block;
-  cursor: help;
+  cursor: pointer;
 }
 
 .field-help:hover,
@@ -621,7 +622,7 @@ body.is-resizing-split * {
 
 .field-help-pop {
   width: max-content;
-  max-width: min(320px, 70vw);
+  max-width: min(420px, 80vw);
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

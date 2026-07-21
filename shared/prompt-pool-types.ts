@@ -29,14 +29,121 @@ export function clampCount(n: number): number {
   return Math.max(1, Math.min(32, Math.floor(n) || 1))
 }
 
+/** Angle-tag openers that may nest inside `<pool:>` / `<random:>`. */
+const ANGLE_TAG_KIND_RE = /^(pool|random|lora):/i
+
+/** True when `s[index]` starts `<pool:` / `<random:` / `<lora:`. */
+export function isAngleTagOpen(s: string, index: number): boolean {
+  return s[index] === '<' && ANGLE_TAG_KIND_RE.test(s.slice(index + 1))
+}
+
+/**
+ * Index of matching `>` for an angle tag at `start`, or -1.
+ * Content inside `` `...` `` is opaque (no tag depth / no early close on `>`).
+ */
+export function findAngleTagClose(s: string, start: number): number {
+  if (!isAngleTagOpen(s, start)) return -1
+  let depth = 0
+  let inQuote = false
+  for (let i = start; i < s.length; i++) {
+    if (s[i] === '`') {
+      inQuote = !inQuote
+      continue
+    }
+    if (inQuote) continue
+    if (isAngleTagOpen(s, i)) {
+      depth++
+      continue
+    }
+    if (s[i] === '>' && depth > 0) {
+      depth--
+      if (depth === 0) return i
+    }
+  }
+  return -1
+}
+
 /**
  * Split `<random:a|b>` choice branches on `|` (fullwidth `｜` accepted).
  * Empty branches are kept so `<random:tag|>` is ~50% tag / ~50% nothing.
+ * Pipes inside nested `<pool:>` / `<random:>` / `<lora:>` or `` `...` `` are ignored.
  */
 export function splitPipeList(raw: string): string[] {
-  return String(raw || '')
-    .split(/[|｜]/)
-    .map((s) => s.trim())
+  const s = String(raw || '')
+  const parts: string[] = []
+  let buf = ''
+  let depth = 0
+  let inQuote = false
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '`') {
+      inQuote = !inQuote
+      buf += s[i]
+      continue
+    }
+    if (inQuote) {
+      buf += s[i]
+      continue
+    }
+    if (isAngleTagOpen(s, i)) {
+      depth++
+      buf += s[i]
+      continue
+    }
+    if (s[i] === '>' && depth > 0) {
+      depth--
+      buf += s[i]
+      continue
+    }
+    if (depth === 0 && (s[i] === '|' || s[i] === '｜')) {
+      parts.push(buf.trim())
+      buf = ''
+      continue
+    }
+    buf += s[i]
+  }
+  parts.push(buf.trim())
+  return parts
+}
+
+/**
+ * Split on `:` outside nested angle tags and `` `...` `` quotes.
+ * Used for `<pool:name:2:0.8>` / `<pool:<random:a|b>:0.8>`.
+ */
+export function splitColonListDepthAware(raw: string): string[] {
+  const s = String(raw || '')
+  const parts: string[] = []
+  let buf = ''
+  let depth = 0
+  let inQuote = false
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '`') {
+      inQuote = !inQuote
+      buf += s[i]
+      continue
+    }
+    if (inQuote) {
+      buf += s[i]
+      continue
+    }
+    if (isAngleTagOpen(s, i)) {
+      depth++
+      buf += s[i]
+      continue
+    }
+    if (s[i] === '>' && depth > 0) {
+      depth--
+      buf += s[i]
+      continue
+    }
+    if (depth === 0 && s[i] === ':') {
+      parts.push(buf)
+      buf = ''
+      continue
+    }
+    buf += s[i]
+  }
+  parts.push(buf)
+  return parts
 }
 
 /** Split count / strength pools on `|` or `,` (fullwidth accepted). */
