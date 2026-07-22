@@ -33,6 +33,7 @@ export {
   findAngleTagClose,
   isAngleTagOpen,
   splitColonList,
+  splitCommaList,
   splitPipeList,
 } from './prompt-syntax'
 

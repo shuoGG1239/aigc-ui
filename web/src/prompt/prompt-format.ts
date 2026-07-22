@@ -73,7 +73,7 @@ export function formatSdxlPrompt(raw: string): string {
 }
 
 function formatAnimaTag(tag: string): string {
-  // Keep <pool:…> / <random:…> / <lora:…> tokens untouched (incl. nesting).
+  // Keep <pool:…> / <random:…> / <shuffle:…> / <lora:…> tokens untouched (incl. nesting).
   const trimmed = tag.trim()
   if (isAngleTagOpen(trimmed, 0) && findAngleTagClose(trimmed, 0) === trimmed.length - 1) {
     return trimmed

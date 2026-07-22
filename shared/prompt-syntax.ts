@@ -1,9 +1,9 @@
 /**
- * Shared scanners for `<pool:>` / `<random:>` / `<lora:>` and `` `...` `` quotes.
+ * Shared scanners for `<pool:>` / `<random:>` / `<shuffle:>` / `<lora:>` and `` `...` `` quotes.
  * Used by template expand and pool literal splits.
  */
 
-const ANGLE_TAG_KIND_RE = /^(pool|random|lora):/i
+const ANGLE_TAG_KIND_RE = /^(pool|random|shuffle|lora):/i
 
 export interface AngleScanState {
   depth: number
@@ -12,7 +12,7 @@ export interface AngleScanState {
 
 export type AngleScanKind = 'toggle-quote' | 'in-quote' | 'tag-open' | 'tag-close' | 'plain'
 
-/** True when `s[index]` starts `<pool:` / `<random:` / `<lora:`. */
+/** True when `s[index]` starts `<pool:` / `<random:` / `<shuffle:` / `<lora:`. */
 export function isAngleTagOpen(s: string, index: number): boolean {
   return s[index] === '<' && ANGLE_TAG_KIND_RE.test(s.slice(index + 1))
 }
@@ -89,4 +89,13 @@ export function splitPipeList(raw: string): string[] {
  */
 export function splitColonList(raw: string): string[] {
   return splitOutsideTags(raw, (ch) => ch === ':', false)
+}
+
+/**
+ * Split `<shuffle:a, b, c>` segments on `,` (fullwidth `，` accepted).
+ * Commas inside nested angle tags or `` `...` `` are ignored.
+ * Empty segments are kept so trailing commas still yield a slot.
+ */
+export function splitCommaList(raw: string): string[] {
+  return splitOutsideTags(raw, (ch) => ch === ',' || ch === '，', true)
 }

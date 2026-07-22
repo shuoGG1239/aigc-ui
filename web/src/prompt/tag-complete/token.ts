@@ -16,6 +16,7 @@ export const SYNTAX_COMPLETIONS = [
   { key: 'lora', label: '<lora:>', insert: '<lora:>', meta: 'LoRA' },
   { key: 'random', label: '<random:>', insert: '<random:>', meta: '随机' },
   { key: 'pool', label: '<pool:>', insert: '<pool:>', meta: '提示词池' },
+  { key: 'shuffle', label: '<shuffle:>', insert: '<shuffle:>', meta: '打乱顺序' },
 ] as const
 
 /**
@@ -44,7 +45,7 @@ export function getCaretToken(text: string, caret: number): CaretToken | null {
       if (syn) {
         return { mode: 'syntax', start: lt, end: pos, query: syn[1].toLowerCase() }
       }
-      // e.g. <pool: / <random: — not tag-complete inside
+      // e.g. <pool: / <random: / <shuffle: — not tag-complete inside
       return null
     }
   }
@@ -81,7 +82,7 @@ export function formatLoraInsert(fileName: string): string {
   return formatLoraTag(fileName, 1)
 }
 
-/** Filter `<lora:>` / `<random:>` / `<pool:>` by typed stem after `<`. */
+/** Filter `<lora:>` / `<random:>` / `<pool:>` / `<shuffle:>` by typed stem after `<`. */
 export function searchSyntaxCompletions(query: string): Array<{
   key: string
   label: string

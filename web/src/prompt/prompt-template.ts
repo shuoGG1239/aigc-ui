@@ -4,6 +4,7 @@ import {
   findAngleTagClose,
   isAngleTagOpen,
   splitColonList,
+  splitCommaList,
   splitPipeList,
 } from '@shared/prompt-syntax'
 import {
@@ -50,7 +51,7 @@ function classifyNumericSegment(raw: string): {
  * Parse inner body after `pool:` / `random:`.
  * Trailing `:…` segments are typed by value: integers = counts, floats = strengths
  * (order does not matter; e.g. `:2,3:0.8,0.9` ≡ `:0.8,0.9:2,3`).
- * Colons inside nested `<pool:>` / `<random:>` / `<lora:>` or `` `...` `` are ignored.
+ * Colons inside nested `<pool:>` / `<random:>` / `<shuffle:>` / `<lora:>` or `` `...` `` are ignored.
  */
 export function parsePlaceholderBody(raw: string): PlaceholderBody {
   const segments = splitColonList(String(raw || '').trim())
@@ -82,7 +83,7 @@ function formatPoolPlaceholder(name: string, counts?: number[], strengths?: numb
 }
 
 export function hasPromptPlaceholders(text: string): boolean {
-  return /<(?:pool|random):/i.test(String(text || ''))
+  return /<(?:pool|random|shuffle):/i.test(String(text || ''))
 }
 
 interface ExpandContext {
@@ -93,11 +94,13 @@ interface ExpandContext {
 }
 
 /**
- * Expand `<pool:…>` (prompt pool) and `<random:…>` (literal).
+ * Expand `<pool:…>` (prompt pool), `<random:…>` (literal), and `<shuffle:…>` (comma segments).
  * Supports nesting, e.g. `<random:<pool:a>|<pool:b>>`,
- * `<pool:<random:name_a|name_b>>`. Outer tag chooses first, then inner expands.
+ * `<pool:<random:name_a|name_b>>`,
+ * `<shuffle:1girl, <pool:outfit>, smile>` (expand each segment, then shuffle order).
+ * Outer tag chooses structure first, then inner expands.
  * `` `...` `` quotes emit interior literally (no tag expand), e.g.
- * `<random:`<pool:a>`|`<pool:b>`>`.
+ * `<random:`<pool:a>`|`<pool:b>`>`, `` <shuffle:`a, b`, c> ``.
  * Unknown pool names are left as-is and reported in `missing`.
  */
 export function expandPromptTemplate(
@@ -111,7 +114,7 @@ export function expandPromptTemplate(
   return { prompt, missing }
 }
 
-/** Next `<pool:` / `<random:` at or after `from`; skips `` `...` `` and whole `<lora:…>`. */
+/** Next `<pool:` / `<random:` / `<shuffle:` at or after `from`; skips `` `...` `` and whole `<lora:…>`. */
 function findNextExpandableTag(
   input: string,
   from: number,
@@ -132,7 +135,7 @@ function findNextExpandableTag(
     if (nextAt < 0) return null
 
     const rest = input.slice(nextAt + 1)
-    const m = /^(pool|random|lora):\s*/i.exec(rest)
+    const m = /^(pool|random|shuffle|lora):\s*/i.exec(rest)
     if (!m) {
       i = nextAt + 1
       continue
@@ -181,7 +184,9 @@ function expandAll(input: string, ctx: ExpandContext, depth: number): string {
     out +=
       open.kind === 'pool'
         ? expandPoolBody(body, ctx, depth)
-        : expandRandomBody(body, ctx, depth)
+        : open.kind === 'shuffle'
+          ? expandShuffleBody(body, ctx, depth)
+          : expandRandomBody(body, ctx, depth)
     i = close + 1
   }
   return out
@@ -212,4 +217,18 @@ function expandRandomBody(body: string, ctx: ExpandContext, depth: number): stri
     picked.push(expandAll(branch, ctx, depth + 1))
   }
   return joinLiteralPromptParts(picked, ctx.family, strengths)
+}
+
+/** Comma-split → expand each segment → Fisher–Yates shuffle → join with `, `. */
+function expandShuffleBody(body: string, ctx: ExpandContext, depth: number): string {
+  const segments = splitCommaList(body)
+  if (!segments.length) return ''
+  const expanded: string[] = []
+  for (const seg of segments) {
+    if (!seg) continue
+    const piece = expandAll(seg, ctx, depth + 1).trim()
+    if (piece) expanded.push(piece)
+  }
+  if (!expanded.length) return ''
+  return sampleWithoutReplacement(expanded, expanded.length).join(', ')
 }
