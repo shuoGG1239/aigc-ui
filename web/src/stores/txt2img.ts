@@ -19,6 +19,8 @@ import {
 import { usePromptPoolStore } from '@/stores/prompt-pool'
 import { useSettingsStore } from '@/stores/settings'
 import {
+  attachParamHistoryPreviews,
+  formFingerprint,
   loadParamHistory,
   pushParamHistory,
   saveParamHistory,
@@ -251,7 +253,9 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       throw err
     }
 
-    recordParamHistory({ ...form.value })
+    const historySnapshot = { ...form.value }
+    recordParamHistory(historySnapshot)
+    const historyFp = formFingerprint(historySnapshot)
 
     let streamed = 0
     const offImage = window.api.txt2img.onImage((payload) => {
@@ -260,6 +264,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       lastSeed.value = payload.seed
       lastPromptId.value = payload.promptId
       streamed += 1
+      attachHistoryPreviews(historyFp, [payload.image.path])
     })
     const offProgress = window.api.txt2img.onProgress((payload) => {
       progress.value = payload
@@ -295,6 +300,10 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
       if (streamed === 0 && result.images.length) {
         results.value = [...result.images, ...results.value].slice(0, MAX_RESULTS)
         selectedIndex.value = 0
+        attachHistoryPreviews(
+          historyFp,
+          result.images.map((img) => img.path),
+        )
       }
       lastSeed.value = result.seed
       lastPromptId.value = result.promptId
@@ -317,6 +326,14 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
   function recordParamHistory(snapshot: Txt2ImgForm): void {
     const max = historyMax()
     paramHistory.value = pushParamHistory(paramHistory.value, snapshot, Date.now(), max)
+    saveParamHistory(paramHistory.value, max)
+  }
+
+  function attachHistoryPreviews(fingerprint: string, paths: string[]): void {
+    const max = historyMax()
+    const next = attachParamHistoryPreviews(paramHistory.value, fingerprint, paths)
+    if (next === paramHistory.value) return
+    paramHistory.value = next
     saveParamHistory(paramHistory.value, max)
   }
 

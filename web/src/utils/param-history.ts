@@ -3,6 +3,9 @@ import { clampParamHistoryMax, PARAM_HISTORY_MAX_DEFAULT } from '@shared/limits'
 import type { Txt2ImgForm } from '@shared/txt2img-form'
 import { sha256Hex } from '@/utils/sha256'
 
+/** Max output image paths kept per history entry (newest first). */
+export const PARAM_HISTORY_PREVIEW_MAX = 4
+
 export interface ParamHistoryEntry {
   fingerprint: string
   at: number
@@ -11,9 +14,28 @@ export interface ParamHistoryEntry {
   starred?: boolean
   /** When starred; used to order favorites. */
   starredAt?: number
+  /** Absolute paths of recent outputs for this fingerprint (newest first). */
+  previewPaths?: string[]
 }
 
 const STORAGE_KEY = 'aigc-ui:txt2img-param-history'
+
+function normalizePreviewPaths(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const paths = raw
+    .filter((p): p is string => typeof p === 'string' && p.trim().length > 0)
+    .map((p) => p.trim())
+  if (!paths.length) return undefined
+  const seen = new Set<string>()
+  const unique: string[] = []
+  for (const p of paths) {
+    if (seen.has(p)) continue
+    seen.add(p)
+    unique.push(p)
+    if (unique.length >= PARAM_HISTORY_PREVIEW_MAX) break
+  }
+  return unique.length ? unique : undefined
+}
 
 function normalizeFamily(value: unknown): ModelFamily {
   return isModelFamily(value) ? value : 'anima'
@@ -34,6 +56,8 @@ function normalizeEntry(raw: ParamHistoryEntry): ParamHistoryEntry {
     entry.starred = true
     entry.starredAt = typeof raw.starredAt === 'number' ? raw.starredAt : raw.at
   }
+  const previewPaths = normalizePreviewPaths(raw.previewPaths)
+  if (previewPaths) entry.previewPaths = previewPaths
   return entry
 }
 
@@ -120,6 +144,9 @@ export function pushParamHistory(
     entry.starred = true
     entry.starredAt = prev.starredAt ?? prev.at
   }
+  if (prev?.previewPaths?.length) {
+    entry.previewPaths = [...prev.previewPaths]
+  }
   return trimParamHistory(
     [entry, ...entries.filter((e) => e.fingerprint !== fingerprint)],
     maxUnstarred,
@@ -138,11 +165,46 @@ export function toggleStarParamHistory(
     if (e.fingerprint !== fingerprint) return e
     changed = true
     if (e.starred) {
-      return { fingerprint: e.fingerprint, at: e.at, form: e.form }
+      const plain: ParamHistoryEntry = {
+        fingerprint: e.fingerprint,
+        at: e.at,
+        form: e.form,
+      }
+      if (e.previewPaths?.length) plain.previewPaths = [...e.previewPaths]
+      return plain
     }
     return { ...e, starred: true as const, starredAt: at }
   })
   return changed ? trimParamHistory(next, maxUnstarred) : entries
+}
+
+/**
+ * Prepend new output paths onto an entry (newest first), dedupe, cap length.
+ * No-op if fingerprint missing or paths empty.
+ */
+export function attachParamHistoryPreviews(
+  entries: ParamHistoryEntry[],
+  fingerprint: string,
+  paths: string[],
+  max = PARAM_HISTORY_PREVIEW_MAX,
+): ParamHistoryEntry[] {
+  const incoming = paths.map((p) => p.trim()).filter(Boolean)
+  if (!incoming.length) return entries
+  let changed = false
+  const next = entries.map((e) => {
+    if (e.fingerprint !== fingerprint) return e
+    changed = true
+    const merged: string[] = []
+    const seen = new Set<string>()
+    for (const p of [...incoming, ...(e.previewPaths ?? [])]) {
+      if (seen.has(p)) continue
+      seen.add(p)
+      merged.push(p)
+      if (merged.length >= max) break
+    }
+    return { ...e, previewPaths: merged }
+  })
+  return changed ? next : entries
 }
 
 export function promptSummary(prompt: string, maxLen = 56): string {

@@ -4,7 +4,12 @@ import { IconStar } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { fuzzyMatches, fuzzyParts } from '@/utils/fuzzy'
-import { formatHms, promptSummary, sortParamHistory } from '@/utils/param-history'
+import {
+  formatHms,
+  promptSummary,
+  sortParamHistory,
+  type ParamHistoryEntry,
+} from '@/utils/param-history'
 
 const emit = defineEmits<{
   /** Fired when the menu opens (parent should close sibling popovers). */
@@ -16,9 +21,21 @@ const toast = useToast()
 
 const open = ref(false)
 const btnRef = ref<HTMLButtonElement | null>(null)
+const menuRef = ref<HTMLElement | null>(null)
+const previewRef = ref<HTMLElement | null>(null)
 const filterRef = ref<HTMLInputElement | null>(null)
 const menuStyle = ref<Record<string, string>>({})
+const previewStyle = ref<Record<string, string>>({})
 const query = ref('')
+
+const hoveredFingerprint = ref<string | null>(null)
+const showNegative = ref(false)
+const hoverTimer = ref<ReturnType<typeof setTimeout> | undefined>()
+const leaveTimer = ref<ReturnType<typeof setTimeout> | undefined>()
+
+/** path -> dataUrl | null (missing) | undefined (loading) */
+const thumbCache = ref<Record<string, string | null>>({})
+const thumbLoading = ref<Set<string>>(new Set())
 
 const filtered = computed(() => {
   const q = query.value
@@ -31,18 +48,49 @@ const filtered = computed(() => {
   return sortParamHistory(matched)
 })
 
+const hoveredEntry = computed(() => {
+  const fp = hoveredFingerprint.value
+  if (!fp) return null
+  return store.paramHistory.find((e) => e.fingerprint === fp) ?? null
+})
+
+const previewModelLabel = computed(() => {
+  const form = hoveredEntry.value?.form
+  if (!form) return ''
+  return form.family === 'sdxl' ? form.checkpoint || '—' : form.unetModel || '—'
+})
+
 function updateMenuPosition(): void {
   const el = btnRef.value
   if (!el) return
   const rect = el.getBoundingClientRect()
   const width = 520
-  // Center under the trigger so extra width extends both left and right.
   let left = rect.left + rect.width / 2 - width / 2
   left = Math.min(Math.max(8, left), window.innerWidth - width - 8)
   menuStyle.value = {
     left: `${left}px`,
     top: `${rect.bottom + 4}px`,
     width: `${width}px`,
+  }
+  updatePreviewPosition()
+}
+
+function updatePreviewPosition(): void {
+  const menu = menuRef.value
+  if (!menu || !hoveredFingerprint.value) return
+  const rect = menu.getBoundingClientRect()
+  const previewW = 320
+  const gap = 8
+  let left = rect.right + gap
+  if (left + previewW > window.innerWidth - 8) {
+    left = rect.left - previewW - gap
+  }
+  left = Math.max(8, left)
+  const top = Math.min(rect.top, window.innerHeight - 24)
+  previewStyle.value = {
+    left: `${left}px`,
+    top: `${Math.max(8, top)}px`,
+    width: `${previewW}px`,
   }
 }
 
@@ -55,16 +103,33 @@ function onFilterInput(e: Event): void {
   query.value = (e.target as HTMLInputElement).value
 }
 
-function onFilterBlur(): void {
+function onFilterBlur(e: FocusEvent): void {
   if (!open.value) return
+  const next = e.relatedTarget
+  if (next instanceof Node) {
+    if (previewRef.value?.contains(next) || menuRef.value?.contains(next)) return
+  }
   requestAnimationFrame(() => {
-    if (open.value) filterRef.value?.focus()
+    if (!open.value) return
+    // Selecting text in the preview moves focus away; don't steal it back.
+    if (previewRef.value?.matches(':hover')) return
+    filterRef.value?.focus()
   })
+}
+
+function clearHoverTimers(): void {
+  if (hoverTimer.value) clearTimeout(hoverTimer.value)
+  if (leaveTimer.value) clearTimeout(leaveTimer.value)
+  hoverTimer.value = undefined
+  leaveTimer.value = undefined
 }
 
 function close(): void {
   open.value = false
   query.value = ''
+  hoveredFingerprint.value = null
+  showNegative.value = false
+  clearHoverTimers()
 }
 
 async function toggle(): Promise<void> {
@@ -74,6 +139,7 @@ async function toggle(): Promise<void> {
   }
   open.value = true
   query.value = ''
+  hoveredFingerprint.value = null
   emit('open')
   await nextTick()
   updateMenuPosition()
@@ -95,11 +161,71 @@ function onToggleStar(fingerprint: string, event: MouseEvent): void {
   toast.ok(before.starred ? '已取消收藏' : '已收藏')
 }
 
+function onItemEnter(item: ParamHistoryEntry): void {
+  if (leaveTimer.value) {
+    clearTimeout(leaveTimer.value)
+    leaveTimer.value = undefined
+  }
+  if (hoverTimer.value) clearTimeout(hoverTimer.value)
+  hoverTimer.value = setTimeout(() => {
+    hoveredFingerprint.value = item.fingerprint
+    showNegative.value = false
+    void nextTick(() => {
+      updatePreviewPosition()
+      void loadThumbs(item.previewPaths ?? [])
+    })
+  }, 120)
+}
+
+function onItemLeave(): void {
+  if (hoverTimer.value) {
+    clearTimeout(hoverTimer.value)
+    hoverTimer.value = undefined
+  }
+  scheduleClearHover()
+}
+
+function onPreviewEnter(): void {
+  if (leaveTimer.value) {
+    clearTimeout(leaveTimer.value)
+    leaveTimer.value = undefined
+  }
+}
+
+function onPreviewLeave(): void {
+  scheduleClearHover()
+}
+
+function scheduleClearHover(): void {
+  if (leaveTimer.value) clearTimeout(leaveTimer.value)
+  leaveTimer.value = setTimeout(() => {
+    hoveredFingerprint.value = null
+  }, 160)
+}
+
+async function loadThumbs(paths: string[]): Promise<void> {
+  for (const path of paths) {
+    if (path in thumbCache.value || thumbLoading.value.has(path)) continue
+    thumbLoading.value.add(path)
+    try {
+      const imgs = await window.api.image.loadPreviewFromPath(path, 1)
+      thumbCache.value = {
+        ...thumbCache.value,
+        [path]: imgs[0]?.dataUrl ?? null,
+      }
+    } catch {
+      thumbCache.value = { ...thumbCache.value, [path]: null }
+    } finally {
+      thumbLoading.value.delete(path)
+    }
+  }
+}
+
 function onDocClick(e: MouseEvent): void {
   const target = e.target as Node
   if (btnRef.value?.contains(target)) return
-  const menu = document.querySelector('.param-history-menu')
-  if (menu?.contains(target)) return
+  if (menuRef.value?.contains(target)) return
+  if (previewRef.value?.contains(target)) return
   close()
 }
 
@@ -124,6 +250,8 @@ watch(open, (isOpen) => {
     document.addEventListener('keydown', onKeydown)
   } else {
     query.value = ''
+    hoveredFingerprint.value = null
+    clearHoverTimers()
     window.removeEventListener('resize', updateMenuPosition)
     window.removeEventListener('scroll', updateMenuPosition, true)
     document.removeEventListener('mousedown', onDocClick)
@@ -132,6 +260,7 @@ watch(open, (isOpen) => {
 })
 
 onBeforeUnmount(() => {
+  clearHoverTimers()
   window.removeEventListener('resize', updateMenuPosition)
   window.removeEventListener('scroll', updateMenuPosition, true)
   document.removeEventListener('mousedown', onDocClick)
@@ -174,13 +303,22 @@ defineExpose({
       @input="onFilterInput"
       @blur="onFilterBlur"
     />
-    <div v-if="open" class="param-history-menu" role="listbox" :style="menuStyle">
+    <div
+      v-if="open"
+      ref="menuRef"
+      class="param-history-menu"
+      role="listbox"
+      :style="menuStyle"
+    >
       <div
         v-for="item in filtered"
         :key="item.fingerprint + item.at"
         class="param-history-item"
+        :class="{ 'is-hovered': hoveredFingerprint === item.fingerprint }"
         role="option"
         @click="onRestore(item.fingerprint)"
+        @mouseenter="onItemEnter(item)"
+        @mouseleave="onItemLeave"
       >
         <button
           type="button"
@@ -202,6 +340,91 @@ defineExpose({
       </div>
       <div v-if="!store.paramHistory.length" class="param-history-empty">暂无历史参数</div>
       <div v-else-if="!filtered.length" class="param-history-empty">无匹配</div>
+    </div>
+
+    <div
+      v-if="open && hoveredEntry"
+      ref="previewRef"
+      class="param-history-preview"
+      :style="previewStyle"
+      @mouseenter="onPreviewEnter"
+      @mouseleave="onPreviewLeave"
+    >
+      <div class="param-history-preview-section">
+        <div class="param-history-preview-label">Prompt</div>
+        <div class="param-history-preview-text">
+          {{ hoveredEntry.form.prompt.trim() || '（空）' }}
+        </div>
+      </div>
+      <div class="param-history-preview-section">
+        <button
+          type="button"
+          class="param-history-preview-label-btn"
+          :aria-expanded="showNegative"
+          @click.stop="showNegative = !showNegative"
+        >
+          <svg
+            class="param-history-preview-chevron"
+            :class="{ 'is-open': showNegative }"
+            width="12"
+            height="12"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M6 4l4 4-4 4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="param-history-preview-label">Negative</span>
+        </button>
+        <div v-if="showNegative" class="param-history-preview-text">
+          {{ hoveredEntry.form.negativePrompt.trim() || '（空）' }}
+        </div>
+      </div>
+      <div class="param-history-preview-meta">
+        <span>{{ hoveredEntry.form.family }}</span>
+        <span>{{ hoveredEntry.form.width }}×{{ hoveredEntry.form.height }}</span>
+        <span>steps {{ hoveredEntry.form.steps }}</span>
+        <span>cfg {{ hoveredEntry.form.cfg }}</span>
+        <span>{{ hoveredEntry.form.sampler }}</span>
+        <span>{{ hoveredEntry.form.scheduler }}</span>
+        <span>seed {{ hoveredEntry.form.seed || '随机' }}</span>
+        <span class="param-history-preview-model" :title="previewModelLabel">{{
+          previewModelLabel
+        }}</span>
+      </div>
+      <div class="param-history-preview-section">
+        <div class="param-history-preview-label">产出预览</div>
+        <div
+          v-if="!(hoveredEntry.previewPaths && hoveredEntry.previewPaths.length)"
+          class="param-history-preview-empty"
+        >
+          暂无预览图
+        </div>
+        <div v-else class="param-history-preview-grid">
+          <div
+            v-for="path in hoveredEntry.previewPaths"
+            :key="path"
+            class="param-history-preview-thumb"
+          >
+            <img
+              v-if="thumbCache[path]"
+              :src="thumbCache[path]!"
+              alt=""
+              draggable="false"
+            />
+            <span v-else-if="thumbCache[path] === null" class="param-history-preview-missing"
+              >已失效</span
+            >
+            <span v-else class="param-history-preview-missing">…</span>
+          </div>
+        </div>
+      </div>
     </div>
   </Teleport>
 </template>
