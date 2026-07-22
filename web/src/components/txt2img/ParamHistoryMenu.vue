@@ -36,6 +36,9 @@ const leaveTimer = ref<ReturnType<typeof setTimeout> | undefined>()
 /** path -> dataUrl | null (missing) | undefined (loading) */
 const thumbCache = ref<Record<string, string | null>>({})
 const thumbLoading = ref<Set<string>>(new Set())
+/** 产出预览 2×2 分页 */
+const PREVIEW_PAGE_SIZE = 4
+const previewPage = ref(0)
 
 const filtered = computed(() => {
   const q = query.value
@@ -59,6 +62,19 @@ const previewModelLabel = computed(() => {
   if (!form) return ''
   return form.family === 'sdxl' ? form.checkpoint || '—' : form.unetModel || '—'
 })
+
+const previewPaths = computed(() => hoveredEntry.value?.previewPaths ?? [])
+
+const previewPageCount = computed(() =>
+  Math.max(1, Math.ceil(previewPaths.value.length / PREVIEW_PAGE_SIZE)),
+)
+
+const pagedPreviewPaths = computed(() => {
+  const start = previewPage.value * PREVIEW_PAGE_SIZE
+  return previewPaths.value.slice(start, start + PREVIEW_PAGE_SIZE)
+})
+
+const showPreviewPager = computed(() => previewPaths.value.length > 0)
 
 function updateMenuPosition(): void {
   const el = btnRef.value
@@ -129,6 +145,7 @@ function close(): void {
   query.value = ''
   hoveredFingerprint.value = null
   showNegative.value = false
+  previewPage.value = 0
   clearHoverTimers()
 }
 
@@ -170,11 +187,19 @@ function onItemEnter(item: ParamHistoryEntry): void {
   hoverTimer.value = setTimeout(() => {
     hoveredFingerprint.value = item.fingerprint
     showNegative.value = false
+    previewPage.value = 0
     void nextTick(() => {
       updatePreviewPosition()
-      void loadThumbs(item.previewPaths ?? [])
+      void loadThumbs((item.previewPaths ?? []).slice(0, PREVIEW_PAGE_SIZE))
     })
   }, 120)
+}
+
+function shiftPreviewPage(delta: number): void {
+  const next = previewPage.value + delta
+  if (next < 0 || next >= previewPageCount.value) return
+  previewPage.value = next
+  void loadThumbs(pagedPreviewPaths.value)
 }
 
 function onItemLeave(): void {
@@ -200,6 +225,7 @@ function scheduleClearHover(): void {
   if (leaveTimer.value) clearTimeout(leaveTimer.value)
   leaveTimer.value = setTimeout(() => {
     hoveredFingerprint.value = null
+    previewPage.value = 0
   }, 160)
 }
 
@@ -421,16 +447,54 @@ defineExpose({
         }}</span>
       </div>
       <div class="param-history-preview-section">
-        <div class="param-history-preview-label">产出预览</div>
-        <div
-          v-if="!(hoveredEntry.previewPaths && hoveredEntry.previewPaths.length)"
-          class="param-history-preview-empty"
-        >
-          暂无预览图
+        <div class="param-history-preview-head">
+          <div class="param-history-preview-label">产出预览</div>
+          <div v-if="showPreviewPager" class="param-history-preview-pager">
+            <button
+              type="button"
+              class="btn btn-ghost btn-icon param-history-preview-page-btn"
+              title="上一页"
+              aria-label="上一页"
+              :disabled="previewPage <= 0"
+              @click.stop="shiftPreviewPage(-1)"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M10 4L6 8l4 4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <span class="param-history-preview-page"
+              >{{ previewPage + 1 }}/{{ previewPageCount }}</span
+            >
+            <button
+              type="button"
+              class="btn btn-ghost btn-icon param-history-preview-page-btn"
+              title="下一页"
+              aria-label="下一页"
+              :disabled="previewPage >= previewPageCount - 1"
+              @click.stop="shiftPreviewPage(1)"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M6 4l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
+        <div v-if="!previewPaths.length" class="param-history-preview-empty">暂无预览图</div>
         <div v-else class="param-history-preview-grid">
           <button
-            v-for="path in hoveredEntry.previewPaths"
+            v-for="path in pagedPreviewPaths"
             :key="path"
             type="button"
             class="param-history-preview-thumb"

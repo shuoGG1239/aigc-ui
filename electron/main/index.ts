@@ -10,6 +10,9 @@ import { FindBarHost } from './find-bar'
 import { registerIpc } from './ipc'
 import type { ActiveClientHolder } from './txt2img-generate'
 
+// DevTools Console：关闭「allow pasting」粘贴保护（本机桌面工具，便于调试）
+app.commandLine.appendSwitch('unsafely-disable-devtools-self-xss-warnings')
+
 let mainWindow: BrowserWindow | null = null
 const activeClient: ActiveClientHolder = { client: null }
 const findBar = new FindBarHost(() => mainWindow)

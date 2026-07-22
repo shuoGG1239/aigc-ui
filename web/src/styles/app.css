@@ -1956,7 +1956,8 @@ body.is-resizing-split * {
 .param-history-preview {
   position: fixed;
   z-index: 1001;
-  max-height: min(520px, calc(100vh - 24px));
+  /* Fit prompt + meta + 2×2 thumbs without scroll on typical layouts */
+  max-height: min(640px, calc(100vh - 24px));
   overflow: auto;
   padding: 10px 12px;
   background: var(--bg);
@@ -1975,12 +1976,45 @@ body.is-resizing-split * {
   min-width: 0;
 }
 
+.param-history-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
 .param-history-preview-label {
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--text-soft);
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+.param-history-preview-pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.param-history-preview-page-btn {
+  width: 24px;
+  height: 24px;
+}
+
+.param-history-preview-page-btn:disabled {
+  opacity: 0.35;
+}
+
+.param-history-preview-page {
+  min-width: 2.5em;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  user-select: none;
 }
 
 .param-history-preview-label-btn {
@@ -2024,7 +2058,9 @@ body.is-resizing-split * {
   line-height: 1.45;
   color: var(--text);
   white-space: pre-wrap;
-  word-break: break-word;
+  /* Break anywhere so long tag runs fill the line (no hole before spaces). */
+  overflow-wrap: anywhere;
+  word-break: break-all;
   user-select: text;
   cursor: text;
 }

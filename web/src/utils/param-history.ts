@@ -4,7 +4,7 @@ import type { Txt2ImgForm } from '@shared/txt2img-form'
 import { sha256Hex } from '@/utils/sha256'
 
 /** Max output image paths kept per history entry (newest first). */
-export const PARAM_HISTORY_PREVIEW_MAX = 4
+export const PARAM_HISTORY_PREVIEW_MAX = 100
 
 export interface ParamHistoryEntry {
   fingerprint: string

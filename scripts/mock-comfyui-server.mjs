@@ -344,31 +344,80 @@ function inspectWorkflow(workflow) {
 
 /**
  * Solid PNG with ComfyUI-compatible tEXt `prompt` (+ `workflow` mirror).
- * Fill: seed%3 → black / white / transparent.
+ * Fill: vivid HSL color from seed ⊕ job id (so same seed still varies across jobs).
  * @param {Job} job
  */
 function buildMockPng(job) {
-  const { width, height, seed, workflow } = job
-  const mode = ((seed % 3) + 3) % 3
-  // 0 black, 1 white, 2 transparent
-  const r = mode === 1 ? 255 : 0
-  const g = mode === 1 ? 255 : 0
-  const b = mode === 1 ? 255 : 0
-  const a = mode === 2 ? 0 : 255
+  const { width, height, seed, workflow, promptId } = job
+  const salt = hashString32(promptId || `${Date.now()}`)
+  const { r, g, b, hex } = colorFromSeed(seed, salt)
 
   const promptJson = JSON.stringify(workflow)
   // UI-ish workflow stub (same graph) so extractors that look at either key work
   const workflowJson = JSON.stringify({
-    extra: { mock: true, seed, fill: ['black', 'white', 'transparent'][mode] },
+    extra: { mock: true, seed, fill: hex },
     nodes: [],
     links: [],
     prompt: workflow,
   })
 
-  return encodePngRgba(width, height, r, g, b, a, {
+  return encodePngRgba(width, height, r, g, b, 255, {
     prompt: promptJson,
     workflow: workflowJson,
   })
+}
+
+/** @param {string} s */
+function hashString32(s) {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+/**
+ * Map seed+salt → saturated RGB (hue wraps full 360°, avoid near-gray).
+ * @param {number} seed
+ * @param {number} salt
+ */
+function colorFromSeed(seed, salt = 0) {
+  let x = (Math.floor(Number(seed)) ^ (salt >>> 0)) >>> 0
+  // splitmix32 — spreads close seeds into distant hues
+  x = (x + 0x9e3779b9) >>> 0
+  x = Math.imul(x ^ (x >>> 16), 0x85ebca6b) >>> 0
+  x = Math.imul(x ^ (x >>> 13), 0xc2b2ae35) >>> 0
+  x = (x ^ (x >>> 16)) >>> 0
+
+  const h = x % 360
+  const s = 0.55 + ((x >>> 9) % 40) / 100 // 0.55–0.94
+  const l = 0.38 + ((x >>> 17) % 28) / 100 // 0.38–0.65
+  const { r, g, b } = hslToRgb(h, s, l)
+  const hex = `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`
+  return { r, g, b, hex }
+}
+
+/** @param {number} h 0–360 @param {number} s 0–1 @param {number} l 0–1 */
+function hslToRgb(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s
+  const hp = h / 60
+  const x = c * (1 - Math.abs((hp % 2) - 1))
+  let r1 = 0
+  let g1 = 0
+  let b1 = 0
+  if (hp < 1) [r1, g1, b1] = [c, x, 0]
+  else if (hp < 2) [r1, g1, b1] = [x, c, 0]
+  else if (hp < 3) [r1, g1, b1] = [0, c, x]
+  else if (hp < 4) [r1, g1, b1] = [0, x, c]
+  else if (hp < 5) [r1, g1, b1] = [x, 0, c]
+  else [r1, g1, b1] = [c, 0, x]
+  const m = l - c / 2
+  return {
+    r: Math.round((r1 + m) * 255),
+    g: Math.round((g1 + m) * 255),
+    b: Math.round((b1 + m) * 255),
+  }
 }
 
 /** @param {Record<string, string>} textChunks */
