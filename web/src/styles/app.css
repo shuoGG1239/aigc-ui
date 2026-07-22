@@ -2068,6 +2068,7 @@ body.is-resizing-split * {
 
 .param-history-preview-thumb {
   aspect-ratio: 1;
+  padding: 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--bg-soft);
@@ -2075,6 +2076,17 @@ body.is-resizing-split * {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  color: inherit;
+}
+
+.param-history-preview-thumb:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.param-history-preview-thumb:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
 .param-history-preview-thumb img {
@@ -2082,6 +2094,7 @@ body.is-resizing-split * {
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none;
 }
 
 .param-history-preview-missing {

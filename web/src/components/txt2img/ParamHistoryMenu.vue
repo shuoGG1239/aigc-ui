@@ -221,6 +221,28 @@ async function loadThumbs(paths: string[]): Promise<void> {
   }
 }
 
+async function onPreviewThumbClick(path: string): Promise<void> {
+  if (thumbCache.value[path] === null) {
+    toast.error('预览图已失效')
+    return
+  }
+  try {
+    const imgs = await window.api.image.loadPreviewFromPath(path, 1)
+    const img = imgs[0]
+    if (!img?.dataUrl) {
+      thumbCache.value = { ...thumbCache.value, [path]: null }
+      toast.error('预览图已失效')
+      return
+    }
+    store.prependResults([
+      { path: img.path, dataUrl: img.dataUrl, filename: img.filename },
+    ])
+    close()
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  }
+}
+
 function onDocClick(e: MouseEvent): void {
   const target = e.target as Node
   if (btnRef.value?.contains(target)) return
@@ -407,10 +429,14 @@ defineExpose({
           暂无预览图
         </div>
         <div v-else class="param-history-preview-grid">
-          <div
+          <button
             v-for="path in hoveredEntry.previewPaths"
             :key="path"
+            type="button"
             class="param-history-preview-thumb"
+            :disabled="thumbCache[path] === null"
+            :title="thumbCache[path] === null ? '预览图已失效' : '在预览区显示'"
+            @click.stop="onPreviewThumbClick(path)"
           >
             <img
               v-if="thumbCache[path]"
@@ -422,7 +448,7 @@ defineExpose({
               >已失效</span
             >
             <span v-else class="param-history-preview-missing">…</span>
-          </div>
+          </button>
         </div>
       </div>
     </div>
