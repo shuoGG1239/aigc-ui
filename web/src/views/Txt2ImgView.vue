@@ -44,7 +44,7 @@ const promptFieldRef = ref<InstanceType<typeof PromptTextarea> | null>(null)
 const negFieldRef = ref<InstanceType<typeof PromptTextarea> | null>(null)
 /** null = insert at end of field. */
 const promptCaret = ref<{ start: number; end: number } | null>(null)
-/** Try `<pool:>` / `<random:>` from the Prompt field-help popover. */
+/** Try `<pool:>` / `<random:>` / `<shuffle:>` from the Prompt field-help popover. */
 const syntaxTryInput = ref('')
 const fieldHelpRef = ref<HTMLElement | null>(null)
 const fieldHelpPopRef = ref<HTMLElement | null>(null)
@@ -558,7 +558,7 @@ function onNumberWheel(
                       v-model="syntaxTryInput"
                       type="text"
                       spellcheck="false"
-                      placeholder="语法测试 <random:a|b> / <pool:chara>"
+                      placeholder="语法测试 <random:a|b> / <shuffle:a|b|c> / <pool:chara>"
                       aria-label="试运行特殊语法"
                       @keydown.enter.prevent="onTrySyntax"
                       @click.stop
@@ -621,6 +621,15 @@ function onNumberWheel(
                   <div class="field-help-block">
                     <code>&lt;random:`&lt;pool:a&gt;`|`&lt;pool:b&gt;`&gt;</code>
                     <span>反引号内不展开，原样输出</span>
+                  </div>
+                  <div class="field-help-sep"></div>
+                  <div class="field-help-block">
+                    <code>&lt;shuffle:a|b|c&gt;</code>
+                    <span>打乱各段顺序，再用逗号拼接</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;shuffle:1girl|&lt;pool:outfit&gt;, smile&gt;</code>
+                    <span>先展开各段再打乱</span>
                   </div>
                   <div class="field-help-sep"></div>
                   <div class="field-help-block">

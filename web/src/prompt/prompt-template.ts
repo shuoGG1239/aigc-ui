@@ -4,7 +4,6 @@ import {
   findAngleTagClose,
   isAngleTagOpen,
   splitColonList,
-  splitCommaList,
   splitPipeList,
 } from '@shared/prompt-syntax'
 import {
@@ -94,13 +93,13 @@ interface ExpandContext {
 }
 
 /**
- * Expand `<pool:…>` (prompt pool), `<random:…>` (literal), and `<shuffle:…>` (comma segments).
+ * Expand `<pool:…>` (prompt pool), `<random:…>` (literal), and `<shuffle:…>` (pipe segments).
  * Supports nesting, e.g. `<random:<pool:a>|<pool:b>>`,
  * `<pool:<random:name_a|name_b>>`,
- * `<shuffle:1girl, <pool:outfit>, smile>` (expand each segment, then shuffle order).
+ * `<shuffle:1girl|<pool:outfit>, smile|outdoors>` (expand each segment, then shuffle order).
  * Outer tag chooses structure first, then inner expands.
  * `` `...` `` quotes emit interior literally (no tag expand), e.g.
- * `<random:`<pool:a>`|`<pool:b>`>`, `` <shuffle:`a, b`, c> ``.
+ * `<random:`<pool:a>`|`<pool:b>`>`.
  * Unknown pool names are left as-is and reported in `missing`.
  */
 export function expandPromptTemplate(
@@ -219,9 +218,9 @@ function expandRandomBody(body: string, ctx: ExpandContext, depth: number): stri
   return joinLiteralPromptParts(picked, ctx.family, strengths)
 }
 
-/** Comma-split → expand each segment → Fisher–Yates shuffle → join with `, `. */
+/** Pipe-split → expand each segment → Fisher–Yates shuffle → join with `, `. */
 function expandShuffleBody(body: string, ctx: ExpandContext, depth: number): string {
-  const segments = splitCommaList(body)
+  const segments = splitPipeList(body)
   if (!segments.length) return ''
   const expanded: string[] = []
   for (const seg of segments) {

@@ -75,7 +75,7 @@ function splitOutsideTags(
 }
 
 /**
- * Split `<random:a|b>` choice branches on `|` (fullwidth `｜` accepted).
+ * Split `<random:a|b>` / `<shuffle:a|b>` segments on `|` (fullwidth `｜` accepted).
  * Empty branches are kept so `<random:tag|>` is ~50% tag / ~50% nothing.
  * Pipes inside nested angle tags or `` `...` `` are ignored.
  */
@@ -89,13 +89,4 @@ export function splitPipeList(raw: string): string[] {
  */
 export function splitColonList(raw: string): string[] {
   return splitOutsideTags(raw, (ch) => ch === ':', false)
-}
-
-/**
- * Split `<shuffle:a, b, c>` segments on `,` (fullwidth `，` accepted).
- * Commas inside nested angle tags or `` `...` `` are ignored.
- * Empty segments are kept so trailing commas still yield a slot.
- */
-export function splitCommaList(raw: string): string[] {
-  return splitOutsideTags(raw, (ch) => ch === ',' || ch === '，', true)
 }
