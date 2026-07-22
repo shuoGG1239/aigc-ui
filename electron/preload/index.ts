@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('api', {
   shell: {
     showItemInFolder: (filePath: string) =>
       ipcRenderer.invoke(IPC.shell.showItemInFolder, filePath),
+    openPath: (filePath: string) => ipcRenderer.invoke(IPC.shell.openPath, filePath),
   },
   comfy: {
     healthCheck: (serverUrl?: string) => ipcRenderer.invoke(IPC.comfy.healthCheck, serverUrl),

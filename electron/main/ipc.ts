@@ -204,6 +204,18 @@ export function registerIpc(opts: {
     throw new Error('文件或目录不存在')
   })
 
+  ipcMain.handle(IPC.shell.openPath, async (_event, filePath: string) => {
+    const target = filePath?.trim()
+    if (!target) {
+      throw new Error('路径为空')
+    }
+    if (!existsSync(target)) {
+      throw new Error('文件不存在')
+    }
+    const err = await shell.openPath(target)
+    if (err) throw new Error(err)
+  })
+
   ipcMain.handle(IPC.comfy.healthCheck, async (_event, serverUrl?: string) => {
     const url = (serverUrl?.trim() || getSettings().serverUrl).replace(/\/$/, '')
     const client = new ComfyUIClient(url)

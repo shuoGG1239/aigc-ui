@@ -91,11 +91,17 @@ defineExpose({
           </button>
         </div>
         <div class="pool-preview-grid" :class="{ 'is-single': preview.images.length === 1 }">
-          <figure v-for="img in preview.images" :key="img.path" class="pool-preview-item">
+          <figure
+            v-for="img in preview.images"
+            :key="img.path"
+            class="pool-preview-item"
+            :data-image-path="img.path"
+          >
             <img
               class="pool-preview-img"
               :src="img.dataUrl"
               :alt="img.filename"
+              :data-image-path="img.path"
               draggable="false"
               @dragstart.prevent
             />

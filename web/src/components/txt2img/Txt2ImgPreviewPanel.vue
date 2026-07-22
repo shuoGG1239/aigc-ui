@@ -49,6 +49,16 @@ async function onOpenPreviewFolder(): Promise<void> {
   }
 }
 
+async function onOpenPreviewImage(): Promise<void> {
+  const path = store.selectedImage?.path
+  if (!path) return
+  try {
+    await window.api.shell.openPath(path)
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  }
+}
+
 async function onToggleImageInfo(): Promise<void> {
   if (infoOpen.value) {
     infoOpen.value = false
@@ -247,6 +257,7 @@ function onPreviewMainWheel(e: WheelEvent): void {
             :data-image-path="store.selectedImage.path"
             draggable="false"
             @dragstart.prevent
+            @click="onOpenPreviewImage"
           />
           <div v-else class="empty-state">
             <div class="title">尚未生成</div>
@@ -387,6 +398,7 @@ function onPreviewMainWheel(e: WheelEvent): void {
             type="button"
             class="result-thumb"
             :class="{ active: i === store.selectedIndex }"
+            :data-image-path="img.path"
             draggable="false"
             @click="store.selectImage(i)"
             @dragstart.prevent

@@ -26,6 +26,7 @@ export const IPC = {
   },
   shell: {
     showItemInFolder: 'shell:showItemInFolder',
+    openPath: 'shell:openPath',
   },
   comfy: {
     healthCheck: 'comfy:healthCheck',

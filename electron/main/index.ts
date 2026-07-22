@@ -82,7 +82,7 @@ function createWindow(): void {
     findBar.prefetch()
   })
 
-  // 右键菜单：查看词条 / 格式化 Prompt / 复制元数据 / 检查元素（剪切复制粘贴用快捷键）
+  // 右键菜单：查看词条 / 格式化 Prompt / 查看图片 / 复制元数据 / 检查元素（剪切复制粘贴用快捷键）
   mainWindow.webContents.on('context-menu', async (_event, params) => {
     const win = mainWindow
     if (!win) return
@@ -93,11 +93,11 @@ function createWindow(): void {
       const hit = (await win.webContents.executeJavaScript(
         `(() => {
           const at = document.elementFromPoint(${params.x}, ${params.y});
-          const img = at && typeof at.closest === 'function'
-            ? at.closest('img[data-image-path]')
+          const pathEl = at && typeof at.closest === 'function'
+            ? at.closest('[data-image-path]')
             : null;
-          const imagePath = img && typeof img.getAttribute === 'function'
-            ? img.getAttribute('data-image-path')
+          const imagePath = pathEl && typeof pathEl.getAttribute === 'function'
+            ? pathEl.getAttribute('data-image-path')
             : null;
           let promptField = null;
           const fieldEl = at && typeof at.closest === 'function'
@@ -149,12 +149,18 @@ function createWindow(): void {
     }
 
     if (imagePath) {
-      const pathForCopy = imagePath
+      const pathForImage = imagePath
+      template.push({
+        label: '查看图片',
+        click: () => {
+          void shell.openPath(pathForImage)
+        },
+      })
       template.push({
         label: '复制元数据',
         click: () => {
           try {
-            const buf = readFileSync(pathForCopy)
+            const buf = readFileSync(pathForImage)
             const info = extractPngInfo(buf)
             clipboard.writeText(JSON.stringify(info))
             win.webContents.send(IPC.image.metadataCopied, { ok: true })

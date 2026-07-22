@@ -498,6 +498,7 @@ defineExpose({
             :key="path"
             type="button"
             class="param-history-preview-thumb"
+            :data-image-path="thumbCache[path] ? path : undefined"
             :disabled="thumbCache[path] === null"
             :title="thumbCache[path] === null ? '预览图已失效' : '在预览区显示'"
             @click.stop="onPreviewThumbClick(path)"
@@ -505,6 +506,7 @@ defineExpose({
             <img
               v-if="thumbCache[path]"
               :src="thumbCache[path]!"
+              :data-image-path="path"
               alt=""
               draggable="false"
             />

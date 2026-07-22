@@ -60,6 +60,7 @@ declare global {
       }
       shell: {
         showItemInFolder: (filePath: string) => Promise<void>
+        openPath: (filePath: string) => Promise<void>
       }
       comfy: {
         healthCheck: (serverUrl?: string) => Promise<HealthResult>
