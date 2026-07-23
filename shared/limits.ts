@@ -24,15 +24,14 @@ export function clampClipSkip(value: unknown, fallback: number): number {
 }
 
 /** Non-starred param-history cap (starred are kept in addition). */
-export const PARAM_HISTORY_MAX_DEFAULT = 100
-export const PARAM_HISTORY_MAX_MIN = 10
-export const PARAM_HISTORY_MAX_MAX = 500
+export const PARAM_HISTORY_MAX_DEFAULT = 500
 
+/** Parse user/settings value; invalid or negative → fallback. No min/max cap. */
 export function clampParamHistoryMax(
   value: unknown,
   fallback = PARAM_HISTORY_MAX_DEFAULT,
 ): number {
   const n = Math.floor(Number(value))
-  if (!Number.isFinite(n)) return fallback
-  return Math.min(PARAM_HISTORY_MAX_MAX, Math.max(PARAM_HISTORY_MAX_MIN, n))
+  if (!Number.isFinite(n) || n < 0) return fallback
+  return n
 }

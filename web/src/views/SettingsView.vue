@@ -3,12 +3,7 @@ import { ref, watch } from 'vue'
 import { IconFolderPick, IconSave } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
 import { DEFAULT_SERVER_URL } from '@shared/app-defaults'
-import {
-  clampParamHistoryMax,
-  PARAM_HISTORY_MAX_DEFAULT,
-  PARAM_HISTORY_MAX_MAX,
-  PARAM_HISTORY_MAX_MIN,
-} from '@shared/limits'
+import { clampParamHistoryMax, PARAM_HISTORY_MAX_DEFAULT } from '@shared/limits'
 import { useSettingsStore } from '@/stores/settings'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 
@@ -169,10 +164,7 @@ async function onSaveParamHistoryMax(): Promise<void> {
 
     <section class="detail-panel settings-panel">
       <div class="panel-header settings-header">
-        <div
-          class="panel-title"
-          :title="`非收藏参数历史最多保留条数（${PARAM_HISTORY_MAX_MIN}–${PARAM_HISTORY_MAX_MAX}）；收藏不计入`"
-        >
+        <div class="panel-title" title="非收藏参数历史最多保留条数；收藏不计入">
           参数历史上限
         </div>
         <div class="path-row settings-path">
@@ -180,8 +172,7 @@ async function onSaveParamHistoryMax(): Promise<void> {
             v-model="paramHistoryMaxDraft"
             class="input"
             type="number"
-            :min="PARAM_HISTORY_MAX_MIN"
-            :max="PARAM_HISTORY_MAX_MAX"
+            min="0"
             step="1"
             :placeholder="String(PARAM_HISTORY_MAX_DEFAULT)"
             title="非收藏参数历史最多保留条数；收藏不计入"
