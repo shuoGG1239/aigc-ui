@@ -1985,6 +1985,36 @@ body.is-resizing-split * {
   min-height: 24px;
 }
 
+.param-history-preview-head-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.param-history-preview-eye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  color: var(--text-soft);
+  line-height: 0;
+}
+
+.param-history-preview-eye:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.param-history-preview-eye:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .param-history-preview-label {
   font-size: 0.6875rem;
   font-weight: 600;

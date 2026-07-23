@@ -1,4 +1,5 @@
 /** Shared SVG icon components — add new icons here. */
+export { default as IconEye } from './IconEye.vue'
 export { default as IconFolderPick } from './IconFolderPick.vue'
 export { default as IconMoon } from './IconMoon.vue'
 export { default as IconSave } from './IconSave.vue'

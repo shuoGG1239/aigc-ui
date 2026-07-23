@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { IconStar } from '@/components/icons'
+import { IconEye, IconStar } from '@/components/icons'
 import { useToast } from '@/composables/useToast'
 import { useTxt2ImgStore } from '@/stores/txt2img'
 import { fuzzyMatches, fuzzyParts } from '@/utils/fuzzy'
@@ -202,6 +202,15 @@ function shiftPreviewPage(delta: number): void {
   void loadThumbs(pagedPreviewPaths.value)
 }
 
+/** Wheel on 产出预览 → previous / next page. */
+function onPreviewSectionWheel(e: WheelEvent): void {
+  if (previewPageCount.value <= 1) return
+  const delta = e.deltaY || e.deltaX
+  if (!delta) return
+  e.preventDefault()
+  shiftPreviewPage(delta > 0 ? 1 : -1)
+}
+
 function onItemLeave(): void {
   if (hoverTimer.value) {
     clearTimeout(hoverTimer.value)
@@ -263,6 +272,40 @@ async function onPreviewThumbClick(path: string): Promise<void> {
     store.prependResults([
       { path: img.path, dataUrl: img.dataUrl, filename: img.filename },
     ])
+    close()
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  }
+}
+
+async function onAppendAllPreviews(): Promise<void> {
+  const paths = previewPaths.value
+  if (!paths.length) {
+    toast.info('暂无预览图')
+    return
+  }
+  try {
+    const images: { path: string; filename: string; dataUrl: string }[] = []
+    for (const path of paths) {
+      try {
+        const imgs = await window.api.image.loadPreviewFromPath(path, 1)
+        const img = imgs[0]
+        if (!img?.dataUrl) {
+          thumbCache.value = { ...thumbCache.value, [path]: null }
+          continue
+        }
+        thumbCache.value = { ...thumbCache.value, [path]: img.dataUrl }
+        images.push({ path: img.path, dataUrl: img.dataUrl, filename: img.filename })
+      } catch {
+        thumbCache.value = { ...thumbCache.value, [path]: null }
+      }
+    }
+    if (!images.length) {
+      toast.error('预览图已失效')
+      return
+    }
+    store.prependResults(images)
+    toast.ok(images.length === 1 ? '已加入预览' : `已加入 ${images.length} 张预览`)
     close()
   } catch (err) {
     toast.error(err instanceof Error ? err.message : String(err))
@@ -446,9 +489,21 @@ defineExpose({
           previewModelLabel
         }}</span>
       </div>
-      <div class="param-history-preview-section">
+      <div class="param-history-preview-section" @wheel="onPreviewSectionWheel">
         <div class="param-history-preview-head">
-          <div class="param-history-preview-label">产出预览</div>
+          <div class="param-history-preview-head-start">
+            <div class="param-history-preview-label">产出预览</div>
+            <button
+              type="button"
+              class="param-history-preview-eye"
+              title="全部加入预览区"
+              aria-label="全部加入预览区"
+              :disabled="!previewPaths.length"
+              @click.stop="onAppendAllPreviews"
+            >
+              <IconEye :size="13" />
+            </button>
+          </div>
           <div v-if="showPreviewPager" class="param-history-preview-pager">
             <button
               type="button"

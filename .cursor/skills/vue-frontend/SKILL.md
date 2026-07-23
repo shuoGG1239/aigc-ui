@@ -129,6 +129,7 @@ app-frame (column, 100%)
 | 清空预览 / 清空日志 | 粉碎机（`IconShredder`） |
 | 打开资源管理器 | 文件夹 |
 | 选择文件夹 | 文件夹 + 指针（`IconFolderPick`） |
+| 预览 / 查看关联图 | 眼睛（`IconEye`） |
 | 格式化提示词 | 文字 `{}`（`.btn-icon-braces`，mono） |
 | 关闭 Toast | 细线叉 SVG |
 

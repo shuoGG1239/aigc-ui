@@ -346,9 +346,12 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     selectedIndex.value = 0
     lastSeed.value = null
     lastPromptId.value = ''
-    status.value = 'idle'
-    errorMessage.value = ''
-    progress.value = null
+    // Keep generate-in-progress UI; only reset status after a finished run.
+    if (status.value !== 'running') {
+      status.value = 'idle'
+      errorMessage.value = ''
+      progress.value = null
+    }
   }
 
   function setResults(images: ResultImage[]): void {
