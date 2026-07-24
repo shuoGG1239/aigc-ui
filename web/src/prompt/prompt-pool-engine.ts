@@ -11,7 +11,7 @@ import {
   sampleProgramPool,
   type ProgramPoolContext,
 } from '@shared/program-pools'
-import { splitPipeList } from '@shared/prompt-syntax'
+import { splitChoiceList } from '@shared/prompt-syntax'
 import {
   clampCount,
   type PromptPool,
@@ -47,7 +47,7 @@ export function nextPoolPrompt(
 
 /**
  * Literal / choice prompt for `<random:xxx:…>`.
- * `prompt` may be `a|b|c` (empty branch = omit); count > 1 avoids repeats until exhausted.
+ * `prompt` may be `a|b|c` or `a,b,c` (no top-level `|` → comma); empty branch = omit.
  */
 export function nextLiteralPrompt(
   prompt: string,
@@ -55,7 +55,7 @@ export function nextLiteralPrompt(
   counts: number[] = [1],
   strengths?: number[],
 ): string {
-  const choices = splitPipeList(prompt)
+  const choices = splitChoiceList(prompt)
   // All-empty (e.g. `<|>`) still counts as valid branches.
   if (!choices.length) return ''
   const count = resolveSampleCount(counts)

@@ -32,7 +32,9 @@ export function clampCount(n: number): number {
 export {
   findAngleTagClose,
   isAngleTagOpen,
+  splitChoiceList,
   splitColonList,
+  splitCommaList,
   splitPipeList,
 } from './prompt-syntax'
 

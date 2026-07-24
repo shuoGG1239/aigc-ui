@@ -84,6 +84,35 @@ export function splitPipeList(raw: string): string[] {
 }
 
 /**
+ * Split on `,` (fullwidth `，` accepted) outside nested angle tags and `` `...` ``.
+ * Empty segments are kept.
+ */
+export function splitCommaList(raw: string): string[] {
+  return splitOutsideTags(raw, (ch) => ch === ',' || ch === '，', true)
+}
+
+function hasTopLevelPipe(raw: string): boolean {
+  const s = String(raw || '')
+  const state: AngleScanState = { depth: 0, inQuote: false }
+  for (let i = 0; i < s.length; i++) {
+    const kind = advanceAngleScan(s, i, state)
+    if (kind === 'plain' && state.depth === 0 && (s[i] === '|' || s[i] === '｜')) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Choice / shuffle segments: top-level `|` wins; otherwise `,` is the separator.
+ * e.g. `a,b,c` ≡ `a|b|c`; `a,b|c` → `a,b` / `c`; nested pipes ignored for the decision.
+ */
+export function splitChoiceList(raw: string): string[] {
+  const s = String(raw || '')
+  return hasTopLevelPipe(s) ? splitPipeList(s) : splitCommaList(s)
+}
+
+/**
  * Split on `:` outside nested angle tags and `` `...` `` quotes.
  * Used for `<pool:name:2:0.8>` / `<pool:<random:a|b>:0.8>`.
  */

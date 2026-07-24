@@ -3,8 +3,8 @@ import { sampleWithoutReplacement } from '@shared/pick'
 import {
   findAngleTagClose,
   isAngleTagOpen,
+  splitChoiceList,
   splitColonList,
-  splitPipeList,
 } from '@shared/prompt-syntax'
 import {
   parseCountsInput,
@@ -93,10 +93,13 @@ interface ExpandContext {
 }
 
 /**
- * Expand `<pool:…>` (prompt pool), `<random:…>` (literal), and `<shuffle:…>` (pipe segments).
+ * Expand `<pool:…>` (prompt pool), `<random:…>` (literal), and `<shuffle:…>` (segments).
+ * Choice split: top-level `|` wins; otherwise `,` separates
+ * (`<random:a,b,c>` ≡ `<random:a|b|c>`; `<random:a,b|c>` → `a,b` or `c`).
  * Supports nesting, e.g. `<random:<pool:a>|<pool:b>>`,
  * `<pool:<random:name_a|name_b>>`,
- * `<shuffle:1girl|<pool:outfit>, smile|outdoors>` (expand each segment, then shuffle order).
+ * `<shuffle:1girl|<pool:outfit>, smile|outdoors>`,
+ * `<random:a,b,<random:d|e>>`.
  * Outer tag chooses structure first, then inner expands.
  * `` `...` `` quotes emit interior literally (no tag expand), e.g.
  * `<random:`<pool:a>`|`<pool:b>`>`.
@@ -207,7 +210,7 @@ function expandPoolBody(body: string, ctx: ExpandContext, depth: number): string
 
 function expandRandomBody(body: string, ctx: ExpandContext, depth: number): string {
   const { name, counts, strengths } = parsePlaceholderBody(body)
-  const branches = splitPipeList(name)
+  const branches = splitChoiceList(name)
   if (!branches.length) return ''
   const count = resolveSampleCount(counts)
   const picked: string[] = []
@@ -218,9 +221,9 @@ function expandRandomBody(body: string, ctx: ExpandContext, depth: number): stri
   return joinLiteralPromptParts(picked, ctx.family, strengths)
 }
 
-/** Pipe-split → expand each segment → Fisher–Yates shuffle → join with `, `. */
+/** Choice-split → expand each segment → Fisher–Yates shuffle → join with `, `. */
 function expandShuffleBody(body: string, ctx: ExpandContext, depth: number): string {
-  const segments = splitPipeList(body)
+  const segments = splitChoiceList(body)
   if (!segments.length) return ''
   const expanded: string[] = []
   for (const seg of segments) {

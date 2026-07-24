@@ -8,6 +8,8 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "vue-tsc --noEmit -p web/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "mock:comfyui": "node scripts/mock-comfyui-server.mjs"
   },
   "dependencies": {
@@ -23,6 +25,7 @@
     "electron-vite": "^3.0.0",
     "typescript": "^5.8.2",
     "vite": "^6.2.2",
+    "vitest": "^4.1.10",
     "vue-tsc": "^2.2.8"
   }
 }

@@ -37,6 +37,7 @@ Token 细节见 [tokens.md](tokens.md)。
 | UI 库 | **禁止** Element Plus / Ant Design / 任何第三方 Design System |
 
 改完 `web/` → **必须** 在仓库根执行 `npm run build`（electron-vite）直到通过。
+改提示词语法（`shared/prompt-syntax` / `web/src/prompt/prompt-template`）→ 另跑 `npm test`。
 
 ### 源码地图（简）
 

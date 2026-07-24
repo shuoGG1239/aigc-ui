@@ -558,7 +558,7 @@ function onNumberWheel(
                       v-model="syntaxTryInput"
                       type="text"
                       spellcheck="false"
-                      placeholder="语法测试 <random:a|b> / <shuffle:a|b|c> / <pool:chara>"
+                      placeholder="语法测试 <random:a|b> / <pool:chara>"
                       aria-label="试运行特殊语法"
                       @keydown.enter.prevent="onTrySyntax"
                       @click.stop
@@ -607,6 +607,14 @@ function onNumberWheel(
                     <span>等概率多选一</span>
                   </div>
                   <div class="field-help-block">
+                    <code>&lt;random:a,b,c&gt;</code>
+                    <span>无 | 时逗号等同分枝</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;random:a,b|c&gt;</code>
+                    <span>有 | 时逗号属枝内正文</span>
+                  </div>
+                  <div class="field-help-block">
                     <code>&lt;random:a|&gt;</code>
                     <span>50% 出 a，50% 空</span>
                   </div>
@@ -626,6 +634,10 @@ function onNumberWheel(
                   <div class="field-help-block">
                     <code>&lt;shuffle:a|b|c&gt;</code>
                     <span>打乱各段顺序，再用逗号拼接</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;shuffle:a,b,c&gt;</code>
+                    <span>无 | 时逗号分段</span>
                   </div>
                   <div class="field-help-block">
                     <code>&lt;shuffle:1girl|&lt;pool:outfit&gt;, smile&gt;</code>
