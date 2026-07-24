@@ -61,6 +61,7 @@ declare global {
       shell: {
         showItemInFolder: (filePath: string) => Promise<void>
         openPath: (filePath: string) => Promise<void>
+        pickDir: (opts?: { title?: string; defaultPath?: string }) => Promise<string | null>
       }
       comfy: {
         healthCheck: (serverUrl?: string) => Promise<HealthResult>
@@ -95,6 +96,10 @@ declare global {
         readMetadata: (filePath: string) => Promise<Record<string, unknown>>
         readClipboardMetadata: () => Promise<Record<string, unknown>>
         loadPreviewFromPath: (targetPath: string, limit?: number) => Promise<GeneratedImage[]>
+        resolveMovedPaths: (
+          roots: string[],
+          paths: string[],
+        ) => Promise<{ moved: Record<string, string>; missing: string[]; indexed: number }>
         onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => () => void
       }
       promptPools: {

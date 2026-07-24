@@ -106,7 +106,7 @@ app-frame (column, 100%)
 - 紧凑：`padding: 6px 12px`，`min-height: ~40px`，title ~0.8125rem
 - **充分利用 header**：左侧标题（可带 status pill），右侧 **icon 按钮组**
 - 主操作（生成 / 启动 / 停止 / 清空 / 保存）优先放 header，少占 body 纵向空间
-- 简单配置优先 **单行**：`标题 | input… | icon按钮`（见设置页输出目录）
+- 简单配置优先 **单行**：`标题 | input… | icon按钮`（见设置页）；目录路径可手改，用保存写入
 
 ---
 

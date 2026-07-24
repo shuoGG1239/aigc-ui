@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs'
 import { ComfyUIClient } from './comfyui'
 import { readClipboardPngMetadata } from './clipboard-png'
 import { extractPngInfo } from './png-info'
+import { resolveMovedImagePaths } from './png-index'
 import { getSettings, setSettings, defaultOutputDir, defaultPromptPreviewDir } from './settings'
 import { resolvePromptPreview } from './prompt-preview'
 import {
@@ -185,6 +186,30 @@ export function registerIpc(opts: {
 
     return entries.map(({ path, filename }) => toImage(path, filename))
   })
+
+  ipcMain.handle(IPC.shell.pickDir, async (_event, opts?: { title?: string; defaultPath?: string }) => {
+    const win = getMainWindow()
+    if (!win) return null
+    const result = await dialog.showOpenDialog(win, {
+      title: opts?.title?.trim() || '选择目录',
+      defaultPath: opts?.defaultPath?.trim() || undefined,
+      properties: ['openDirectory'],
+    })
+    if (result.canceled || !result.filePaths[0]) return null
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle(
+    IPC.image.resolveMovedPaths,
+    async (_event, roots: string[], paths: string[]) => {
+      const rootList = Array.isArray(roots) ? roots.map((r) => String(r || '').trim()).filter(Boolean) : []
+      const pathList = Array.isArray(paths) ? paths.map((p) => String(p || '').trim()).filter(Boolean) : []
+      if (!rootList.length) {
+        throw new Error('请至少选择一个扫描目录')
+      }
+      return resolveMovedImagePaths(rootList, pathList)
+    },
+  )
 
   ipcMain.handle(IPC.shell.showItemInFolder, async (_event, filePath: string) => {
     const target = filePath?.trim()

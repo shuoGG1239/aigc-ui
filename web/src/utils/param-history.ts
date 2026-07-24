@@ -207,6 +207,53 @@ export function attachParamHistoryPreviews(
   return changed ? next : entries
 }
 
+/** Collect unique preview paths across history (for batch path repair). */
+export function collectParamHistoryPreviewPaths(entries: ParamHistoryEntry[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const e of entries) {
+    for (const p of e.previewPaths ?? []) {
+      const t = p.trim()
+      if (!t || seen.has(t)) continue
+      seen.add(t)
+      out.push(t)
+    }
+  }
+  return out
+}
+
+/**
+ * Rewrite missing/moved preview paths using `moved` (old → new).
+ * Dedupes within each entry after remap.
+ */
+export function applyPreviewPathMoves(
+  entries: ParamHistoryEntry[],
+  moved: Record<string, string>,
+): { entries: ParamHistoryEntry[]; fixed: number } {
+  const keys = Object.keys(moved)
+  if (!keys.length) return { entries, fixed: 0 }
+  let fixed = 0
+  const next = entries.map((e) => {
+    if (!e.previewPaths?.length) return e
+    let changed = false
+    const remapped: string[] = []
+    const seen = new Set<string>()
+    for (const p of e.previewPaths) {
+      const to = moved[p] ?? p
+      if (to !== p) {
+        fixed++
+        changed = true
+      }
+      if (seen.has(to)) continue
+      seen.add(to)
+      remapped.push(to)
+      if (remapped.length >= PARAM_HISTORY_PREVIEW_MAX) break
+    }
+    return changed ? { ...e, previewPaths: remapped } : e
+  })
+  return { entries: next, fixed }
+}
+
 export function promptSummary(prompt: string, maxLen = 56): string {
   const text = prompt.replace(/\s+/g, ' ').trim()
   if (!text) return '(空 Prompt)'

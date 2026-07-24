@@ -146,6 +146,13 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     saveParamHistory(paramHistory.value, max)
   }
 
+  /** Replace history list (e.g. after preview-path repair) and persist. */
+  function replaceParamHistory(entries: ParamHistoryEntry[]): void {
+    const max = historyMax()
+    paramHistory.value = trimParamHistory(entries, max)
+    saveParamHistory(paramHistory.value, max)
+  }
+
   function expandField(template: string): string {
     if (!hasPromptPlaceholders(template)) return template
     const poolStore = usePromptPoolStore()
@@ -388,6 +395,7 @@ export const useTxt2ImgStore = defineStore('txt2img', () => {
     restoreHistory,
     toggleHistoryStar,
     applyParamHistoryMax,
+    replaceParamHistory,
     generate,
     cancel,
     clearResults,

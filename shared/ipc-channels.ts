@@ -27,6 +27,7 @@ export const IPC = {
   shell: {
     showItemInFolder: 'shell:showItemInFolder',
     openPath: 'shell:openPath',
+    pickDir: 'shell:pickDir',
   },
   comfy: {
     healthCheck: 'comfy:healthCheck',
@@ -53,6 +54,7 @@ export const IPC = {
     readMetadata: 'image:readMetadata',
     readClipboardMetadata: 'image:readClipboardMetadata',
     loadPreviewFromPath: 'image:loadPreviewFromPath',
+    resolveMovedPaths: 'image:resolveMovedPaths',
     metadataCopied: 'image:metadata-copied',
   },
   find: {

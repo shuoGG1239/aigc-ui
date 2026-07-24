@@ -9,7 +9,11 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['shared/**/*.test.ts', 'web/src/prompt/**/*.test.ts'],
+    include: [
+      'shared/**/*.test.ts',
+      'web/src/prompt/**/*.test.ts',
+      'web/src/utils/**/*.test.ts',
+    ],
     environment: 'node',
   },
 })

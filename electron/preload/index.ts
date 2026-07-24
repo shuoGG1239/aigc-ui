@@ -28,6 +28,8 @@ contextBridge.exposeInMainWorld('api', {
     showItemInFolder: (filePath: string) =>
       ipcRenderer.invoke(IPC.shell.showItemInFolder, filePath),
     openPath: (filePath: string) => ipcRenderer.invoke(IPC.shell.openPath, filePath),
+    pickDir: (opts?: { title?: string; defaultPath?: string }) =>
+      ipcRenderer.invoke(IPC.shell.pickDir, opts),
   },
   comfy: {
     healthCheck: (serverUrl?: string) => ipcRenderer.invoke(IPC.comfy.healthCheck, serverUrl),
@@ -96,6 +98,8 @@ contextBridge.exposeInMainWorld('api', {
     readClipboardMetadata: () => ipcRenderer.invoke(IPC.image.readClipboardMetadata),
     loadPreviewFromPath: (targetPath: string, limit?: number) =>
       ipcRenderer.invoke(IPC.image.loadPreviewFromPath, targetPath, limit),
+    resolveMovedPaths: (roots: string[], paths: string[]) =>
+      ipcRenderer.invoke(IPC.image.resolveMovedPaths, roots, paths),
     onMetadataCopied: (cb: (result: { ok: boolean; message?: string }) => void) => {
       const handler = (_e: IpcRendererEvent, result: { ok: boolean; message?: string }) => cb(result)
       ipcRenderer.on(IPC.image.metadataCopied, handler)
