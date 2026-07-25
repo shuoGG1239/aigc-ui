@@ -19,6 +19,46 @@ export const SYNTAX_COMPLETIONS = [
   { key: 'shuffle', label: '<shuffle:>', insert: '<shuffle:>', meta: '打乱顺序' },
 ] as const
 
+/** Separators between tag tokens in normal prompt text. */
+function isPromptTagSep(ch: string): boolean {
+  return ch === ',' || ch === '\n' || ch === '\r'
+}
+
+/** Separators between choice segments inside `<random:>` / `<shuffle:>`. */
+function isChoiceTagSep(ch: string): boolean {
+  return ch === ',' || ch === '，' || ch === '|' || ch === '｜' || ch === '\n' || ch === '\r'
+}
+
+/**
+ * Tag token immediately before `pos`, scanning back to `minStart` with `isSep`.
+ */
+function tagTokenAt(
+  text: string,
+  pos: number,
+  minStart: number,
+  isSep: (ch: string) => boolean,
+): CaretToken | null {
+  let start = minStart
+  for (let i = pos - 1; i >= minStart; i--) {
+    if (isSep(text[i]!)) {
+      start = i + 1
+      break
+    }
+  }
+  while (start < pos && /\s/.test(text[start]!)) start++
+
+  let raw = text.slice(start, pos)
+  // Strip incomplete / complete weight wrappers for the search query
+  raw = raw.replace(/^[\(\[\{]+/, '')
+  const weightIdx = raw.lastIndexOf(':')
+  if (weightIdx > 0 && /^[\d.]*$/.test(raw.slice(weightIdx + 1))) {
+    raw = raw.slice(0, weightIdx)
+  }
+  const query = raw.trim()
+  if (!query) return null
+  return { mode: 'tag', start, end: pos, query }
+}
+
 /**
  * Resolve the token being typed at `caret` for tag / LoRA / syntax autocomplete.
  */
@@ -45,32 +85,17 @@ export function getCaretToken(text: string, caret: number): CaretToken | null {
       if (syn) {
         return { mode: 'syntax', start: lt, end: pos, query: syn[1].toLowerCase() }
       }
-      // e.g. <pool: / <random: / <shuffle: — not tag-complete inside
+      // `<random:…` / `<shuffle:…` → tag complete current choice segment
+      const choice = /^<(random|shuffle):\s*/i.exec(frag)
+      if (choice) {
+        return tagTokenAt(text, pos, lt + choice[0].length, isChoiceTagSep)
+      }
+      // e.g. <pool:name — pool key, not danbooru tag complete
       return null
     }
   }
 
-  let start = 0
-  for (let i = before.length - 1; i >= 0; i--) {
-    const ch = before[i]
-    if (ch === ',' || ch === '\n' || ch === '\r') {
-      start = i + 1
-      break
-    }
-  }
-  while (start < pos && /\s/.test(text[start])) start++
-
-  let raw = before.slice(start)
-  // Strip incomplete / complete weight wrappers for the search query
-  raw = raw.replace(/^[\(\[\{]+/, '')
-  const weightIdx = raw.lastIndexOf(':')
-  if (weightIdx > 0 && /^[\d.]*$/.test(raw.slice(weightIdx + 1))) {
-    raw = raw.slice(0, weightIdx)
-  }
-  const query = raw.trim()
-  if (!query) return null
-
-  return { mode: 'tag', start, end: pos, query }
+  return tagTokenAt(text, pos, 0, isPromptTagSep)
 }
 
 export function formatTagInsert(name: string, family: 'anima' | 'sdxl'): string {
