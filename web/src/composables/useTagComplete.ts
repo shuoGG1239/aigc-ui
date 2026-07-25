@@ -25,13 +25,15 @@ import {
   formatLoraInsert,
   formatTagInsert,
   getCaretToken,
+  searchPoolCompletions,
   searchSyntaxCompletions,
   type CaretToken,
 } from '@/prompt/tag-complete/token'
+import { usePromptPoolStore } from '@/stores/prompt-pool'
 import { fuzzyParts } from '@/utils/fuzzy'
 
 export interface SuggestItem {
-  kind: 'tag' | 'lora' | 'syntax'
+  kind: 'tag' | 'lora' | 'syntax' | 'pool'
   key: string
   label: string
   meta: string
@@ -52,6 +54,7 @@ export interface UseTagCompleteOptions {
 
 export function useTagComplete(options: UseTagCompleteOptions) {
   const { textareaRef, model, emitCaret, emitFocus, emitBlur } = options
+  const poolStore = usePromptPoolStore()
 
   const open = ref(false)
   const items = ref<SuggestItem[]>([])
@@ -154,6 +157,24 @@ export function useTagComplete(options: UseTagCompleteOptions) {
         }))
       } catch (err) {
         console.warn('[tag-complete] LoRA 列表加载失败', err)
+        next = []
+      }
+    } else if (tok.mode === 'pool') {
+      try {
+        await poolStore.hydrate()
+        if (gen !== refreshGen || document.activeElement !== ta) return
+        next = searchPoolCompletions(
+          poolStore.pools.map((p) => p.name),
+          tok.query,
+        ).map((s) => ({
+          kind: 'pool' as const,
+          key: `pool:${s.key}`,
+          label: s.label,
+          meta: s.meta,
+          insert: s.insert,
+        }))
+      } catch (err) {
+        console.warn('[tag-complete] 提示词池列表加载失败', err)
         next = []
       }
     } else {
@@ -309,6 +330,9 @@ export function useTagComplete(options: UseTagCompleteOptions) {
     // Background load only — never sync-parse on the UI thread here.
     void ensureTagDb().catch((err) => {
       console.error('[tag-complete] 词库加载失败', err)
+    })
+    void poolStore.hydrate().catch((err) => {
+      console.warn('[tag-complete] 提示词池预加载失败', err)
     })
     // Do not open suggestions on focus/click — only while typing (input).
     emitFocus(e)

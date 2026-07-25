@@ -1,13 +1,13 @@
 import { formatLoraTag } from '@shared/lora-tag'
 
-export type CompleteMode = 'tag' | 'lora' | 'syntax'
+export type CompleteMode = 'tag' | 'lora' | 'syntax' | 'pool'
 
 export interface CaretToken {
   mode: CompleteMode
   /** Range in full text to replace on accept. */
   start: number
   end: number
-  /** Query used for filtering (no `<lora:` prefix; syntax = keyword stem). */
+  /** Query used for filtering (no `<lora:` / `<pool:` prefix; syntax = keyword stem). */
   query: string
 }
 
@@ -85,12 +85,19 @@ export function getCaretToken(text: string, caret: number): CaretToken | null {
       if (syn) {
         return { mode: 'syntax', start: lt, end: pos, query: syn[1].toLowerCase() }
       }
+      // `<pool:name` → prompt-pool name completion (before counts / nested `<`)
+      if (/^<pool:/i.test(frag)) {
+        const body = frag.replace(/^<pool:/i, '')
+        if (/^[a-zA-Z0-9_-]*$/.test(body)) {
+          return { mode: 'pool', start: lt, end: pos, query: body }
+        }
+        return null
+      }
       // `<random:…` / `<shuffle:…` → tag complete current choice segment
       const choice = /^<(random|shuffle):\s*/i.exec(frag)
       if (choice) {
         return tagTokenAt(text, pos, lt + choice[0].length, isChoiceTagSep)
       }
-      // e.g. <pool:name — pool key, not danbooru tag complete
       return null
     }
   }
@@ -120,5 +127,35 @@ export function searchSyntaxCompletions(query: string): Array<{
     label: s.label,
     insert: s.insert,
     meta: s.meta,
+  }))
+}
+
+/** Filter current prompt-pool names for `<pool:…>` autocomplete. */
+export function searchPoolCompletions(
+  names: string[],
+  query: string,
+  limit = 25,
+): Array<{
+  key: string
+  label: string
+  insert: string
+  meta: string
+}> {
+  const q = query.trim().toLowerCase()
+  const hits = names.filter((n) => !q || n.toLowerCase().includes(q))
+  hits.sort((a, b) => {
+    if (!q) return a.localeCompare(b)
+    const al = a.toLowerCase()
+    const bl = b.toLowerCase()
+    const ap = al.startsWith(q) ? 0 : 1
+    const bp = bl.startsWith(q) ? 0 : 1
+    if (ap !== bp) return ap - bp
+    return a.localeCompare(b)
+  })
+  return hits.slice(0, limit).map((name) => ({
+    key: name,
+    label: name,
+    insert: `<pool:${name}>`,
+    meta: '提示词池',
   }))
 }

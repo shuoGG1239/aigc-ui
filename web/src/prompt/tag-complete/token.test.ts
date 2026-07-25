@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getCaretToken } from './token'
+import { getCaretToken, searchPoolCompletions } from './token'
 
 describe('getCaretToken', () => {
   it('completes tags inside <random:> segments', () => {
@@ -28,8 +28,27 @@ describe('getCaretToken', () => {
     expect(getCaretToken('<lora:foo', 9)).toMatchObject({ mode: 'lora', query: 'foo' })
   })
 
-  it('does not tag-complete bare <pool: prefix', () => {
-    expect(getCaretToken('<pool:cha', 9)).toBeNull()
+  it('completes pool names after <pool:', () => {
+    expect(getCaretToken('<pool:cha', 9)).toEqual({
+      mode: 'pool',
+      start: 0,
+      end: 9,
+      query: 'cha',
+    })
+  })
+
+  it('offers all pools when query is empty', () => {
+    expect(getCaretToken('<pool:', 6)).toMatchObject({ mode: 'pool', query: '' })
+  })
+
+  it('stops pool complete once counts colon is typed', () => {
+    expect(getCaretToken('<pool:chara:2', 13)).toBeNull()
+  })
+
+  it('filters pool names by query', () => {
+    const hits = searchPoolCompletions(['outfit', 'chara', 'quality'], 'cha')
+    expect(hits.map((h) => h.key)).toEqual(['chara'])
+    expect(hits[0]?.insert).toBe('<pool:chara>')
   })
 
   it('completes normal prompt tags', () => {
