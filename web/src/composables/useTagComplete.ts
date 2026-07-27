@@ -187,15 +187,16 @@ export function useTagComplete(options: UseTagCompleteOptions) {
         return
       }
       const family = toValue(options.family)
+      const tagOpts = tok.atPrefix ? { atPrefix: true } : undefined
       next = searchTags(tok.query).map((h: TagHit) => ({
         kind: 'tag' as const,
         key: `tag:${h.name}`,
-        label: formatTagInsert(h.name, family),
+        label: formatTagInsert(h.name, family, tagOpts),
         meta: formatCount(h.count),
         category: h.category,
         matchedAlias: h.matchedAlias,
         translation: h.translation,
-        insert: formatTagInsert(h.name, family),
+        insert: formatTagInsert(h.name, family, tagOpts),
       }))
     }
 

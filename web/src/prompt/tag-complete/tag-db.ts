@@ -115,16 +115,20 @@ export function preloadTagDb(): void {
   })
 }
 
-/** Normalize Latin/booru query to underscore form. */
+/** Normalize Latin/booru query to underscore form (strips leading `@`). */
 export function normalizeTagQuery(query: string): string {
-  return query.trim().toLowerCase().replace(/\s+/g, '_')
+  let q = query.trim().toLowerCase().replace(/\s+/g, '_')
+  if (q.startsWith('@')) q = q.slice(1)
+  return q
 }
 
 /** Whether query is long enough to search (CJK: 1 char; Latin: 2). */
 export function canSearchTags(query: string): boolean {
   const q = query.trim()
-  if (!q) return false
-  if (CJK_RE.test(q)) return q.length >= 1
+  if (!q || q === '@') return false
+  const body = q.startsWith('@') ? q.slice(1).trim() : q
+  if (!body) return false
+  if (CJK_RE.test(body)) return body.length >= 1
   return normalizeTagQuery(q).length >= 2
 }
 
@@ -136,7 +140,7 @@ export function searchTags(query: string, limit = 25): TagHit[] {
   const db = tags
   if (!db || !canSearchTags(query)) return []
 
-  const qRaw = query.trim().toLowerCase()
+  const qRaw = query.trim().toLowerCase().replace(/^@+/, '')
   const qTag = qRaw.replace(/\s+/g, '_')
   const qZh = qRaw
   const preferZh = CJK_RE.test(qRaw)

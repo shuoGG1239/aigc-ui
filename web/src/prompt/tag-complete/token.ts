@@ -7,8 +7,10 @@ export interface CaretToken {
   /** Range in full text to replace on accept. */
   start: number
   end: number
-  /** Query used for filtering (no `<lora:` / `<pool:` prefix; syntax = keyword stem). */
+  /** Query used for filtering (no `<lora:` / `<pool:` / leading `@` prefix; syntax = keyword stem). */
   query: string
+  /** User typed `@…` (Anima artist); insert should keep `@` for anima. */
+  atPrefix?: boolean
 }
 
 /** Angle-bracket syntax starters offered while typing `<…`. */
@@ -54,9 +56,12 @@ function tagTokenAt(
   if (weightIdx > 0 && /^[\d.]*$/.test(raw.slice(weightIdx + 1))) {
     raw = raw.slice(0, weightIdx)
   }
+  // Anima `@artist` — search without `@` (tag DB has bare names)
+  const atPrefix = raw.startsWith('@')
+  if (atPrefix) raw = raw.slice(1)
   const query = raw.trim()
   if (!query) return null
-  return { mode: 'tag', start, end: pos, query }
+  return { mode: 'tag', start, end: pos, query, ...(atPrefix ? { atPrefix: true } : {}) }
 }
 
 /**
@@ -105,9 +110,15 @@ export function getCaretToken(text: string, caret: number): CaretToken | null {
   return tagTokenAt(text, pos, 0, isPromptTagSep)
 }
 
-export function formatTagInsert(name: string, family: 'anima' | 'sdxl'): string {
-  if (family === 'anima') return name.replace(/_/g, ' ')
-  return name
+export function formatTagInsert(
+  name: string,
+  family: 'anima' | 'sdxl',
+  opts?: { atPrefix?: boolean },
+): string {
+  let out = family === 'anima' ? name.replace(/_/g, ' ') : name
+  // Keep `@` only for Anima (SDXL artists are bare names).
+  if (opts?.atPrefix && family === 'anima') out = `@${out}`
+  return out
 }
 
 export function formatLoraInsert(fileName: string): string {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getCaretToken, searchPoolCompletions } from './token'
+import { formatTagInsert, getCaretToken, searchPoolCompletions } from './token'
 
 describe('getCaretToken', () => {
   it('completes tags inside <random:> segments', () => {
@@ -59,5 +59,21 @@ describe('getCaretToken', () => {
       end: text.length,
       query: 'sm',
     })
+  })
+
+  it('strips leading @ for artist search query', () => {
+    const text = '1girl, @wlo'
+    expect(getCaretToken(text, text.length)).toEqual({
+      mode: 'tag',
+      start: 7,
+      end: text.length,
+      query: 'wlo',
+      atPrefix: true,
+    })
+  })
+
+  it('keeps @ on anima insert when atPrefix', () => {
+    expect(formatTagInsert('wlop', 'anima', { atPrefix: true })).toBe('@wlop')
+    expect(formatTagInsert('wlop', 'sdxl', { atPrefix: true })).toBe('wlop')
   })
 })
