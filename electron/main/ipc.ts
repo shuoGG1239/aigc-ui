@@ -23,8 +23,10 @@ import {
   type PromptPoolFile,
 } from './prompt-pools'
 import { generateTxt2Img, type ActiveClientHolder } from './txt2img-generate'
+import { runWd14Tag } from './wd14-tag'
 import type { FindBarHost } from './find-bar'
 import { IPC } from '@shared/ipc-channels'
+import type { Wd14TagParams } from '@shared/ipc-types'
 import { chromeForTheme, isThemeMode, type ThemeMode } from '@shared/theme'
 
 function applyWindowChrome(win: BrowserWindow, theme: ThemeMode): void {
@@ -150,27 +152,48 @@ export function registerIpc(opts: {
       throw new Error('路径不存在')
     }
 
+    const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'])
+    const mimeFor = (ext: string) => {
+      switch (ext) {
+        case '.jpg':
+        case '.jpeg':
+          return 'image/jpeg'
+        case '.webp':
+          return 'image/webp'
+        case '.gif':
+          return 'image/gif'
+        case '.bmp':
+          return 'image/bmp'
+        default:
+          return 'image/png'
+      }
+    }
+
     const st = statSync(target)
-    const toImage = (path: string, filename: string) => ({
-      path,
-      filename: filename || basename(path),
-      dataUrl: `data:image/png;base64,${readFileSync(path).toString('base64')}`,
-    })
+    const toImage = (path: string, filename: string) => {
+      const ext = extname(path).toLowerCase()
+      return {
+        path,
+        filename: filename || basename(path),
+        dataUrl: `data:${mimeFor(ext)};base64,${readFileSync(path).toString('base64')}`,
+      }
+    }
 
     if (st.isFile()) {
-      if (extname(target).toLowerCase() !== '.png') {
-        throw new Error('仅支持 PNG 图片或包含 PNG 的文件夹')
+      const ext = extname(target).toLowerCase()
+      if (!IMAGE_EXTS.has(ext)) {
+        throw new Error('仅支持 PNG / JPG / WebP 等常见图片，或包含这些文件的文件夹')
       }
       return [toImage(target, basename(target))]
     }
 
     if (!st.isDirectory()) {
-      throw new Error('请拖入 PNG 图片或文件夹')
+      throw new Error('请拖入图片或文件夹')
     }
 
     const max = Math.max(1, Math.min(Math.floor(limit) || 10, 24))
     const entries = readdirSync(target)
-      .filter((name) => extname(name).toLowerCase() === '.png')
+      .filter((name) => IMAGE_EXTS.has(extname(name).toLowerCase()))
       .map((name) => {
         const path = join(target, name)
         const fileSt = statSync(path)
@@ -181,10 +204,14 @@ export function registerIpc(opts: {
       .slice(0, max)
 
     if (!entries.length) {
-      throw new Error('文件夹内没有 PNG 图片')
+      throw new Error('文件夹内没有可预览的图片')
     }
 
     return entries.map(({ path, filename }) => toImage(path, filename))
+  })
+
+  ipcMain.handle(IPC.imageTools.wd14Tag, async (_event, params: Wd14TagParams) => {
+    return runWd14Tag(params)
   })
 
   ipcMain.handle(IPC.shell.pickDir, async (_event, opts?: { title?: string; defaultPath?: string }) => {

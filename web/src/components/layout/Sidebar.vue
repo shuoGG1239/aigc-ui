@@ -9,6 +9,7 @@ const { isDark, toggleTheme } = useTheme()
 
 const primaryItems = [
   { path: '/', label: '文生图', icon: 'spark' as const },
+  { path: '/image-tools', label: '图像工具', icon: 'image' as const },
   { path: '/pools', label: '提示词池', icon: 'book' as const },
   { path: '/console', label: '控制台', icon: 'console' as const },
 ]
@@ -46,6 +47,31 @@ function go(path: string): void {
           <path
             d="M18 15.5l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1z"
             fill="currentColor"
+          />
+        </svg>
+        <svg
+          v-else-if="item.icon === 'image'"
+          class="nav-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect
+            x="3.5"
+            y="5"
+            width="17"
+            height="14"
+            rx="2"
+            stroke="currentColor"
+            stroke-width="1.6"
+          />
+          <circle cx="9" cy="10" r="1.6" fill="currentColor" />
+          <path
+            d="M4.5 16.5l4.2-4.2a1.2 1.2 0 0 1 1.7 0L14 16l2.1-2.1a1.2 1.2 0 0 1 1.7 0l1.7 1.7"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           />
         </svg>
         <svg

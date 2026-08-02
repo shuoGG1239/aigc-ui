@@ -114,6 +114,26 @@ export interface HealthResult {
   message: string
 }
 
+/** WD14 tag reverse-prompt (image tools). */
+export interface Wd14TagParams {
+  imagePath: string
+  /** e.g. wd-swinv2-tagger-v3 */
+  model: string
+  threshold: number
+  characterThreshold: number
+  replaceUnderscore: boolean
+  trailingComma: boolean
+  excludeTags: string
+}
+
+export interface Wd14TagResult {
+  promptId: string
+  tags: string
+  model: string
+  imagePath: string
+  filename: string
+}
+
 export interface PromptPreviewImage {
   path: string
   dataUrl: string

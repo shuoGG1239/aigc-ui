@@ -35,6 +35,9 @@ contextBridge.exposeInMainWorld('api', {
     healthCheck: (serverUrl?: string) => ipcRenderer.invoke(IPC.comfy.healthCheck, serverUrl),
     listModels: (folder: string) => ipcRenderer.invoke(IPC.comfy.listModels, folder),
   },
+  imageTools: {
+    wd14Tag: (params: unknown) => ipcRenderer.invoke(IPC.imageTools.wd14Tag, params),
+  },
   comfyProcess: {
     getStatus: () => ipcRenderer.invoke(IPC.comfyProcess.getStatus),
     getLogs: () => ipcRenderer.invoke(IPC.comfyProcess.getLogs),

@@ -51,7 +51,7 @@ onUnmounted(() => {
         <div class="page-view">
           <RouterView v-slot="{ Component }">
             <!-- Keep txt2img mounted so preview dataUrls are not re-decoded on every visit. -->
-            <KeepAlive :include="['Txt2ImgView']">
+            <KeepAlive :include="['Txt2ImgView', 'ImageToolsView']">
               <component :is="Component" />
             </KeepAlive>
           </RouterView>

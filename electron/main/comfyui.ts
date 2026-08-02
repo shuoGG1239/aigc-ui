@@ -339,6 +339,47 @@ export class ComfyUIClient {
     return images
   }
 
+  /**
+   * Upload a local image into ComfyUI `input/` (for LoadImage / WD14 REST).
+   * POST /upload/image
+   */
+  async uploadImage(filePath: string): Promise<{ name: string; subfolder: string; type: string }> {
+    const { readFileSync } = await import('fs')
+    const { basename } = await import('path')
+    const buf = readFileSync(filePath)
+    const form = new FormData()
+    form.append('image', new Blob([new Uint8Array(buf)]), basename(filePath))
+    form.append('overwrite', 'true')
+
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 120_000)
+    try {
+      const resp = await fetch(this.url('/upload/image'), {
+        method: 'POST',
+        body: form,
+        signal: controller.signal,
+      })
+      const text = await resp.text()
+      if (!resp.ok) {
+        throw new Error(`上传图片失败 HTTP ${resp.status}: ${text || resp.statusText}`)
+      }
+      const data = text ? (JSON.parse(text) as { name?: string; subfolder?: string; type?: string }) : {}
+      if (!data.name) throw new Error('上传图片失败：未返回文件名')
+      return {
+        name: data.name,
+        subfolder: data.subfolder ?? '',
+        type: data.type ?? 'input',
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error('上传图片超时')
+      }
+      throw err
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
   async downloadImage(filename: string, subfolder: string, folderType: string): Promise<Buffer> {
     const params = new URLSearchParams({
       filename,

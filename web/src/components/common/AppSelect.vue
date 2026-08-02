@@ -7,7 +7,7 @@ const props = withDefaults(
     modelValue: string
     options: SelectOption[]
     placeholder?: string
-    variant?: 'default' | 'compact'
+    variant?: 'default' | 'compact' | 'plain'
     disabled?: boolean
     loading?: boolean
     emptyText?: string

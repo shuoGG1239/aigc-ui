@@ -12,6 +12,8 @@ import type {
   HealthResult,
   PromptPreviewResolveResult,
   Txt2ImgParams,
+  Wd14TagParams,
+  Wd14TagResult,
 } from '../shared/ipc-types'
 import type { PromptPool } from '../shared/prompt-pool-types'
 import type { ThemeMode } from '../shared/theme'
@@ -66,6 +68,9 @@ declare global {
       comfy: {
         healthCheck: (serverUrl?: string) => Promise<HealthResult>
         listModels: (folder: string) => Promise<string[]>
+      }
+      imageTools: {
+        wd14Tag: (params: Wd14TagParams) => Promise<Wd14TagResult>
       }
       comfyProcess: {
         getStatus: () => Promise<ComfyProcessStatus>

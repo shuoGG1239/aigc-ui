@@ -15,6 +15,9 @@ export const ComfyClass = {
   PreviewImage: 'PreviewImage',
   /** Still appears in older / external graphs when parsing PNG metadata. */
   SaveImage: 'SaveImage',
+  LoadImage: 'LoadImage',
+  /** pythongosssss/ComfyUI-WD14-Tagger */
+  WD14Tagger: 'WD14Tagger|pysssss',
 } as const
 
 export type ComfyClassName = (typeof ComfyClass)[keyof typeof ComfyClass]

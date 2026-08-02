@@ -13,5 +13,7 @@ export type {
   PromptPreviewResolveResult,
   ResolvedLora,
   Txt2ImgParams,
+  Wd14TagParams,
+  Wd14TagResult,
 } from '@shared/ipc-types'
 export type { ModelFamily } from '@shared/family'

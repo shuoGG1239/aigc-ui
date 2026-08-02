@@ -1,4 +1,4 @@
-# CSS Token 速查（aigc-ui）
+# CSS Token 速查
 
 ## 完整 `:root`
 
@@ -48,7 +48,7 @@
 ```
 
 暗色层级（深→浅）：`--bg-sidebar` `#080808` → `--bg-page` `#1c1c1c` → `--bg-input` → `--bg` 面板 → `--bg-soft` → `--bg-elevated`；accent `#4d9eff`。  
-窗口铬色：`shared/theme.ts` `THEME_CHROME`（与 `--chrome-*` 同步）。侧栏太阳/月亮切换；偏好 `localStorage` `aigc-ui:theme`。
+窗口铬色与 `--chrome-*` 同步（见 `shared/theme`）。侧栏切换亮/暗；偏好存 `localStorage`。
 
 
 ## 字号惯例
@@ -92,7 +92,7 @@
 ## AppSelect 结构
 
 ```html
-<div class="app-select app-select--default|bare|compact">
+<div class="app-select app-select--default|compact|plain">
   <button class="app-select-trigger">
     <span class="app-select-value">…</span>
     <span class="app-select-chevron">▾</span>
@@ -102,4 +102,5 @@
 </div>
 ```
 
-trigger / value / option 字体与 input 一致：`mono` 12.5px。
+`default` / `compact`：trigger 与 input 一致（mono 12.5px）。  
+`plain`：标题位纯文字 + 小三角（`--font`，无边框）。

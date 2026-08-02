@@ -33,6 +33,9 @@ export const IPC = {
     healthCheck: 'comfy:healthCheck',
     listModels: 'comfy:listModels',
   },
+  imageTools: {
+    wd14Tag: 'imageTools:wd14Tag',
+  },
   comfyProcess: {
     getStatus: 'comfyProcess:getStatus',
     getLogs: 'comfyProcess:getLogs',
