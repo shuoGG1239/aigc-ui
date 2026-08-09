@@ -1,5 +1,7 @@
 /** Shared `<lora:…>` parse / format / stem (web + electron). */
 
+import { randomOne } from './pick'
+
 export interface LoraTag {
   name: string
   strengthModel: number
@@ -25,10 +27,18 @@ export function formatLoraTag(
   return `<lora:${stem}:${sm}:${sc}>`
 }
 
-function parseStrength(raw: string | undefined, fallback: number): number {
+/** Parse one strength slot: single number, or comma-list → random pick. */
+export function parseStrengthSlot(raw: string | undefined, fallback: number): number {
   if (raw === undefined || raw.trim() === '') return fallback
-  const n = Number(raw)
-  return Number.isFinite(n) ? n : fallback
+  const nums = raw
+    .split(/[,，]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map(Number)
+    .filter((n) => Number.isFinite(n))
+  if (!nums.length) return fallback
+  if (nums.length === 1) return nums[0]!
+  return randomOne(nums) ?? fallback
 }
 
 export function stripLoraTags(text: string): string {
@@ -54,8 +64,9 @@ function collectFromText(text: string, order: string[], byKey: Map<string, LoraT
     let strengthModel = 1
     let strengthClip = 1
     if (s1 !== undefined) {
-      strengthModel = parseStrength(s1, 1)
-      strengthClip = s2 !== undefined ? parseStrength(s2, strengthModel) : strengthModel
+      strengthModel = parseStrengthSlot(s1, 1)
+      // One weight list → model/clip share the same rolled value.
+      strengthClip = s2 !== undefined ? parseStrengthSlot(s2, strengthModel) : strengthModel
     }
     if (!byKey.has(key)) order.push(key)
     byKey.set(key, { name, strengthModel, strengthClip })

@@ -656,6 +656,14 @@ function onNumberWheel(
                     <code>&lt;lora:名称:0.8:0.6&gt;</code>
                     <span>model / clip 分离强度</span>
                   </div>
+                  <div class="field-help-block">
+                    <code>&lt;lora:名称:0.7,0.8,0.9,1&gt;</code>
+                    <span>强度列表随机抽一个（model=clip）</span>
+                  </div>
+                  <div class="field-help-block">
+                    <code>&lt;lora:名称:0.7,0.8:0.5,0.6&gt;</code>
+                    <span>model / clip 各自随机</span>
+                  </div>
                 </div>
               </Teleport>
             </div>

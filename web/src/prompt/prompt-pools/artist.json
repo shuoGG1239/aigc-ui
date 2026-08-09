@@ -3,7 +3,7 @@
   "entries": [
     {
       "prompt": "@akakura",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@akamoku",
@@ -11,31 +11,31 @@
     },
     {
       "prompt": "@alphonse_(white_datura)",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@ama_mitsuki",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@amagasa_yun",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@amazuyu_tatsuki",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@anmi",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@as109",
-      "weight": 50
+      "weight": 100
     },
     {
       "prompt": "@ask_(askzy)",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@azuuru",
@@ -43,59 +43,59 @@
     },
     {
       "prompt": "@bbolalus",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@bison_cangshu",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@bukurote",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@chen_bin",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@cierra_(ra-bit)",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@ciloranko",
-      "weight": 5000
+      "weight": 100
     },
     {
       "prompt": "@cogecha",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@cyenmi3",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@dampi",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@danimaru",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@daram_(shappydude)",
-      "weight": 200
+      "weight": 100
     },
     {
       "prompt": "@deadnooodles",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@dishwasher1910",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@dsmile",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@eluthel",
@@ -103,7 +103,7 @@
     },
     {
       "prompt": "@fujiyama",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@fukahire_(ruinon)",
@@ -115,7 +115,7 @@
     },
     {
       "prompt": "@fuzichoco",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@gaou_(umaiyo_puyoman)",
@@ -123,23 +123,23 @@
     },
     {
       "prompt": "@gin00",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@gomzi",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@gou_lianlian_dogface",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@hagi_(ame_hagi)",
-      "weight": 5000
+      "weight": 100
     },
     {
       "prompt": "@haimura_kiyotaka",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@hanekoto",
@@ -147,11 +147,11 @@
     },
     {
       "prompt": "@heripiro",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@himitsu_(hi_mi_tsu_2)",
-      "weight": 5000
+      "weight": 100
     },
     {
       "prompt": "@hiten_(hitenkei)",
@@ -159,31 +159,31 @@
     },
     {
       "prompt": "@hoji_(hooooooooji1029)",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@hokori_sakuni",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@houkisei",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@ibara_riato",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@icomochi",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@ideolo",
-      "weight": 4000
+      "weight": 100
     },
     {
       "prompt": "@ikeuchi_tanuma",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@infukun",
@@ -195,15 +195,15 @@
     },
     {
       "prompt": "@jako_(jakoo21)",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@jyt",
-      "weight": 5000
+      "weight": 100
     },
     {
       "prompt": "@kaede_(yumesaki_kaede)",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@kamizaki_hibana",
@@ -211,63 +211,63 @@
     },
     {
       "prompt": "@kani_biimu",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@kantoku",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@kanzaki_hiro",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@karory",
-      "weight": 200
+      "weight": 100
     },
     {
       "prompt": "@kawacy",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@kazutake_hazano",
-      "weight": 4000
+      "weight": 100
     },
     {
       "prompt": "@ke-ta",
-      "weight": 5000
+      "weight": 100
     },
     {
       "prompt": "@kedama_milk",
-      "weight": 20000
+      "weight": 100
     },
     {
       "prompt": "@liduke",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@makihitsuji",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@mankai_kaika",
-      "weight": 200
+      "weight": 100
     },
     {
       "prompt": "@mika_pikazo",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@mikaze_oto",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@mikisai",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@mikozin",
-      "weight": 700
+      "weight": 100
     },
     {
       "prompt": "@mimelond",
@@ -275,27 +275,27 @@
     },
     {
       "prompt": "@minaba_hideo",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@misaki_kurehito",
-      "weight": 50
+      "weight": 100
     },
     {
       "prompt": "@mitsumi_misato",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@miv4t",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@miwabe_sakura",
-      "weight": 200
+      "weight": 100
     },
     {
       "prompt": "@miwano_rag",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@miyoshino",
@@ -303,11 +303,11 @@
     },
     {
       "prompt": "@miyuki_(miyuki0529)",
-      "weight": 4000
+      "weight": 100
     },
     {
       "prompt": "@modare",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@monochrome",
@@ -315,35 +315,35 @@
     },
     {
       "prompt": "@morikura_en",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@muninshiki",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@muryotaro",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@nanananana",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@nanashi_(nlo)",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@nardack",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@nekojira",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@nima_(niru54)",
-      "weight": 2500
+      "weight": 100
     },
     {
       "prompt": "@ningen_mame",
@@ -355,23 +355,23 @@
     },
     {
       "prompt": "@norizc",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@noyu_(noyu23386566)",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@onineko",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@paryi",
-      "weight": 50
+      "weight": 100
     },
     {
       "prompt": "@paseri",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@pkpkpppk",
@@ -383,11 +383,11 @@
     },
     {
       "prompt": "@pottsness",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@qianqianjie",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@qinghejunzi",
@@ -395,31 +395,31 @@
     },
     {
       "prompt": "@qtonagi",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@quan_(kurisu_tina)",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@qys3",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@rei_(sanbonzakura)",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@Rella",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@reoen",
-      "weight": 2500
+      "weight": 100
     },
     {
       "prompt": "@rhasta",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@rika_(mikunopantsu)",
@@ -427,23 +427,23 @@
     },
     {
       "prompt": "@rin31153336",
-      "weight": 4000
+      "weight": 100
     },
     {
       "prompt": "@rosumerii",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@rouka_(akatyann)",
-      "weight": 2500
+      "weight": 100
     },
     {
       "prompt": "@rurudo",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@saru",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@sencha_(senta_10)",
@@ -451,35 +451,35 @@
     },
     {
       "prompt": "@senji_(tegone_spike)",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@shacho_(ko_no_ha)",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@shirabi",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@shiroshi_(denpa_eshidan)",
-      "weight": 1500
+      "weight": 100
     },
     {
       "prompt": "@sho_(sho_lwlw)",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@sincos",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@sofra",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@sogawa",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@starshadowmagician",
@@ -487,7 +487,7 @@
     },
     {
       "prompt": "@suimya",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@suzumori_uina",
@@ -495,71 +495,71 @@
     },
     {
       "prompt": "@takenoko_no_you",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@tianliang_duohe_fangdongye",
-      "weight": 5000
+      "weight": 100
     },
     {
       "prompt": "@toosaka_asagi",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@tsubasa_tsubasa",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@u_u_zan",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@wanke",
-      "weight": 3000
+      "weight": 100
     },
     {
       "prompt": "@weri",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@wlop",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@xilmo",
-      "weight": 500
+      "weight": 100
     },
     {
       "prompt": "@xiujia_yihuizi",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@yamasan",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@yoneyama_mai",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@yoru_nai",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@you_shimizu",
-      "weight": 1000
+      "weight": 100
     },
     {
       "prompt": "@yunsang",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@yuya_(night_lily)",
-      "weight": 2000
+      "weight": 100
     },
     {
       "prompt": "@zuizi",
-      "weight": 3000
+      "weight": 100
     }
   ],
   "updatedAt": 1784369238183
