@@ -8,6 +8,8 @@ export interface AppSettings {
   launchCommand: string
   /** Directory of prompt preview images (filename stem ↔ normalized prompt). */
   promptPreviewDir: string
+  /** Path to external image editor executable (e.g. Photoshop). Empty = disabled. */
+  imageEditorPath: string
   /** Max non-starred txt2img param-history entries (starred excluded). */
   paramHistoryMax: number
 }

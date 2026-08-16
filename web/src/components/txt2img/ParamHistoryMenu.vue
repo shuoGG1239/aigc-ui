@@ -226,8 +226,17 @@ function onPreviewEnter(): void {
   }
 }
 
-function onPreviewLeave(): void {
+function onPreviewLeave(e: MouseEvent): void {
+  // Native context menu often leaves relatedTarget null; keep preview visible.
+  if (e.relatedTarget === null) return
   scheduleClearHover()
+}
+
+function onPreviewContextMenu(): void {
+  if (leaveTimer.value) {
+    clearTimeout(leaveTimer.value)
+    leaveTimer.value = undefined
+  }
 }
 
 function scheduleClearHover(): void {
@@ -313,6 +322,7 @@ async function onAppendAllPreviews(): Promise<void> {
 }
 
 function onDocClick(e: MouseEvent): void {
+  if (e.button !== 0) return
   const target = e.target as Node
   if (btnRef.value?.contains(target)) return
   if (menuRef.value?.contains(target)) return
@@ -440,6 +450,7 @@ defineExpose({
       :style="previewStyle"
       @mouseenter="onPreviewEnter"
       @mouseleave="onPreviewLeave"
+      @contextmenu="onPreviewContextMenu"
     >
       <div class="param-history-preview-section">
         <div class="param-history-preview-label">Prompt</div>

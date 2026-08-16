@@ -121,6 +121,27 @@ export function registerIpc(opts: {
     }
   })
 
+  ipcMain.handle(IPC.settings.pickImageEditor, async () => {
+    const win = getMainWindow()
+    if (!win) return null
+    const current = getSettings().imageEditorPath?.trim()
+    const result = await dialog.showOpenDialog(win, {
+      title: '选择图片编辑软件',
+      defaultPath: current || undefined,
+      properties: ['openFile'],
+      filters:
+        process.platform === 'win32'
+          ? [{ name: '可执行文件', extensions: ['exe'] }]
+          : process.platform === 'darwin'
+            ? [{ name: '应用程序', extensions: ['app'] }]
+            : [{ name: '可执行文件', extensions: ['*'] }],
+    })
+    if (result.canceled || !result.filePaths[0]) {
+      return null
+    }
+    return setSettings({ imageEditorPath: result.filePaths[0] }).imageEditorPath
+  })
+
   ipcMain.handle(IPC.promptPreview.resolve, (_event, prompt: string) => resolvePromptPreview(prompt))
 
   ipcMain.handle(IPC.promptPools.list, () => listPromptPools())

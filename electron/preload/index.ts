@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('api', {
     openOutputDir: () => ipcRenderer.invoke(IPC.settings.openOutputDir),
     pickPromptPreviewDir: () => ipcRenderer.invoke(IPC.settings.pickPromptPreviewDir),
     openPromptPreviewDir: () => ipcRenderer.invoke(IPC.settings.openPromptPreviewDir),
+    pickImageEditor: () => ipcRenderer.invoke(IPC.settings.pickImageEditor),
   },
   promptPreview: {
     resolve: (prompt: string) => ipcRenderer.invoke(IPC.promptPreview.resolve, prompt),

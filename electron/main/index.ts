@@ -3,6 +3,8 @@ import { join } from 'path'
 import { readFileSync } from 'fs'
 import { extractPngInfo } from './png-info'
 import { initComfyProcess, stopComfySync } from './comfy-process'
+import { getSettings } from './settings'
+import { openImageWithEditor } from './open-image-editor'
 import { APP_DISPLAY_NAME } from '@shared/app-defaults'
 import { IPC } from '@shared/ipc-channels'
 import { THEME_CHROME } from '@shared/theme'
@@ -82,7 +84,7 @@ function createWindow(): void {
     findBar.prefetch()
   })
 
-  // 右键菜单：查看词条 / 格式化 Prompt / 查看图片 / 复制元数据 / 检查元素（剪切复制粘贴用快捷键）
+  // 右键菜单：查看词条 / 格式化 Prompt / 编辑 / 查看图片 / 复制元数据 / 检查元素
   mainWindow.webContents.on('context-menu', async (_event, params) => {
     const win = mainWindow
     if (!win) return
@@ -150,6 +152,22 @@ function createWindow(): void {
 
     if (imagePath) {
       const pathForImage = imagePath
+      const editorPath = getSettings().imageEditorPath?.trim()
+      if (editorPath) {
+        template.push({
+          label: '编辑',
+          click: () => {
+            try {
+              openImageWithEditor(pathForImage, editorPath)
+            } catch (err) {
+              win.webContents.send(IPC.image.metadataCopied, {
+                ok: false,
+                message: err instanceof Error ? err.message : String(err),
+              })
+            }
+          },
+        })
+      }
       template.push({
         label: '查看图片',
         click: () => {

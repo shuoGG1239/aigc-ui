@@ -17,10 +17,12 @@ const toast = useToast()
 const serverUrlDraft = ref(settings.serverUrl)
 const outputDirDraft = ref(settings.outputDir)
 const previewDirDraft = ref(settings.promptPreviewDir)
+const imageEditorDraft = ref(settings.imageEditorPath)
 const paramHistoryMaxDraft = ref(String(settings.paramHistoryMax))
 const savingUrl = ref(false)
 const savingOutputDir = ref(false)
 const savingPreviewDir = ref(false)
+const savingImageEditor = ref(false)
 const savingHistoryMax = ref(false)
 const repairingHistory = ref(false)
 /** Single scan root for preview-path repair (defaults to output dir). */
@@ -45,6 +47,13 @@ watch(
   () => settings.promptPreviewDir,
   (dir) => {
     previewDirDraft.value = dir
+  },
+)
+
+watch(
+  () => settings.imageEditorPath,
+  (path) => {
+    imageEditorDraft.value = path
   },
 )
 
@@ -129,6 +138,28 @@ async function onSavePreviewDir(): Promise<void> {
     toast.error(err instanceof Error ? err.message : String(err))
   } finally {
     savingPreviewDir.value = false
+  }
+}
+
+async function onPickImageEditor(): Promise<void> {
+  await settings.pickImageEditor()
+  imageEditorDraft.value = settings.imageEditorPath
+  if (settings.imageEditorPath) {
+    toast.ok('图片编辑软件已选择')
+  }
+}
+
+async function onSaveImageEditor(): Promise<void> {
+  savingImageEditor.value = true
+  try {
+    const imageEditorPath = imageEditorDraft.value.trim()
+    await settings.save({ imageEditorPath })
+    imageEditorDraft.value = settings.imageEditorPath
+    toast.ok(imageEditorPath ? '图片编辑软件已保存' : '已清空图片编辑软件')
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : String(err))
+  } finally {
+    savingImageEditor.value = false
   }
 }
 
@@ -400,6 +431,47 @@ async function onRepairParamHistoryPreviews(): Promise<void> {
             aria-label="保存预览图目录"
             :disabled="savingPreviewDir"
             @click="onSavePreviewDir"
+          >
+            <IconSave />
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-panel settings-panel">
+      <div class="panel-header settings-header">
+        <div
+          class="panel-title"
+          title="预览图右键「编辑」用此程序打开；未配置时不显示该菜单项"
+        >
+          图片编辑软件
+        </div>
+        <div class="path-row settings-path">
+          <input
+            v-model="imageEditorDraft"
+            class="input"
+            type="text"
+            spellcheck="false"
+            placeholder="未配置"
+            title="图片编辑软件可执行文件路径"
+            @keydown.enter="onSaveImageEditor"
+          />
+          <button
+            type="button"
+            class="btn btn-ghost btn-icon"
+            title="选择程序"
+            aria-label="选择图片编辑软件"
+            @click="onPickImageEditor"
+          >
+            <IconFolderPick />
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-icon"
+            title="保存"
+            aria-label="保存图片编辑软件路径"
+            :disabled="savingImageEditor"
+            @click="onSaveImageEditor"
           >
             <IconSave />
           </button>

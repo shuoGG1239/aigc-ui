@@ -35,6 +35,7 @@ export function getSettings(): AppSettings {
     outputDir: defaultOutputDir(),
     launchCommand: DEFAULT_LAUNCH_COMMAND,
     promptPreviewDir: defaultPromptPreviewDir(),
+    imageEditorPath: '',
     paramHistoryMax: PARAM_HISTORY_MAX_DEFAULT,
   }
 
@@ -61,6 +62,8 @@ export function getSettings(): AppSettings {
         typeof raw.promptPreviewDir === 'string'
           ? raw.promptPreviewDir.trim()
           : defaults.promptPreviewDir,
+      imageEditorPath:
+        typeof raw.imageEditorPath === 'string' ? raw.imageEditorPath.trim() : defaults.imageEditorPath,
       paramHistoryMax: clampParamHistoryMax(raw.paramHistoryMax, defaults.paramHistoryMax),
     }
   } catch {
@@ -81,6 +84,9 @@ export function setSettings(patch: Partial<AppSettings>): AppSettings {
   }
   if (typeof next.promptPreviewDir === 'string') {
     next.promptPreviewDir = next.promptPreviewDir.trim()
+  }
+  if (typeof next.imageEditorPath === 'string') {
+    next.imageEditorPath = next.imageEditorPath.trim()
   }
   next.paramHistoryMax = clampParamHistoryMax(next.paramHistoryMax)
   writeFileSync(settingsPath(), JSON.stringify(next, null, 2), 'utf-8')

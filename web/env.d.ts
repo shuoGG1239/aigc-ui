@@ -55,6 +55,7 @@ declare global {
         openOutputDir: () => Promise<void>
         pickPromptPreviewDir: () => Promise<string | null>
         openPromptPreviewDir: () => Promise<void>
+        pickImageEditor: () => Promise<string | null>
       }
       promptPreview: {
         resolve: (prompt: string) => Promise<PromptPreviewResolveResult>

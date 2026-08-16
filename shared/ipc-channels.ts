@@ -13,6 +13,7 @@ export const IPC = {
     openOutputDir: 'settings:openOutputDir',
     pickPromptPreviewDir: 'settings:pickPromptPreviewDir',
     openPromptPreviewDir: 'settings:openPromptPreviewDir',
+    pickImageEditor: 'settings:pickImageEditor',
   },
   promptPreview: {
     resolve: 'promptPreview:resolve',

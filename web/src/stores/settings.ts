@@ -11,6 +11,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const outputDir = ref('')
   const launchCommand = ref('')
   const promptPreviewDir = ref('')
+  const imageEditorPath = ref('')
   const paramHistoryMax = ref(PARAM_HISTORY_MAX_DEFAULT)
   const connStatus = ref<ConnStatus>('unknown')
   const connMessage = ref('')
@@ -21,6 +22,7 @@ export const useSettingsStore = defineStore('settings', () => {
     outputDir.value = s.outputDir
     launchCommand.value = s.launchCommand
     promptPreviewDir.value = s.promptPreviewDir || ''
+    imageEditorPath.value = s.imageEditorPath || ''
     paramHistoryMax.value = s.paramHistoryMax
   }
 
@@ -57,6 +59,13 @@ export const useSettingsStore = defineStore('settings', () => {
     await window.api.settings.openPromptPreviewDir()
   }
 
+  async function pickImageEditor(): Promise<void> {
+    const path = await window.api.settings.pickImageEditor()
+    if (path) {
+      imageEditorPath.value = path
+    }
+  }
+
   async function healthCheck(url?: string): Promise<boolean> {
     connStatus.value = 'checking'
     const result = await window.api.comfy.healthCheck(url ?? serverUrl.value)
@@ -70,6 +79,7 @@ export const useSettingsStore = defineStore('settings', () => {
     outputDir,
     launchCommand,
     promptPreviewDir,
+    imageEditorPath,
     paramHistoryMax,
     connStatus,
     connMessage,
@@ -80,6 +90,7 @@ export const useSettingsStore = defineStore('settings', () => {
     openOutputDir,
     pickPromptPreviewDir,
     openPromptPreviewDir,
+    pickImageEditor,
     healthCheck,
   }
 })
