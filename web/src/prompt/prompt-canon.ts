@@ -1,5 +1,7 @@
 /** Family-neutral prompt segments (storage dialect). */
 
+import { advanceAngleScan, type AngleScanState } from '@shared/prompt-syntax'
+
 export interface PromptSegment {
   text: string
   /** Fixed strength; null means open to strengths pool / bare emit. */
@@ -30,23 +32,34 @@ function isWrapped(s: string, open: string, close: string): boolean {
   return depth === 0
 }
 
-/** Split on commas not inside {}, [], or (). */
+/** Split on commas not inside {}, [], (), angle tags, or `` `...` ``. */
 export function splitTopLevel(raw: string): string[] {
   const parts: string[] = []
   let buf = ''
   let depthCurly = 0
   let depthSquare = 0
   let depthParen = 0
+  const angleState: AngleScanState = { depth: 0, inQuote: false }
   for (let i = 0; i < raw.length; i++) {
     const c = raw[i]
-    if (c === '{') depthCurly++
-    else if (c === '}') depthCurly = Math.max(0, depthCurly - 1)
-    else if (c === '[') depthSquare++
-    else if (c === ']') depthSquare = Math.max(0, depthSquare - 1)
-    else if (c === '(') depthParen++
-    else if (c === ')') depthParen = Math.max(0, depthParen - 1)
+    advanceAngleScan(raw, i, angleState)
+    const inOpaque = angleState.inQuote || angleState.depth > 0
+    if (!inOpaque) {
+      if (c === '{') depthCurly++
+      else if (c === '}') depthCurly = Math.max(0, depthCurly - 1)
+      else if (c === '[') depthSquare++
+      else if (c === ']') depthSquare = Math.max(0, depthSquare - 1)
+      else if (c === '(') depthParen++
+      else if (c === ')') depthParen = Math.max(0, depthParen - 1)
+    }
 
-    if (c === ',' && depthCurly === 0 && depthSquare === 0 && depthParen === 0) {
+    if (
+      (c === ',' || c === '，') &&
+      !inOpaque &&
+      depthCurly === 0 &&
+      depthSquare === 0 &&
+      depthParen === 0
+    ) {
       const t = buf.trim()
       if (t) parts.push(t)
       buf = ''

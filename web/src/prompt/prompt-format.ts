@@ -1,5 +1,5 @@
 import { resolveFamily, type ModelFamily } from '@shared/family'
-import { findAngleTagClose, isAngleTagOpen } from '@shared/prompt-syntax'
+import { findAngleTagClose, isAngleTagOpen, splitCommaList } from '@shared/prompt-syntax'
 import { parseNaiToSegments, segmentsToCanon } from '@/prompt/prompt-canon'
 
 export interface FormatPromptResult {
@@ -44,9 +44,7 @@ export function formatAnimaPrompt(raw: string): string {
 
 /** Tag polish only (assumes already canon / brace-free). */
 function polishAnimaPrompt(raw: string): string {
-  return raw
-    .replace(/[\r\n]+/g, ', ')
-    .split(',')
+  return splitCommaList(raw.replace(/[\r\n]+/g, ', '))
     .map((p) => p.trim())
     .filter(Boolean)
     .map((tag) => formatAnimaTag(tag))
@@ -64,9 +62,7 @@ export function formatSdxlPrompt(raw: string): string {
     if (text.startsWith('@')) text = text.slice(1).trim()
     return { ...seg, text }
   })
-  return segmentsToCanon(segments)
-    .replace(/[\r\n]+/g, ', ')
-    .split(',')
+  return splitCommaList(segmentsToCanon(segments).replace(/[\r\n]+/g, ', '))
     .map((p) => p.trim())
     .filter(Boolean)
     .join(', ')
